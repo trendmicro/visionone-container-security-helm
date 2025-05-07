@@ -1,4 +1,4 @@
-{{- if or (eq true .Values.cloudOne.runtimeSecurity.enabled) (eq true .Values.cloudOne.malwareScanning.enabled) }}
+{{- if or (eq true .Values.visionOne.runtimeSecurity.enabled) (eq true .Values.visionOne.malwareScanning.enabled) }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -18,38 +18,38 @@ data:
 {{ toYaml .Values.scout.falco.config | indent 4 }}
 {{- end }}
 {{- include "falco.sanitier.ouput" . | indent 4 }}
-{{- if .Values.cloudOne.runtimeSecurity.customRules.enabled }}
+{{- if .Values.visionOne.runtimeSecurity.customRules.enabled }}
 {{ (.Files.Glob "config/falco-customrules.yaml").AsConfig | indent 2 }}
     rules_files:
       - /etc/falco/default_rules.yaml
       - /etc/falco/rules.d
-    {{- if .Values.cloudOne.runtimeSecurity.customRules.ociRepository.enabled }}
-      {{- range .Values.cloudOne.runtimeSecurity.customRules.ociRepository.ruleFiles }}
+    {{- if .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled }}
+      {{- range .Values.visionOne.runtimeSecurity.customRules.ociRepository.ruleFiles }}
       - {{ $.Values.scout.falco.ociRepository.artifacts_dir }}/{{- . -}}
       {{- end }}
     {{- end }}
-    json_output: {{.Values.cloudOne.runtimeSecurity.customRules.output.json}}
-  {{ if .Values.cloudOne.runtimeSecurity.customRules.output.splunk.url }}
+    json_output: {{.Values.visionOne.runtimeSecurity.customRules.output.json}}
+  {{ if .Values.visionOne.runtimeSecurity.customRules.output.splunk.url }}
     http_output:
       enabled: true
-      url: {{ .Values.cloudOne.runtimeSecurity.customRules.output.splunk.url }}
-      {{ if .Values.cloudOne.runtimeSecurity.customRules.output.splunk.headers }}
+      url: {{ .Values.visionOne.runtimeSecurity.customRules.output.splunk.url }}
+      {{ if .Values.visionOne.runtimeSecurity.customRules.output.splunk.headers }}
       custom_headers:
-        {{- range .Values.cloudOne.runtimeSecurity.customRules.output.splunk.headers}}
+        {{- range .Values.visionOne.runtimeSecurity.customRules.output.splunk.headers}}
         {{- if contains "Authorization:" . }}
-        {{- if $.Values.cloudOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName -}}
+        {{- if $.Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName -}}
         {{- fail "customRules.output.splunk.hecTokenSecretName automatically adds Splunk HEC auth header, no other Authorization headers allowed" -}}
         {{- end}}{{- end}}
         - "{{ . }}"
         {{- end }}
-        {{- if $.Values.cloudOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName }}
+        {{- if $.Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName }}
         - "Authorization: Splunk ${SPLUNK_HEC_TOKEN}"
         {{- end }}
       {{- end }}
       ca_path: "/etc/ssl/certs"
       ca_cert: "/etc/ssl/certs/ca-certificates.crt"
   {{- end }}
-  {{- if .Values.cloudOne.runtimeSecurity.customRules.ociRepository.enabled }}
+  {{- if .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled }}
     # falcoctl queries version via http
     webserver:
       enabled: true
@@ -81,7 +81,7 @@ data:
 {{- include "falco.sanitier.ouput" . | indent 4 }}
 {{- end }}
 ---
-{{- if .Values.cloudOne.runtimeSecurity.customRules.enabled }}
+{{- if .Values.visionOne.runtimeSecurity.customRules.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

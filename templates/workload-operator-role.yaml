@@ -1,4 +1,3 @@
-{{- if or (eq true .Values.cloudOne.vulnerabilityScanning.enabled) (eq true .Values.cloudOne.inventoryCollection.enabled) }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -114,4 +113,3 @@ subjects:
 - kind: ServiceAccount
   name: workload-images-remover-service-account
   namespace: {{ .Release.Namespace }}
-{{- end }}

@@ -1,18 +1,17 @@
-# Trend Micro Cloud One Container Security Helm Chart
+# Trend Micro Vision One Container Security Helm Chart
 
 ## Getting started
 
+### Upgrading from cloudone-container-security-helm
+
+If you are upgrading from the [Trend Micro Cloud One Container Security Helm chart]([cloudone-container-security-helm](https://github.com/trendmicro/cloudone-container-security-helm)), please follow these [instructions](docs/upgrade-from-cloud-one-helm.md).
+
 ### Installing Helm
 
-Trend Micro Cloud One Container Security components use the `helm` package manager for Kubernetes.
+Trend Micro Vision One Container Security components use the `helm` package manager for Kubernetes.
 
-Helm 3 or later is supported when installing Trend Micro Cloud One - Container Security components.
+Helm 3 or later is supported when installing Trend Micro Vision One - Container Security components.
 To get started, see the [Helm installation guide](https://helm.sh/docs/intro/install/).
-
-> [!NOTE]
-> - Clusters deployed using Helm chart versions older than **2.3.25** will no longer receive new rule updates.
->  - Clusters that use unsupported Helm chart versions retain protection from their last applied policy but may create error logs in Scout due to failures downloading newer rules.
-> - To ensure continued rule updates, upgrade Helm chart to the latest version. See [Upgrade a Trend Micro Cloud One Container Security deployment](#upgrade-a-trend-micro-cloud-one-container-security-deployment).
 
 ### Kubernetes Network Policies with Container Security Continuous Compliance
 
@@ -28,10 +27,10 @@ To install Container Security, a network plugin with NetworkPolicy support is re
 **Note**: If you are running Container Security in a **Red Hat OpenShift** environment, network isolation mitigation is only supported for pods whose security context is acceptable by oversight controller's SecurityContextConstraint.  If you want to let Container Security isolate pods that are not allowed by default, you can use overrides.yaml to override the default setting.
 
 By default, Container Security Continuous Compliance will create a Kubernetes network policy on your behalf. If you want to create it manually, follow the steps below:
-1. Change the value of `cloudOne.oversight.enableNetworkPolicyCreation` to `false`, as seen below:
+1. Change the value of `visionOne.oversight.enableNetworkPolicyCreation` to `false`, as seen below:
 
 ```
-  cloudOne:
+  visionOne:
     oversight:
       enableNetworkPolicyCreation: false
 ```
@@ -58,37 +57,37 @@ By default, Container Security Continuous Compliance will create a Kubernetes ne
 
 ### Registering Cluster with Trend Micro Container Security
 
-There are two methods to register a cluster with Trend Micro Container Security:
+To use the Trend Micro Vision One Container Security components with your Kubernetes cluster, you must first register your cluster. There are two methods to register a cluster with Trend Micro Container Security:
 
-1. [**Manual Registration**](#getting-a-container-security-api-key): Create a cluster in the Trend Micro Container Security console and obtain an API key or use the Public API to create a cluster and obtain an API key.
+1. [**Manual Registration**](#getting-a-container-security-bootstrap-token): Create a cluster in the Trend Micro Container Security console and obtain a bootstrap token or use the Public API to create a cluster and obtain a bootstrap token.
 2. [**Automated Registration**](#using-automated-cluster-registration): Use the Vision One API key to automatically register all clusters with Trend Micro Container Security.
 
-### Getting a Container Security API Key
+### Getting a Container Security bootstrap token
 
-To use the Trend Micro Cloud One Container Security components with your Kubernetes cluster an API key is required to be able to communicate with _Trend Micro Cloud One Container Security_.
+Manually registered clusters use a bootstrap token to initiate communication with _Trend Micro Vision One Container Security_.
 
-To obtain an API key:
-1. Navigate to the _Trend Micro Cloud One Container Security_ console using https://cloudone.trendmicro.com.
+To obtain a bootstrap token:
+1. Navigate to the _Trend Micro Vision One Container Security_ console using https://portal.xdr.trendmicro.com/index.html#/app/server-cloud/container-inventory.
 
-2. Go to [Add a cluster](https://cloudone.trendmicro.com/docs/container-security/cluster-add/).
+2. Click on _+ Add Cluster_ under the Kubernetes section.
 
 3. Give your Kubernetes cluster a unique name.
 
-4. Copy your API key, as it will be used during the installation process.
+4. Copy your bootstrap token, as it will be used during the installation process.
 
-5. It is recommended to create a api key secret as outlined in the [Use Existing Secrets for API Key](#use-existing-secrets-for-api-key) section.
+5. It is recommended to create an authentication secret as outlined in the [Use Existing Secrets for bootstrap token](#use-existing-secrets-for-bootstrap-token) section.
 
-### Use Existing Secrets for API Key and Proxy Credentials
+### Use Existing Secrets for bootstrap token and Proxy Credentials
 
-#### Use Existing Secrets for API Key
+#### Use Existing Secrets for bootstrap token
 
-By default, the helm chart expects the api key to be provided through the `cloudOne.APIKey` helm value in the `overrides.yaml` file. This method creates an API key secret in the same namespace where the Container Security components are installed but can expose the API key in helm values. 
+By default, the helm chart expects the bootstrap token to be provided through the `visionOne.bootstrapToken` helm value in the `overrides.yaml` file. This method creates an authentication secret in the same namespace where the Container Security components are installed but can expose the bootstrap token in helm values.
 
-It is recommended to use the `useExistingSecrets.containerSecurityAuth: true` option and create a secret in the same namespace where the Container Security components will be installed. The secret should be named `trendmicro-container-security-auth` with the key `api.key` set to the API key value. This will also allow automation of the api key secret creation and management.
+It is recommended to use the `useExistingSecrets.containerSecurityAuth: true` option and create a secret in the same namespace where the Container Security components will be installed. The secret should be named `trendmicro-container-security-auth` with the key `api.key` set to the bootstrap token value. This will also allow automation of the authentication secret creation and management.
 
 ```sh
 kubectl create secret generic trendmicro-container-security-auth --from-literal
-api.key=<container-security-api-key> --namespace <trendmicro-namespace>
+api.key=<container-security-bootstrap-token> --namespace <trendmicro-namespace>
 ```
 
 Then, set the `useExistingSecrets.containerSecurityAuth: true` in the `overrides.yaml` file.
@@ -115,13 +114,13 @@ To use automated cluster registration:
 
 3. Put the Vision One API Key into a secret called `trendmicro-container-security-registration-key` with the key `registration.key` in the same namespace where the Container Security components are installed.
 
-4. Install the Container Security Helm chart using the values `cloudOne.clusterRegistrationKey: true` and `cloudOne.groupId=<your cluster group ID>`. You can optionally define the cluster name by setting either `cloudOne.clusterName` or `cloudOne.clusterNamePrefix`, if these are not specified the name will be a random string. An existing policy can also be assigned to the cluster by setting `cloudOne.policyId=<your policy ID>`.
+4. Install the Container Security Helm chart using the values `visionOne.clusterRegistrationKey: true` and `visionOne.groupId=<your cluster group ID>`. You can optionally define the cluster name by setting either `visionOne.clusterName` or `visionOne.clusterNamePrefix`, if these are not specified the name will be a random string. An existing policy can also be assigned to the cluster by setting `visionOne.policyId=<your policy ID>`.
 
 ### Override configuration defaults
 
 Helm uses a file called `values.yaml` to set configuration defaults. You can find detailed documentation for each of the configuration options in this file.
 
-You can override the defaults in this file by creating an `overrides.yaml` file and providing the location of this file as input during installation. The `cloudOne.APIKey` should be overridden in the `overrides.yaml` file.
+You can override the defaults in this file by creating an `overrides.yaml` file and providing the location of this file as input during installation. The `visionOne.bootstrapToken` should be overridden in the `overrides.yaml` file.
 
 **Note**: If you create a file to override the values, make sure to copy the structure from the chart's `values.yaml` file. You only need to provide the values that you are overriding.
 
@@ -138,7 +137,7 @@ To install Container Security chart into an existing Kubernetes namespace, use t
     --values overrides.yaml \
     --namespace ${namespace} \
     trendmicro \
-    https://github.com/trendmicro/cloudone-container-security-helm/archive/master.tar.gz
+    https://github.com/trendmicro/visionone-container-security-helm/archive/main.tar.gz
 ```
 
 In the example below, we create a new namespace by using `helm`'s `--create-namespace` option:
@@ -149,7 +148,7 @@ In the example below, we create a new namespace by using `helm`'s `--create-name
     --namespace trendmicro-system \
     --create-namespace \
     trendmicro \
-    https://github.com/trendmicro/cloudone-container-security-helm/archive/master.tar.gz
+    https://github.com/trendmicro/visionone-container-security-helm/archive/main.tar.gz
 ```
 
 For more information about `helm install`, see the [Helm installation documentation](https://helm.sh/docs/helm/helm_install/).
@@ -160,7 +159,7 @@ For more information about `helm install`, see the [Helm installation documentat
 
 **Note**: If you are running Container Security in a cluster where Pod Security Admission is available and you have runtime security enabled, ensure the namespace where Container Security is installed is using the [privileged Pod Security Standards policy](https://kubernetes.io/docs/concepts/security/pod-security-standards/#privileged).
 
-### Upgrade a Trend Micro Cloud One Container Security deployment
+### Upgrade a Trend Micro Vision One Container Security deployment
 
 To upgrade an existing installation in the default Kubernetes namespace to the latest version:
 
@@ -169,7 +168,7 @@ To upgrade an existing installation in the default Kubernetes namespace to the l
     --values overrides.yaml \
     --namespace ${namespace} \
     trendmicro \
-    https://github.com/trendmicro/cloudone-container-security-helm/archive/master.tar.gz
+    https://github.com/trendmicro/visionone-container-security-helm/archive/main.tar.gz
 ```
 
 **Note**: Helm will override or reset values in `overrides.yaml`. If you want to use the values you had previously, use the [--reuse-values](https://helm.sh/docs/helm/helm_upgrade/) option during a Helm upgrade:
@@ -179,7 +178,7 @@ To upgrade an existing installation in the default Kubernetes namespace to the l
     --namespace ${namespace} \
     --reuse-values \
     trendmicro \
-    https://github.com/trendmicro/cloudone-container-security-helm/archive/master.tar.gz
+    https://github.com/trendmicro/visionone-container-security-helm/archive/main.tar.gz
 ```
 
 ### Uninstall the Container Security Helm chart
@@ -206,14 +205,13 @@ By default, Container Security Continuous Compliance will create a Kubernetes ne
 
 ## Documentation
 
-- [Trend Micro Cloud One Container Security Documentation](https://cloudone.trendmicro.com/docs/container-security)
 - [Trend Micro Vision One Container Security Documentation](https://docs.trendmicro.com/en-us/documentation/article/trend-vision-one-container-security)
 
 ## Advanced topics
 
 ### Install a specific version of the Container Security helm chart
 
-If you want to install a specific version you can use the archive link for the tagged release. For example, to install Trend Micro Cloud One Container Security helm chart version 2.6.6, run the following command:
+If you want to install a specific version you can use the archive link for the tagged release. For example, to install Trend Micro Vision One Container Security helm chart version 3.0.0, run the following command:
 
 ```sh
   helm install \
@@ -221,7 +219,7 @@ If you want to install a specific version you can use the archive link for the t
     --namespace ${namespace} \
     --create-namespace \
     trendmicro \
-    https://github.com/trendmicro/cloudone-container-security-helm/archive/2.6.6.tar.gz
+    https://github.com/trendmicro/visionone-container-security-helm/archive/3.0.0.tar.gz
 ```
 
 ### Enabling or disabling a specific component
@@ -229,7 +227,7 @@ If you want to install a specific version you can use the archive link for the t
 If desired, specifics components of the Container Security helm chart can be enabled or disabled individually using an overrides file.
 For example, you can choose to enable the runtime security component by including the below in your `overrides.yaml` file:
 ```yaml
-  cloudOne:
+  visionOne:
     runtimeSecurity:
       enabled: true
 ```
@@ -376,7 +374,7 @@ logConfig:
 You can also configure the log level for each component individually by setting the `logLevel` value for the component in your `overrides.yaml` file:
 
 ```yaml
-cloudone:
+visionOne:
   admissionController:
     logLevel: debug
 ```
@@ -441,7 +439,7 @@ For Argo CD deployments, we provide a cleanup script to help with the uninstalla
 
 For detailed instructions on using the Argo CD cleanup script, please refer to the [Argo CD cleanup script documentation](./scripts/argocd-cleanup.md).
 
-## Falco Version Matrix 
+## Falco Version Matrix
 
 The following matrix shows the Falco version that is bundled with each Helm chart version:
 

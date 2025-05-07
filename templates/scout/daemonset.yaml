@@ -1,4 +1,4 @@
-{{- if or .Values.cloudOne.runtimeSecurity.enabled .Values.cloudOne.malwareScanning.enabled }}
+{{- if or .Values.visionOne.runtimeSecurity.enabled .Values.visionOne.malwareScanning.enabled }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -22,13 +22,13 @@ spec:
         container.apparmor.security.beta.kubernetes.io/scout: unconfined
 {{- end }}{{/* if */}}
         checksum/config: {{ include (print $.Template.BasePath "/scout/configmap.yaml") . | sha256sum }}
-{{- if eq "tls" .Values.cloudOne.k8sMetaCollector.grpcAuth.type }}
+{{- if eq "tls" .Values.visionOne.k8sMetaCollector.grpcAuth.type }}
         checksum/metacollector: {{ include (print $.Template.BasePath "/k8s-metacollector-secret.yaml") . | sha256sum }}
 {{- end }}
 {{- with (default .Values.podAnnotations.defaults .Values.podAnnotations.scout) }}
 {{- toYaml . | nindent 8 }}
 {{- end }}{{/* with */}}
-        customrules/enabled: {{ and .Values.cloudOne.runtimeSecurity.enabled .Values.cloudOne.runtimeSecurity.customRules.enabled | quote }}
+        customrules/enabled: {{ and .Values.visionOne.runtimeSecurity.enabled .Values.visionOne.runtimeSecurity.customRules.enabled | quote }}
 
     spec:
       serviceAccountName: {{ include "scout.serviceAccountName" . }}
@@ -75,7 +75,7 @@ spec:
       containers:
         - name: falco
           {{- with .Values.images.falco }}
-          {{- $project := (default (default "trendmicrocloudone" $imageDefaults.project) .project) }}
+          {{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
           {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
           {{- $tag := (default $imageDefaults.tag .tag) }}
           image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
@@ -177,10 +177,10 @@ spec:
             - mountPath: /root/.falco
               name: components-dir
               readOnly: true
-{{- if .Values.cloudOne.runtimeSecurity.customRules.enabled }}
+{{- if .Values.visionOne.runtimeSecurity.customRules.enabled }}
         - name: falco-customrules
           {{- with .Values.images.falco }}
-          {{- $project := (default (default "trendmicrocloudone" $imageDefaults.project) .project) }}
+          {{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
           {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
           {{- $tag := (default $imageDefaults.tag .tag) }}
           image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
@@ -225,21 +225,21 @@ spec:
                 fieldRef:
                   fieldPath: spec.nodeName
             - name: HEC_CLIENT_PARAMS
-              value: "{{ include "hec_client_params_as_env_var" .Values.cloudOne.runtimeSecurity.customRules.output.splunk }}"
-          {{- if .Values.cloudOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName }}
-          {{- if not ( lookup "v1" "Secret" .Release.Namespace .Values.cloudOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName ) -}}{{- fail (
+              value: "{{ include "hec_client_params_as_env_var" .Values.visionOne.runtimeSecurity.customRules.output.splunk }}"
+          {{- if .Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName }}
+          {{- if not ( lookup "v1" "Secret" .Release.Namespace .Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName ) -}}{{- fail (
               printf "secret %s is expected in namespace %s, with key 'hec_secret' containing Splunk HEC token"
-                .Values.cloudOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName
+                .Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName
                 .Release.Namespace
               ) -}}{{- end}}
             - name: SPLUNK_HEC_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.cloudOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName }}
+                  name: {{ .Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName }}
                   key: hec_secret
-          {{- end }}{{/* .Values.cloudOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName */}}
-          {{- if .Values.cloudOne.runtimeSecurity.customRules.ociRepository.enabled }}
-            {{- with .Values.cloudOne.runtimeSecurity.customRules.ociRepository.basicAuthTokenSecretName }}
+          {{- end }}{{/* .Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName */}}
+          {{- if .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled }}
+            {{- with .Values.visionOne.runtimeSecurity.customRules.ociRepository.basicAuthTokenSecretName }}
               {{- if not ( lookup "v1" "Secret" $.Release.Namespace . ) -}}{{- fail (
                   printf "secret %s is expected in namespace %s, with key 'falcoctl' containing basic auth as for FALCOCTL_REGISTRY_AUTH_BASIC"
                     .
@@ -280,7 +280,7 @@ spec:
             - mountPath: /usr/wrappers
               name: customrules-wrappers
               readOnly: true
-{{- if .Values.cloudOne.runtimeSecurity.customRules.ociRepository.enabled }}
+{{- if .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled }}
             - mountPath: {{ .Values.scout.falco.ociRepository.artifacts_dir }}
               name: oci-repository-artifacts-dir
               readOnly: false
@@ -306,11 +306,11 @@ spec:
             - mountPath: /root/.falco
               name: components-dir
               readOnly: true
-{{- end }}{{/* if .Values.cloudOne.runtimeSecurity.customRules.enabled */}}
+{{- end }}{{/* if .Values.visionOne.runtimeSecurity.customRules.enabled */}}
         - name: scout
           {{- $imageDefaults := .Values.images.defaults }}
           {{- with .Values.images.scout }}
-          {{- $project := (default (default "trendmicrocloudone" $imageDefaults.project) .project) }}
+          {{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
           {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
           {{- $tag := (default $imageDefaults.tag .tag) }}
           image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
@@ -341,19 +341,19 @@ spec:
             {{- end}}{{/* if */}}
             - --k8s-metacollector
             - {{ include "k8sMetaCollector.svc.url" . }}
-            {{- if eq "tls" .Values.cloudOne.k8sMetaCollector.grpcAuth.type }}
+            {{- if eq "tls" .Values.visionOne.k8sMetaCollector.grpcAuth.type }}
             - --k8s-metacollector-cert
             - /etc/scout/metacollector-ca-cert.pem
             {{- end}}
 {{- include "containerRuntime.sock.args" ( list "cri" "" .Values.scout.falco ) | trim | nindent 12 }}
-            - --malware-scanning={{ default "false" .Values.cloudOne.malwareScanning.enabled }}
-            - --malware-event-count={{ .Values.cloudOne.malwareScanning.maximumEventCount}}
-            - --runtime-security={{ default "false" .Values.cloudOne.runtimeSecurity.enabled }}
-            {{- if .Values.cloudOne.malwareScanning.enabled }}
+            - --malware-scanning={{ default "false" .Values.visionOne.malwareScanning.enabled }}
+            - --malware-event-count={{ .Values.visionOne.malwareScanning.maximumEventCount}}
+            - --runtime-security={{ default "false" .Values.visionOne.runtimeSecurity.enabled }}
+            {{- if .Values.visionOne.malwareScanning.enabled }}
             - --malware-scanner-url
-            - {{ include "malwareScanner.svc.url" . }}:{{ .Values.cloudOne.malwareScanning.scanner.port }}
+            - {{ include "malwareScanner.svc.url" . }}:{{ .Values.visionOne.malwareScanning.scanner.port }}
             - --excluded-scan-path
-            {{- $excludedPaths := (default (list) .Values.cloudOne.malwareScanning.excludedPaths) }}
+            {{- $excludedPaths := (default (list) .Values.visionOne.malwareScanning.excludedPaths) }}
             {{- $combinedListPath := .Values.malwareScanner.defaultExcludedPaths }}
             {{- range $excludedPaths }}
             {{- $combinedListPath = append $combinedListPath . }}
@@ -362,7 +362,7 @@ spec:
             - --job-status-file-path={{ printf "%s%s%s" "../.." $jobStatusMntPath "/malware_scan_job_status.json" }}
             - --scan-worker-count
             - "{{ .Values.malwareScanner.scanWorkerCount }}"
-            {{- end }}{{/* if .Values.cloudOne.malwareScanning.enabled */}}
+            {{- end }}{{/* if .Values.visionOne.malwareScanning.enabled */}}
         {{- if .Values.scout.scout.extraArgs }}
 {{ toYaml .Values.scout.scout.extraArgs | indent 12 }}
         {{- end }}{{/* if */}}
@@ -372,9 +372,9 @@ spec:
             - name: "{{ $key }}"
               value: "{{ $value }}"
           {{- end }}{{/* range */}}
-          {{- if .Values.cloudOne.malwareScanning.enabled }}
+          {{- if .Values.visionOne.malwareScanning.enabled }}
             - name: TM_AM_SCAN_TIMEOUT_SECS
-              value: "{{ .Values.cloudOne.malwareScanning.scanTimeoutSeconds }}"
+              value: "{{ .Values.visionOne.malwareScanning.scanTimeoutSeconds }}"
           {{- end }}{{/* if */}}
             - name: POD_NAME
               valueFrom:
@@ -417,7 +417,7 @@ spec:
               readOnly: true
             - mountPath: {{ $jobStatusMntPath }}
               name: status-dir
-{{- if eq "tls" .Values.cloudOne.k8sMetaCollector.grpcAuth.type }}
+{{- if eq "tls" .Values.visionOne.k8sMetaCollector.grpcAuth.type }}
             - mountPath: /etc/scout/metacollector-ca-cert.pem
               name: metacollector-grpc-certs
               subPath: ca-cert.pem
@@ -430,7 +430,7 @@ spec:
         - name: falcoversion
           {{- $imageDefaults := .Values.images.defaults }}
           {{- with .Values.images.falco }}
-          {{- $project := (default (default "trendmicrocloudone" $imageDefaults.project) .project) }}
+          {{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
           {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
           {{- $tag := (default $imageDefaults.tag .tag) }}
           image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
@@ -454,7 +454,7 @@ spec:
         - name: downloader
           {{- $imageDefaults := .Values.images.defaults }}
           {{- with .Values.images.scout }}
-          {{- $project := (default (default "trendmicrocloudone" $imageDefaults.project) .project) }}
+          {{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
           {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
           {{- $tag := (default $imageDefaults.tag .tag) }}
           image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
@@ -551,13 +551,13 @@ spec:
             items:
               - key: falco.yaml
                 path: falco.yaml
-{{- if .Values.cloudOne.runtimeSecurity.customRules.enabled }}
+{{- if .Values.visionOne.runtimeSecurity.customRules.enabled }}
               - key: falco-customrules.yaml
                 path: falco-customrules.yaml
 {{- end }}
               - key: default_rules.yaml
                 path: default_rules.yaml
-{{- if .Values.cloudOne.runtimeSecurity.customRules.enabled }}
+{{- if .Values.visionOne.runtimeSecurity.customRules.enabled }}
         - name: customrules-wrappers
           configMap:
             name: {{ template "container.security.name" . }}-customrules-falco-config
@@ -572,11 +572,11 @@ spec:
         - name: rules-volume
           emptyDir:
             sizeLimit: 50Mi
-{{- if .Values.cloudOne.runtimeSecurity.customRules.enabled }}
+{{- if .Values.visionOne.runtimeSecurity.customRules.enabled }}
         - name: customrules-volume
           configMap:
             name: {{ template "container.security.name" . }}-customrules
-  {{- if .Values.cloudOne.runtimeSecurity.customRules.ociRepository.enabled }}
+  {{- if .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled }}
         - name: oci-repository-artifacts-dir
           emptyDir:
             sizeLimit: 10Mi
@@ -606,11 +606,11 @@ spec:
         - name: components-dir
           emptyDir:
             sizeLimit: 50Mi
-{{- if eq "tls" .Values.cloudOne.k8sMetaCollector.grpcAuth.type }}
+{{- if eq "tls" .Values.visionOne.k8sMetaCollector.grpcAuth.type }}
         - name: metacollector-grpc-certs
           secret:
             secretName: {{ template "k8sMetaCollector.fullname" . }}-tls-certificate
 {{- end }}
   updateStrategy:
     type: RollingUpdate
-{{- end }}{{/* if or (eq true .Values.cloudOne.runtimeSecurity.enabled) (eq true .Values.cloudOne.malwareScanning.enabled) */}}
+{{- end }}{{/* if or (eq true .Values.visionOne.runtimeSecurity.enabled) (eq true .Values.visionOne.malwareScanning.enabled) */}}

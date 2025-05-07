@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# a helper script to fetch Kubernetes settings and Trend Micro Cloud One container security logs.
+# a helper script to fetch Kubernetes settings and Trend Micro Vision One container security logs.
 #
 
 RELEASE=${RELEASE:-trendmicro}
@@ -40,7 +40,7 @@ case X`helm version --template="{{.Version}}"` in
   Xv3.*)
     HELM_COMMAND="$HELM list --all-namespaces";;
   *)
-    echo "Trend Micro Cloud One Container Security only supports Helm 3 or newer version, exiting..."
+    echo "Trend Micro Vision One Container Security only supports Helm 3 or newer version, exiting..."
     exit 1
 esac
 
@@ -87,7 +87,7 @@ done
 
 # get values file for current RELEASE and NAMESPACE
 VALUES=$($HELM get values $RELEASE -n $NAMESPACE -o yaml)
-VALUES=$(echo "$VALUES" | sed 's/apikey: .*/apiKey: xxxxxx/I') # redacting any exposed API keys
+VALUES=$(echo "$VALUES" | sed 's/apikey: .*/bootstrapToken: xxxxxx/I') # redacting any exposed API keys
 VALUES=$(echo "$VALUES" | sed 's/password: .*/password: xxxxxx/I') # redacting any plain-text proxy password
 echo "$VALUES" > $MASTER_DIR/$RELEASE-$NAMESPACE-values.yaml
 

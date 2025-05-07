@@ -1,4 +1,4 @@
-{{- if or (eq true .Values.cloudOne.vulnerabilityScanning.enabled) (eq true .Values.cloudOne.malwareScanning.enabled) }}
+{{- if or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -44,7 +44,7 @@ spec:
         securityContext:
 {{ toYaml $containerSecurityContext | indent 12 }}
 {{- end }}
-        {{- $project := (default (default "trendmicrocloudone" $imageDefaults.project) .project) }}
+        {{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
         {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
         {{- $tag := (default $imageDefaults.tag .tag) }}
         image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
@@ -57,7 +57,7 @@ spec:
         workingDir: /var/scanmanager
         args:
         - --zap-devel={{ default "false" .Values.logConfig.devel }}
-        - --zap-log-level={{ include "logLevel" (list .Values.cloudOne.scanManager.logLevel .) }}
+        - --zap-log-level={{ include "logLevel" (list .Values.visionOne.scanManager.logLevel .) }}
         - --zap-encoder={{ default "json" .Values.logConfig.encoder }}
         - --zap-stacktrace-level={{ default "error" .Values.logConfig.stacktraceLevel }}
         - --zap-time-encoding={{ default "rfc3339" .Values.logConfig.timeEncoding }}
@@ -70,7 +70,7 @@ spec:
         - --release-service={{ .Release.Service }}
         - --release-name={{ .Release.Name }}
         - --container-security-name={{ include "container.security.name" . }}
-        - --max-job-count={{ default 5 .Values.cloudOne.scanManager.maxJobCount }}
+        - --max-job-count={{ default 5 .Values.visionOne.scanManager.maxJobCount }}
         {{- with .Values.images.scanManager }}
         {{- $secret := (default (default "" $imageDefaults.imagePullSecret) .imagePullSecret) }}
         {{- if not (eq "" $secret) }}
@@ -78,16 +78,16 @@ spec:
         {{- end }}
         {{- end }}
         - --scan-config-path=/etc/config
-        - --job-active-deadline={{ printf "%ds" (int .Values.cloudOne.scanManager.activeDeadlineSeconds) }}
-        - --malware-scan-job-active-deadline={{ printf "%ds" (int .Values.cloudOne.scanManager.malwareScanActiveDeadlineSeconds) }}
-        {{- if .Values.cloudOne.vulnerabilityScanning.enabled }}
+        - --job-active-deadline={{ printf "%ds" (int .Values.visionOne.scanManager.activeDeadlineSeconds) }}
+        - --malware-scan-job-active-deadline={{ printf "%ds" (int .Values.visionOne.scanManager.malwareScanActiveDeadlineSeconds) }}
+        {{- if .Values.visionOne.vulnerabilityScanning.enabled }}
         - --enable-vulnerability-scanning
         {{- end }}
-        {{- if .Values.cloudOne.malwareScanning.enabled }}
+        {{- if .Values.visionOne.malwareScanning.enabled }}
         - --enable-malware-scanning
         - --scanner-endpoint={{ printf "%s:%d" (include "malwareScanner.svc.url" .) 50051 }}
         - --malware-exclude-namespaces={{ (include "namespaceExclusions" .) }}
-          {{- $excludedPaths := (default (list) .Values.cloudOne.malwareScanning.excludedPaths) }}
+          {{- $excludedPaths := (default (list) .Values.visionOne.malwareScanning.excludedPaths) }}
           {{- $combinedListPath := .Values.malwareScanner.defaultExcludedPaths }}
           {{- range $excludedPaths }}
           {{- $combinedListPath = append $combinedListPath . }}
@@ -96,7 +96,7 @@ spec:
         - --mqtt-config-file-path=/app/scanmanager.yaml
         - --vision-one-feature-gate={{ default "false" .Values.visionOneFeatureGate }}
         {{- end }}
-        {{- if and (.Capabilities.APIVersions.Has "security.openshift.io/v1") (or (eq true .Values.cloudOne.vulnerabilityScanning.enabled) (eq true .Values.cloudOne.malwareScanning.enabled)) }}
+        {{- if and (.Capabilities.APIVersions.Has "security.openshift.io/v1") (or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled)) }}
         - --openshift-service-account-name={{ include "scanJob.serviceAccountName" . }}
         {{- $labels := include "scanner.labels" $ }}
         - --openshift-service-account-labels={{ $labels | replace "\n" "," | replace " " "" }}
@@ -109,7 +109,7 @@ spec:
         {{- include "container.security.proxy.env" . | nindent 8 }}
         {{- $scanJobImageDefaults := .Values.images.defaults }}
         {{- with .Values.images.scanJob }}
-        {{- $scanJobProject := (default (default "trendmicrocloudone" $scanJobImageDefaults.project) .project) }}
+        {{- $scanJobProject := (default (default "trendmicro/container-security" $scanJobImageDefaults.project) .project) }}
         {{- $scanJobRepository := printf "%s/%s" $scanJobProject (required ".repository is required!" .repository) }}
         {{- $scanJobTag := (default $scanJobImageDefaults.tag .tag) }}
         {{- $scanJobImage := include "image.source" (dict "repository" $scanJobRepository "registry" .registry "tag" $scanJobTag "imageDefaults" $scanJobImageDefaults "digest" .digest)}}
@@ -329,7 +329,7 @@ spec:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
 {{- end }}
-        {{- $project := (default (default "trendmicrocloudone" $imageDefaults.project) .project) }}
+        {{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
         {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
         {{- $tag := (default $imageDefaults.tag .tag) }}
           image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
@@ -341,7 +341,7 @@ spec:
           - --excluded-namespaces
           {{- $excludeNS := (include "namespaceExclusions" .) }}
           - {{ $excludeNS | quote }}
-          {{- if and (.Capabilities.APIVersions.Has "security.openshift.io/v1") (or (eq true .Values.cloudOne.vulnerabilityScanning.enabled) (eq true .Values.cloudOne.malwareScanning.enabled)) }}
+          {{- if and (.Capabilities.APIVersions.Has "security.openshift.io/v1") (or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled)) }}
           {{- $labels := include "scanner.labels" $ }}
           - --openshift-service-account-labels={{ $labels | replace "\n" "," | replace " " "" }}
           {{- end }}

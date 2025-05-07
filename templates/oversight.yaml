@@ -1,4 +1,4 @@
-{{- if eq true .Values.cloudOne.oversight.enabled }}
+{{- if eq true .Values.visionOne.oversight.enabled }}
 apiVersion: cloudone.trendmicro.com/v1
 kind: Oversight
 metadata:

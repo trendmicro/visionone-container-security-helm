@@ -5,12 +5,12 @@
 
 ### Splunk HEC token is added as a secret
 
-A secret *splunk-hec-secret* is added into namespace *trendmicro-system* with key *hec_secret* containing Splunk HEC token: 
+A secret *splunk-hec-secret* is added into namespace *trendmicro-system* with key *hec_secret* containing Splunk HEC token:
 
 > *trendmicro-system* is a default namespace to deploy this chart.
 > Normally, it is created during helm chart deployment with *--create-namespace* helm flag.
 > If this chart is not deployed yet, the namespace may be missed.
-> 
+>
 > Add the namespace before creating a secret:
 > ```sh
 > kubectl create namespace trendmicro-system
@@ -58,7 +58,7 @@ Helm chart automatically adds required Splunk Authorization headers , no other a
 ### validate
 
 ```sh
-helm template https://github.com/trendmicro/cloudone-container-security-helm/archive/master.tar.gz  --dry-run=server --values overrides_hec_secret.yaml --debug --namespace trendmicro-system > manifest.yaml
+helm template https://github.com/trendmicro/visionone-container-security-helm/archive/main.tar.gz  --dry-run=server --values overrides_hec_secret.yaml --debug --namespace trendmicro-system > manifest.yaml
 ```
 
 ## Errors

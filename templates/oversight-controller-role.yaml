@@ -1,4 +1,4 @@
-{{- if eq true .Values.cloudOne.oversight.enabled }}
+{{- if eq true .Values.visionOne.oversight.enabled }}
 {{- if .Values.rbac.create }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -97,7 +97,7 @@ rules:
   - get
   - patch
   - update
-{{- if eq true .Values.cloudOne.oversight.enableNetworkPolicyCreation }}
+{{- if eq true .Values.visionOne.oversight.enableNetworkPolicyCreation }}
 - apiGroups:
   - networking.k8s.io
   resources:

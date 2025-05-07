@@ -659,11 +659,10 @@ Create an image source.
 {{- end -}}
 
 {{/*
-Cloud One API Key auth
-.Values.cloudOne.admissionController.apiKey is for backwards compatibility with the version <= v.1.0.1
+Vision One auth token
 */}}
 {{- define "container.security.auth.secret" -}}
-{{- if not .Values.cloudOne.clusterRegistrationKey }}
+{{- if not .Values.visionOne.clusterRegistrationKey }}
 {{- if not (and .Values.useExistingSecrets (eq true .Values.useExistingSecrets.containerSecurityAuth)) }}
 apiVersion: v1
 kind: Secret
@@ -673,28 +672,23 @@ metadata:
     {{- include "container.security.labels" . | nindent 4 }}
 type: Opaque
 data:
-{{- if and (hasKey .Values.cloudOne "apiKey") (.Values.cloudOne.apiKey) }}
-  api.key: {{ .Values.cloudOne.apiKey | toString | b64enc | quote }}
-{{- else if and (hasKey .Values.cloudOne.admissionController "apiKey") (.Values.cloudOne.admissionController.apiKey) }}
-  api.key: {{ .Values.cloudOne.admissionController.apiKey | toString | b64enc | quote }}
+{{- if and (hasKey .Values.visionOne "bootstrapToken") (.Values.visionOne.bootstrapToken) }}
+  api.key: {{ .Values.visionOne.bootstrapToken | toString | b64enc | quote }}
 {{- else }}
-  api.key: {{ required "A valid Cloud One apiKey is required" .Values.cloudOne.apiKey | toString | b64enc | quote }}
+  api.key: {{ required "A valid Vision One bootstrapToken is required" .Values.visionOne.bootstrapToken | toString | b64enc | quote }}
 {{- end }}
 {{- end }}
 {{- end }}
 {{- end -}}{{/* define */}}
 
 {{/*
-Cloud One API endpoint
-.Values.cloudOne.admissionController.endpoint is for backwards compatibility with the version <= v.1.0.1
+Vision One API endpoint
 */}}
 {{- define "container.security.endpoint" -}}
-{{- if and (hasKey .Values.cloudOne.admissionController "endpoint") (.Values.cloudOne.admissionController.endpoint) }}
-{{- .Values.cloudOne.admissionController.endpoint -}}
-{{- else if and (hasKey .Values.cloudOne "endpoint") (.Values.cloudOne.endpoint) }}
-{{- .Values.cloudOne.endpoint -}}
+{{- if and (hasKey .Values.visionOne "endpoint") (.Values.visionOne.endpoint) }}
+{{- .Values.visionOne.endpoint -}}
 {{- else }}
-{{- required "A valid Cloud One endpoint is required" .Values.cloudOne.endpoint -}}
+{{- required "A valid Vision One endpoint is required" .Values.visionOne.endpoint -}}
 {{- end }}
 {{- end -}}{{/* define */}}
 
@@ -903,7 +897,7 @@ securityContext: {{- toYaml $containerSecurityContext | nindent 4 }}
 {{- end }}{{/* if .securityContext.enabled */}}
 {{- $imageDefaults := .images.defaults }}
 {{- with .images.rbacProxy -}}
-{{- $project := (default (default "trendmicrocloudone" $imageDefaults.project) .project) }}
+{{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
 {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
 {{- $tag := (default $imageDefaults.tag .tag) }}
 image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
@@ -970,16 +964,25 @@ Return the trusted images digest
 Validate input for cluster registration from override file
 */}}
 {{- define "validateClusterInput" -}}
-{{- if and .Values.cloudOne.apiKey .Values.cloudOne.clusterRegistrationKey }}
-{{- fail "Please do not specify the apiKey in the override file when using automated cluster registration" }}
+{{- if and .Values.visionOne.bootstrapToken .Values.visionOne.clusterRegistrationKey }}
+{{- fail "Please do not specify the bootstrapToken in the override file when using automated cluster registration" }}
 {{- end }}
-{{- if and (not .Values.cloudOne.groupId ) (.Values.cloudOne.clusterRegistrationKey) }}
+{{- if and (not .Values.visionOne.groupId ) (.Values.visionOne.clusterRegistrationKey) }}
 {{- fail "Please specify the groupId in the override file when using automated cluster registration" }}
 {{- end }}
-{{- if and .Values.cloudOne.clusterName (gt (float64 (len .Values.cloudOne.clusterName)) 64.0) }}
+{{- if and .Values.visionOne.clusterName (gt (float64 (len .Values.visionOne.clusterName)) 64.0) }}
 {{- fail "The cluster name must be less than 64 characters" }}
 {{- end }}
-{{- if and .Values.cloudOne.clusterNamePrefix (gt (float64 (len .Values.cloudOne.clusterNamePrefix)) 16.0) }}
+{{- if and .Values.visionOne.clusterNamePrefix (gt (float64 (len .Values.visionOne.clusterNamePrefix)) 16.0) }}
+{{- fail "The cluster name prefix must be less than 16 characters" }}
+{{- end }}
+{{- if and (not .Values.visionOne.groupId ) (.Values.visionOne.clusterRegistrationKey) }}
+{{- fail "Please specify the groupId in the override file when using automated cluster registration" }}
+{{- end }}
+{{- if and .Values.visionOne.clusterName (gt (float64 (len .Values.visionOne.clusterName)) 64.0) }}
+{{- fail "The cluster name must be less than 64 characters" }}
+{{- end }}
+{{- if and .Values.visionOne.clusterNamePrefix (gt (float64 (len .Values.visionOne.clusterNamePrefix)) 16.0) }}
 {{- fail "The cluster name prefix must be less than 16 characters" }}
 {{- end }}
 {{- end -}}
@@ -1033,7 +1036,7 @@ Usage:
 {{ include "containerRuntime.sock.falco.args" .Values.scout.falco }}
 */}}
 {{- define "containerRuntime.sock.falco.args" -}}
-{{- if and .docker .docker.enabled }} 
+{{- if and .docker .docker.enabled }}
 - -o
 - container_engines.cri.sockets[]=/var/run/docker.sock
 {{- end }}{{/* if */}}
@@ -1130,24 +1133,11 @@ Usage:
 {{- end -}}
 
 {{/*
-Check if the cloudOne.endpoint points to Vision One
-*/}}
-{{- define "container.security.isVisionOneEndpoint" -}}
-{{- $endpoint := include "container.security.endpoint" . -}}
-{{- if contains "trendmicro.com/external" $endpoint -}}
-true
-{{- else -}}
-false
-{{- end -}}
-{{- end -}}
-
-
-{{/*
 Automatically adds any namespace with prefix to excluded namespace list for openshift
 */}}
 {{- define "namespaceExclusions" -}}
-{{- $excludedNamespaces := .Values.cloudOne.exclusion.namespaces | default list -}}
-{{- $osNsPrefixes := .Values.cloudOne.exclusion.osNsPrefixes | default list -}}
+{{- $excludedNamespaces := .Values.visionOne.exclusion.namespaces | default list -}}
+{{- $osNsPrefixes := .Values.visionOne.exclusion.osNsPrefixes | default list -}}
 
 {{- if .Capabilities.APIVersions.Has "security.openshift.io/v1" -}}
   {{- $namespaceList := lookup "v1" "Namespace" "" "" -}}
@@ -1200,6 +1190,6 @@ Return the policy sync interval for the policy operator
 {{- if .Values.spc.enabled }}
 {{- .Values.spc.policySyncInterval }}
 {{- else }}
-{{- .Values.cloudOne.policyOperator.policySyncInterval }}
+{{- .Values.visionOne.policyOperator.policySyncInterval }}
 {{- end }}
 {{- end -}}

@@ -1,4 +1,4 @@
-{{- if and .Values.cloudOne.runtimeSecurity.enabled .Values.cloudOne.runtimeSecurity.customRules.enabled }}
+{{- if and .Values.visionOne.runtimeSecurity.enabled .Values.visionOne.runtimeSecurity.customRules.enabled }}
 {{ $events_pipe := (printf "%v/falco-customrules-events" .Values.scout.falco.falcoctl.pipes_dir ) }}
 ---
 apiVersion: v1
@@ -8,31 +8,31 @@ metadata:
   labels:
     {{- include "scout.labels" . | nindent 4 }}
 data:
-  {{- if .Values.cloudOne.runtimeSecurity.customRules.ociRepository.enabled }}
+  {{- if .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled }}
   falcoctl.yaml: |
     artifact:
       follow:
         every: 6h0m0s
         refs:
-        {{- range .Values.cloudOne.runtimeSecurity.customRules.ociRepository.artifactUrls }}
+        {{- range .Values.visionOne.runtimeSecurity.customRules.ociRepository.artifactUrls }}
           - {{ . }}
         {{- end }}
   {{- end }}
   falco-customrules-wrapper.sh: |
     #!/usr/bin/env bash
     #set -x
-  {{- if .Values.cloudOne.runtimeSecurity.customRules.ociRepository.enabled }}
+  {{- if .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled }}
     # create empty oci-artifact files to allow falco watch them;
     # falco skips non-existed files
-    {{- range .Values.cloudOne.runtimeSecurity.customRules.ociRepository.ruleFiles }}
+    {{- range .Values.visionOne.runtimeSecurity.customRules.ociRepository.ruleFiles }}
     > {{ $.Values.scout.falco.ociRepository.artifacts_dir }}/{{- . -}}
     {{- end }}
     # configure OCI artifact with falcoctl
     set -o pipefail
     # this pipe aggregates falco and falcoctl events
     mkfifo {{ $events_pipe }}
-    {{- if .Values.cloudOne.runtimeSecurity.customRules.params.clusterName }}
-    SIEM_CLUSTER_NAME={{- .Values.cloudOne.runtimeSecurity.customRules.params.clusterName | quote -}}
+    {{- if .Values.visionOne.runtimeSecurity.customRules.params.clusterName }}
+    SIEM_CLUSTER_NAME={{- .Values.visionOne.runtimeSecurity.customRules.params.clusterName | quote -}}
     {{- else if .Values.clusterName }}
     SIEM_CLUSTER_NAME={{- .Values.clusterName | quote -}}
     {{- else }}
@@ -44,7 +44,7 @@ data:
     # run falcoctl as subprocess, redirect its output to falcoctl-artifact-installed-processor.sh;
     # certain falcoctl parameters are hardcoded and not exposes through helm chart.
     # Instead they are injected as arguments;
-    {{- if .Values.cloudOne.runtimeSecurity.customRules.ociRepository.basicAuthTokenSecretName }}
+    {{- if .Values.visionOne.runtimeSecurity.customRules.ociRepository.basicAuthTokenSecretName }}
     FALCOCTL_REGISTRY_AUTH_BASIC=${FALCOCTL_REGISTRY_AUTH_BASIC} \
     {{- end }}
     /usr/bin/falcoctl --config /etc/falcoctl-config-volume/falcoctl.yaml \
@@ -58,7 +58,7 @@ data:
   {{- end }}
     /usr/bin/falco \
     -c /etc/falco/falco-customrules.yaml \
-    {{- range regexSplit "\n" (include "containerRuntime.sock.falco.args" .Values.scout.falco ) -1 }} 
+    {{- range regexSplit "\n" (include "containerRuntime.sock.falco.args" .Values.scout.falco ) -1 }}
     {{- $v := (. | nospace | trimPrefix "-") -}}
     {{- if $v }}
     {{ $v }} \
@@ -98,7 +98,7 @@ data:
     -o \
     syslog_output.enabled={{ default "false" .Values.scout.falco.syslog_enabled }} \
     {{- if .Values.scout.falco.extraArgs }}{{ join " \\" .Values.scout.falco.extraArgs }}{{- end }}{{/* if */}}
-  {{- if .Values.cloudOne.runtimeSecurity.customRules.ociRepository.enabled }}
+  {{- if .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled }}
     2>&1 \
     | tee >(/usr/scripts/falco-customrules-falcoctl-rules-applied-processor.sh {{ $events_pipe }})
   {{- end }}

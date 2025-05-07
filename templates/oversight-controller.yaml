@@ -1,4 +1,4 @@
-{{- if eq true .Values.cloudOne.oversight.enabled }}
+{{- if eq true .Values.visionOne.oversight.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -44,7 +44,7 @@ spec:
         securityContext:
 {{ toYaml $containerSecurityContext | indent 12 }}
 {{- end }}
-        {{- $project := (default (default "trendmicrocloudone" $imageDefaults.project) .project) }}
+        {{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
         {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
         {{- $tag := (default $imageDefaults.tag .tag) }}
         image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
@@ -65,7 +65,7 @@ spec:
             mountPath: /etc/config
         args:
         - --zap-devel={{ default "false" .Values.logConfig.devel }}
-        - --zap-log-level={{ include "logLevel" (list .Values.cloudOne.oversight.logLevel .) }}
+        - --zap-log-level={{ include "logLevel" (list .Values.visionOne.oversight.logLevel .) }}
         - --zap-encoder={{ default "json" .Values.logConfig.encoder }}
         - --zap-stacktrace-level={{ default "error" .Values.logConfig.stacktraceLevel }}
         - --zap-time-encoding={{ default "rfc3339" .Values.logConfig.timeEncoding }}
@@ -77,11 +77,11 @@ spec:
         {{- if gt (int .Values.replicas.oversight) 1 }}
         - --leader-elect
         {{- end }}
-        - --mitigation-handler-buffer-size={{ default 50 .Values.cloudOne.oversight.mitigationHandlerBufferSize }}
-        - --page-size={{ default 100 .Values.cloudOne.oversight.pageSize }}
-        - --sync-period={{ default "3600s" .Values.cloudOne.oversight.syncPeriod }}
-        - --enable-runtime-mitigation={{ default "false" .Values.cloudOne.runtimeSecurity.enabled }}
-        - --enable-compliance-scan={{ default "false" .Values.cloudOne.complianceScan.enabled }}
+        - --mitigation-handler-buffer-size={{ default 50 .Values.visionOne.oversight.mitigationHandlerBufferSize }}
+        - --page-size={{ default 100 .Values.visionOne.oversight.pageSize }}
+        - --sync-period={{ default "3600s" .Values.visionOne.oversight.syncPeriod }}
+        - --enable-runtime-mitigation={{ default "false" .Values.visionOne.runtimeSecurity.enabled }}
+        - --enable-compliance-scan={{ default "false" .Values.visionOne.complianceScan.enabled }}
         - --job-template-path=/etc/config/compliance-scan-job-template.yaml
         - --exclude-kubernetes-service-host-from-proxy={{ default "false" .Values.proxy.excludeKubernetesServiceHost }}
         - --excluded-namespaces
@@ -89,18 +89,7 @@ spec:
         - {{ $excludeNS | quote }}
         - --cloud-one-endpoint={{ include "container.security.endpoint" . }}
         - --network-policy-label={{ default "trendmicro" .Release.Name }}
-        - --application-version=$(APPLICATION_VERSION)
-        {{- if (eq .Values.cloudOne.oversight.enableNetworkPolicyCreation false) }}
-        - --enable-network-policy-creation=false
-        {{- end }}
-        {{- if .Values.telemetry.enabled }}
-        - --telemetry-endpoint={{ .Values.telemetry.endpoint }}
-        - --telemetry-interval={{ .Values.telemetry.interval }}
-        - --telemetry-api-key={{ default "" .Values.telemetry.apiKey }}
-        {{- if .Values.telemetry.publicKey }}
-        - --telemetry-key-file=/telemetry/key.pem
-        {{- end }}{{/* .Values.telemetry.publicKey */}}
-        {{- end }}{{/* .Values.telemetry.enabled */}}
+        - --enable-network-policy-creation={{ default "false" .Values.visionOne.oversight.enableNetworkPolicyCreation }}
         - --trusted-images={{ include "digest" . }}
         command:
         - /manager
@@ -257,7 +246,7 @@ data:
       namespace: {{ .Release.Namespace }}
     spec:
       backoffLimit: 2
-      activeDeadlineSeconds: {{ .Values.cloudOne.complianceScan.activeDeadlineSeconds }}
+      activeDeadlineSeconds: {{ .Values.visionOne.complianceScan.activeDeadlineSeconds }}
       ttlSecondsAfterFinished: 60
       template:
         metadata:
@@ -280,7 +269,7 @@ data:
           {{- end }}
           containers:
           - name: compliance-scan-job
-            {{- $project := (default (default "trendmicrocloudone" $imageDefaults.project) .project) }}
+            {{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
             {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
             {{- $tag := (default $imageDefaults.tag .tag) }}
             image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}

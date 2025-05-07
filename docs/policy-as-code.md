@@ -20,9 +20,8 @@ Container Security supports the following policy resource types:
 The policy operator is disabled by default. To enable, update the overrides.yaml file:
 
 ```yaml
-cloudOne:
+visionOne:
   policyOperator:
-    enabled: true
     clusterPolicyName: <name of your policy custom resource>
 ```
 
@@ -32,7 +31,7 @@ Note: Only one cluster policy can be active at a time. The name of the cluster p
 
 To interact with the custom resources, use the following kind names:
 - `clusterpolicy` for Cluster Policy
-- `runtimeruleset` for Runtime Ruleset 
+- `runtimeruleset` for Runtime Ruleset
 
 ## Policy Custom Resource
 
@@ -361,7 +360,7 @@ After un-installing, if the policy resources owned by the cluster remain in Visi
 
 The policy operator will add a finalizer to the custom resources to ensure that the policy and ruleset are not deleted until the operator has removed the policy from Vision One. The finalizer will be removed once the policy has been deleted from Vision One.
 
-If the policy operator is terminated before the finalizer is removed, the finalizer can be removed manually to allow the custom resource to be deleted. 
+If the policy operator is terminated before the finalizer is removed, the finalizer can be removed manually to allow the custom resource to be deleted.
 
 To remove the finalizer, edit the custom resource and remove the finalizer from the metadata section:
 

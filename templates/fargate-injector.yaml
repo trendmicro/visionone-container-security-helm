@@ -1,4 +1,4 @@
-{{- if and (eq true .Values.cloudOne.runtimeSecurity.enabled) (eq true .Values.cloudOne.fargateInjector.enabled) }}
+{{- if and (eq true .Values.visionOne.runtimeSecurity.enabled) (eq true .Values.visionOne.fargateInjector.enabled) }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -67,7 +67,7 @@ spec:
           securityContext:
 {{ toYaml $containerSecurityContext | indent 12 }}
 {{- end }}
-          {{- $project := (default (default "trendmicrocloudone" $imageDefaults.project) .project) }}
+          {{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
           {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
           {{- $tag := (default $imageDefaults.tag .tag) }}
           image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
@@ -78,17 +78,17 @@ spec:
           command:
             - /eks-admission-injector
             - --cert-file-path
-            - /etc/webhook/certs/cert.pem 
+            - /etc/webhook/certs/cert.pem
             - --key-file-path
-            - /etc/webhook/certs/key.pem 
+            - /etc/webhook/certs/key.pem
             - --log-level
-            - {{ .Values.cloudOne.fargateInjector.logLevel }}
+            - {{ .Values.visionOne.fargateInjector.logLevel }}
             - --endpoint
-            - {{ .Values.cloudOne.endpoint }}
+            - {{ .Values.visionOne.endpoint }}
             - --auth-secret-name
             - {{ template "container.security.fullname" . }}-auth
             - --zap-devel={{ default "false" .Values.logConfig.devel }}
-            - --zap-log-level={{ include "logLevel" (list .Values.cloudOne.fargateInjector.logLevel .) }}
+            - --zap-log-level={{ include "logLevel" (list .Values.visionOne.fargateInjector.logLevel .) }}
             - --zap-encoder={{ default "json" .Values.logConfig.encoder }}
             - --zap-stacktrace-level={{ default "error" .Values.logConfig.stacktraceLevel }}
             - --zap-time-encoding={{ default "rfc3339" .Values.logConfig.timeEncoding }}
@@ -97,21 +97,21 @@ spec:
             - {{ $excludeNS | quote }}
             - --scout-image-uri
             {{- with .Values.images.scout }}
-            {{- $project := (default (default "trendmicrocloudone" $imageDefaults.project) .project) }}
+            {{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
             {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
             {{- $tag := (default $imageDefaults.tag .tag) }}
             - {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
             {{- end }}
             - --falco-image-uri
             {{- with .Values.images.falco }}
-            {{- $project := (default (default "trendmicrocloudone" $imageDefaults.project) .project) }}
+            {{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
             {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
             {{- $tag := (default $imageDefaults.tag .tag) }}
             - {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
             {{- end }}
             - --pdig-image-uri
             {{- with .Values.images.pdig }}
-            {{- $project := (default (default "trendmicrocloudone" $imageDefaults.project) .project) }}
+            {{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
             {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
             {{- $tag := (default $imageDefaults.tag .tag) }}
             - {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
@@ -119,7 +119,7 @@ spec:
             {{- if ne (len .Values.scout.scout.falcoInternalEvent) 0 }}
             - --falco-internal-event
             - {{ join "," .Values.scout.scout.falcoInternalEvent }}
-            {{- end}}{{/* if */}}    
+            {{- end}}{{/* if */}}
             - --pull-image-auth
             {{- $imageDefaults := .Values.images.defaults }}
             {{- with .Values.images.fargateInjector }}

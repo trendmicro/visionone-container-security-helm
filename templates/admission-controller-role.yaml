@@ -1,6 +1,6 @@
-{{- if and (eq true .Values.cloudOne.admissionController.enabled) (eq true .Values.cloudOne.vulnerabilityScanning.enabled) }}
+{{- if and (eq true .Values.visionOne.admissionController.enabled) (eq true .Values.visionOne.vulnerabilityScanning.enabled) }}
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole 
+kind: ClusterRole
 metadata:
   name: admission-controller-role
   labels:

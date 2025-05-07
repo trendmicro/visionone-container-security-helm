@@ -1,4 +1,4 @@
-{{- if or (eq true .Values.cloudOne.vulnerabilityScanning.enabled) (eq true .Values.cloudOne.malwareScanning.enabled) }}
+{{- if or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled) }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -53,12 +53,12 @@ rules:
   - list
   - watch
   - create
-- apiGroups: 
+- apiGroups:
   - ""
-  resources: 
+  resources:
   - services
   - endpoints
-  verbs: 
+  verbs:
   - get
   - list
 - apiGroups:

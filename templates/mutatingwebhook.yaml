@@ -1,7 +1,7 @@
-{{- if and (eq true .Values.cloudOne.runtimeSecurity.enabled) (eq true .Values.cloudOne.fargateInjector.enabled) }}
+{{- if and (eq true .Values.visionOne.runtimeSecurity.enabled) (eq true .Values.visionOne.fargateInjector.enabled) }}
 {{- $cn := printf "%s.%s.svc" "trendmicro-fargate-injector" .Release.Namespace }}
-{{- $ca := genCA (printf "%s-ca" "trendmicro-fargate-injector") (default 3650 (int .Values.cloudOne.fargateInjector.certificate.lifetime)) -}}
-{{- $cert := genSignedCert (default $cn .Values.cloudOne.fargateInjector.certificate.commonName) (default nil .Values.cloudOne.fargateInjector.certificate.ipAlternativeNames) (default (list $cn) .Values.cloudOne.fargateInjector.certificate.dnsAlternativeNames) (default 3650 (int .Values.cloudOne.fargateInjector.certificate.lifetime)) $ca -}}
+{{- $ca := genCA (printf "%s-ca" "trendmicro-fargate-injector") (default 3650 (int .Values.visionOne.fargateInjector.certificate.lifetime)) -}}
+{{- $cert := genSignedCert (default $cn .Values.visionOne.fargateInjector.certificate.commonName) (default nil .Values.visionOne.fargateInjector.certificate.ipAlternativeNames) (default (list $cn) .Values.visionOne.fargateInjector.certificate.dnsAlternativeNames) (default 3650 (int .Values.visionOne.fargateInjector.certificate.lifetime)) $ca -}}
 
 apiVersion: v1
 kind: Secret
@@ -24,7 +24,7 @@ metadata:
   labels:
     {{- include "fargateInjector.labels" . | nindent 4 }}
 webhooks:
-  - name: {{ default $cn .Values.cloudOne.fargateInjector.certificate.commonName }}
+  - name: {{ default $cn .Values.visionOne.fargateInjector.certificate.commonName }}
     rules:
       - apiGroups:
           - '*'
@@ -43,7 +43,7 @@ webhooks:
           - "jobs"
           - "cronjobs"
         scope: "*"
-    failurePolicy: {{ required "A valid failure policy is required!" .Values.cloudOne.fargateInjector.failurePolicy }}
+    failurePolicy: {{ required "A valid failure policy is required!" .Values.visionOne.fargateInjector.failurePolicy }}
     clientConfig:
       service:
         name: trendmicro-fargate-injector
@@ -52,5 +52,5 @@ webhooks:
       caBundle: {{ $ca.Cert | b64enc | quote }}
     admissionReviewVersions: ["v1", "v1beta1"]
     sideEffects: None
-    timeoutSeconds: {{ default 30 .Values.cloudOne.fargateInjector.webhookTimeoutSeconds }}
+    timeoutSeconds: {{ default 30 .Values.visionOne.fargateInjector.webhookTimeoutSeconds }}
 {{- end }}

@@ -1,4 +1,4 @@
-{{- if and (eq true .Values.cloudOne.complianceScan.enabled) }}
+{{- if and (eq true .Values.visionOne.complianceScan.enabled) }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:

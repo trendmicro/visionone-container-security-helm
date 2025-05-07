@@ -6,10 +6,10 @@ TrendMicro helm chart can be configured to automatically download and install ru
 
 This functionality is off by default.
 
-To enable automatic installation of ruleFiles from OCI repositories, add the following sections into overrides: 
+To enable automatic installation of ruleFiles from OCI repositories, add the following sections into overrides:
 
 ```yaml
-cloudOne: 
+visionOne:
 ...
   runtimeSecurity:
     enabled: true
@@ -21,7 +21,7 @@ cloudOne:
           url: {splunk url}
           headers:
             - "X-Splunk-Request-Channel: {splunk channel id}"
-          hecTokenSecretName: 'splunk-hec-secret'      
+          hecTokenSecretName: 'splunk-hec-secret'
       ociRepository:
         enabled: true
         ruleFiles:
@@ -37,15 +37,15 @@ cloudOne:
 ```
 **NOTE: these fields are subject to change**
 
-Section `cloudOne.runtimeSecurity.customRules.ociRepository.artifactUrls` is a list of OCI repository URLs to pull artifacts from.
+Section `visionOne.runtimeSecurity.customRules.ociRepository.artifactUrls` is a list of OCI repository URLs to pull artifacts from.
 For URL format, see [falcoctl push](https://github.com/falcosecurity/falcoctl?tab=readme-ov-file#falcoctl-registry-push).
 
-Section `cloudOne.runtimeSecurity.customRules.ociRepository.ruleFiles` is a list of filenames, to be continuously monitored as OCI artifacts.
+Section `visionOne.runtimeSecurity.customRules.ociRepository.ruleFiles` is a list of filenames, to be continuously monitored as OCI artifacts.
 Each file is expected to be a valid falco rulefile. There is no restrictions on how files are distributed between artifacts. A single artifact may contain all listed files or multiple artifacts may contain some of them. falco ignores files not listed by `.ociRepository.ruleFiles`.
 
 Consult [falcoctl registry](https://github.com/falcosecurity/falcoctl?tab=readme-ov-file#falcoctl-registry) for details how to push artifacts into OCI repo using falcoctl.
 
-Section `cloudOne.runtimeSecurity.customRules.ociRepository.basicAuthTokenSecretName` is a string naming a kubernetes secret inside `trendmicro-system` namespace. The secret is expected to include `falcoctl` key, its value is interpreted as basic auth credentials for private OCI repos. The format is the same as falcoctl env variable `FALCOCTL_REGISTRY_AUTH_BASIC`, described here [falcoctl environment variables](https://github.com/falcosecurity/falcoctl?tab=readme-ov-file#falcoctl-environment-variables).
+Section `visionOne.runtimeSecurity.customRules.ociRepository.basicAuthTokenSecretName` is a string naming a kubernetes secret inside `trendmicro-system` namespace. The secret is expected to include `falcoctl` key, its value is interpreted as basic auth credentials for private OCI repos. The format is the same as falcoctl env variable `FALCOCTL_REGISTRY_AUTH_BASIC`, described here [falcoctl environment variables](https://github.com/falcosecurity/falcoctl?tab=readme-ov-file#falcoctl-environment-variables).
 
 Use of this secret:
 - with `.artifactUrls` only listing public repos, this field may be empty string or just skipped
@@ -57,13 +57,13 @@ NOTE: with `.basicAuthTokenSecretName` secret present but contains no key `falco
 
 NOTE: with `.basicAuthTokenSecretName` secret present and contains key `falcoctl` but its value represents wrong credentials, falcoctl will not be able to install artifacts from private repos and falco will run with rules defined at deployment.
 
-Section `cloudOne.runtimeSecurity.customRules.output.splunk` describes endpoint and credentials for `artifacts-accepted` and `artifacts-ignored` events. See [this](falco-splunk-hec-secret.md) for details.
+Section `visionOne.runtimeSecurity.customRules.output.splunk` describes endpoint and credentials for `artifacts-accepted` and `artifacts-ignored` events. See [this](falco-splunk-hec-secret.md) for details.
 
 NOTE: if splunk URL or auth headers are invalid, no events are expected, falco is not affected.
 
-Optionally, section `.Values.scout.falco.ociRepository.logLevel` can be set to `info` to lower CPU impact. In this case `.output_fields.enabled_rules` will be empty. 
+Optionally, section `.Values.scout.falco.ociRepository.logLevel` can be set to `info` to lower CPU impact. In this case `.output_fields.enabled_rules` will be empty.
 
-Section `cloudOne.runtimeSecurity.customRules.params.clusterName` is a string, optional, helps to identify which cluster sent splunk event; copied into splunk event `cluster_name` field; if not set, `cloudOne.clusterName` is used instead; if `cloudOne.clusterName` also not set, then `cluster_name` will be empty.
+Section `visionOne.runtimeSecurity.customRules.params.clusterName` is a string, optional, helps to identify which cluster sent splunk event; copied into splunk event `cluster_name` field; if not set, `visionOne.clusterName` is used instead; if `visionOne.clusterName` also not set, then `cluster_name` will be empty.
 
 ## OCI repo
 
@@ -72,19 +72,19 @@ See [artifact push](https://github.com/falcosecurity/falcoctl?tab=readme-ov-file
 
 ## Artifact Versions
 
-Falcoctl supports floating versions, i.e. every time version "0.1.0" is pushed, extra tags added "0" and "0.1". It allows `.ociRepository.artifactUrls` to specify major versions only, i.e. "float over" fully qualified tags/versions and pickup the most recent version without reconfiguration. 
-See [semver](https://semver.org/). 
+Falcoctl supports floating versions, i.e. every time version "0.1.0" is pushed, extra tags added "0" and "0.1". It allows `.ociRepository.artifactUrls` to specify major versions only, i.e. "float over" fully qualified tags/versions and pickup the most recent version without reconfiguration.
+See [semver](https://semver.org/).
 
-## Possible Issues 
+## Possible Issues
 
 ### Issue: help install/upgrade failed with `secret *** is expected`
 
-Possible reason 1: secret `cloudOne.runtimeSecurity.customRules.ociRepository.basicAuthTokenSecretName`
+Possible reason 1: secret `visionOne.runtimeSecurity.customRules.ociRepository.basicAuthTokenSecretName`
 is missing from `trendmicro-system` namespace.
 
-Solution: follow recommendations in Section `cloudOne.runtimeSecurity.customRules.ociRepository.basicAuthTokenSecretName` on how to create the secret.
+Solution: follow recommendations in Section `visionOne.runtimeSecurity.customRules.ociRepository.basicAuthTokenSecretName` on how to create the secret.
 
-Possible reason 2: secret `cloudOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName`
+Possible reason 2: secret `visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName`
 is missing from `trendmicro-system` namespace.
 
 Solution: follow [this](./docs/falco-splunk-hec-secret.md) on how to create the secret.
@@ -93,10 +93,10 @@ Solution: follow [this](./docs/falco-splunk-hec-secret.md) on how to create the 
 
 Additional info: cluster events include error `Error: couldn't find key falcoctl in Secret ...`
 
-Possible reason: secret `cloudOne.runtimeSecurity.customRules.ociRepository.basicAuthTokenSecretName`
+Possible reason: secret `visionOne.runtimeSecurity.customRules.ociRepository.basicAuthTokenSecretName`
 contains no key `falcoctl`.
 
-Solution: add key `falcoctl`, follow recommendations in Section `cloudOne.runtimeSecurity.customRules.ociRepository.basicAuthTokenSecretName`
+Solution: add key `falcoctl`, follow recommendations in Section `visionOne.runtimeSecurity.customRules.ociRepository.basicAuthTokenSecretName`
 
 ### Issue: OCI artifacts are not installed
 
@@ -116,7 +116,7 @@ Unable to pull config layer
 ...
 ```
 
-Possible reason: secret `cloudOne.runtimeSecurity.customRules.ociRepository.basicAuthTokenSecretName` is malformed or defines wrong password or defines wrong repo URL.
+Possible reason: secret `visionOne.runtimeSecurity.customRules.ociRepository.basicAuthTokenSecretName` is malformed or defines wrong password or defines wrong repo URL.
 
 Solution: double check the format is the same as falcoctl env variable `FALCOCTL_REGISTRY_AUTH_BASIC`, described here [falcoctl environment variables](https://github.com/falcosecurity/falcoctl?tab=readme-ov-file#falcoctl-environment-variables).
 Double check repo URL and password is valid.
@@ -136,9 +136,9 @@ msg="{\"text\":\"Success\",\"code\":0,\"ackId\":11}"
 ...
 ```
 
-Possible reason: section `cloudOne.runtimeSecurity.customRules.output.splunk.headers` includes no or incorrect header `X-Splunk-Request-Channel`. 
+Possible reason: section `visionOne.runtimeSecurity.customRules.output.splunk.headers` includes no or incorrect header `X-Splunk-Request-Channel`.
 
-Solution: Double check Splunk request channel is valid.  
+Solution: Double check Splunk request channel is valid.
 
 #### Cause: Splunk HEC token or Splunk URL is invalid
 
@@ -150,9 +150,9 @@ Additional info: logs of container `falco-customrules` in `scout` pod show HTTP 
 ...
 ```
 
-Possible reason: section `cloudOne.runtimeSecurity.customRules.output.splunk` is not correct. 
+Possible reason: section `visionOne.runtimeSecurity.customRules.output.splunk` is not correct.
 
-Solution: Provide valid URL and HTTP auth Bearer token as specified [here](./docs/falco-splunk-hec-secret.md). 
+Solution: Provide valid URL and HTTP auth Bearer token as specified [here](./docs/falco-splunk-hec-secret.md).
 
 #### Cause: Splunk HEC info is not specified
 
@@ -164,15 +164,15 @@ invalid value "" for flag -H: header malformed, expect {key}:{value}
 ...
 ```
 
-Possible reason: section `cloudOne.runtimeSecurity.customRules.output.splunk` is missing. 
+Possible reason: section `visionOne.runtimeSecurity.customRules.output.splunk` is missing.
 
-Solution: Provide Splunk HEC info as specified [here](./docs/falco-splunk-hec-secret.md). 
+Solution: Provide Splunk HEC info as specified [here](./docs/falco-splunk-hec-secret.md).
 
 ### Issue: Rules from certain rulefile are not visible in Splunk event
 
-Possible reason: section `cloudOne.runtimeSecurity.customRules.ociRepository.ruleFiles` is missing or specify rule files missing from artifact. 
+Possible reason: section `visionOne.runtimeSecurity.customRules.ociRepository.ruleFiles` is missing or specify rule files missing from artifact.
 
-Solution: make sure this section lists rules file actually present in OCI artifact. 
+Solution: make sure this section lists rules file actually present in OCI artifact.
 
 
 ## How It Works
@@ -184,7 +184,7 @@ With `ociRepository.enabled` false, the container `falco-customrules` will use r
 
 With `ociRepository.enabled` true, the container `falco-customrules` will do the following:
 - run an instance of falcoctl, configured to watch/download/install OCI artifacts from `.ociRepository.artifactUrls` ( every 6 hours, hardcoded )
-- send messages to splunk when new artifact(s) is installed / accepted / ignored by falco 
+- send messages to splunk when new artifact(s) is installed / accepted / ignored by falco
 
 When new version of an artifact is available, falcoctl installs it into a directory shared with falco.
 Falco detects changes in files listed by `.ociRepository.ruleFiles`, performs "hot restart". Changes on the rest of files are ignored.
@@ -200,25 +200,25 @@ Falco detects changes in files listed by `.ociRepository.ruleFiles`, performs "h
 
 ### Format
 
-Two kinds of events are generated, determined by `output` field: 
+Two kinds of events are generated, determined by `output` field:
 - `artifacts accepted` , with `"output":"artifacts accepted"`
 - `artifact ignored`, with `"output":"artifacts ignored"`
 
 ```json
 {
     "source":"oci artifacts falcoctl",
-    "cluster_name":"value of {cloudOne.runtimeSecurity.customRules.params.clusterName} or {cloudOne.clusterName}",
+    "cluster_name":"value of {visionOne.runtimeSecurity.customRules.params.clusterName} or {visionOne.clusterName}",
     "hostname":"{HOSTNAME of container}",
     "time":"2025-03-06T16:54:48Z",
     "output":"artifacts {accepted|ignored}",
     "output_fields":{
-        "artifacts":[ 
+        "artifacts":[
             {
                 "artifactName":"{artifact name including repo and tag}",
                 "digest":"sha256:{artifact sha}",
                 "type":"rulesfile"
                 ...
-            }, 
+            },
             ...
         ],
         "enabled_rules":[
@@ -235,7 +235,7 @@ Two kinds of events are generated, determined by `output` field:
 
 At container startup, event `artifacts accepted` is emitted with empty `output_fields.artifacts` and only rules defined at deployment time.
 
-When new artifact(s) is installed and the rules are validated by falco during "hot restart", event `artifacts accepted` is emitted with recently installed artifacts listed by `output_fields.artifacts`  
+When new artifact(s) is installed and the rules are validated by falco during "hot restart", event `artifacts accepted` is emitted with recently installed artifacts listed by `output_fields.artifacts`
 and currently monitored rules listed by `.output_fields.enabled_rules` ( a superposition of all good rules installed so far from all artifacts since last container restart and rules configured at deployment ).
 
 When falco detects some rules are malformed, event `artifacts ignored` is emitted with recently installed artifacts in `output_fields.artifacts` ( any artifact may be a source of a bad rule ) and currently monitored good rules listed by `.output_fields.enabled_rules`. List of recently installed artifacts is preserved until next successful "hot restart".

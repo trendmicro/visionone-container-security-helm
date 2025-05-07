@@ -1,16 +1,16 @@
-# Default values for Trend Micro Cloud One - Container Security.
+# Default values for Trend Micro Vision One - Container Security.
 # This is a YAML-formatted file.
 
-cloudOne:
-  ## API key to be used with Trend Micro Cloud One Container Security
+visionOne:
+  ## bootstrap token to be used with Trend Micro Vision One Container Security
   ##
   ## Default value: (none)
-  apiKey:
-  ## endpoint is the url of Trend Micro Cloud One Container Security service
-  ## Allows for full endpoint to be provided or the Cloud One region (ex: us-1).
+  bootstrapToken:
+  ## endpoint is the url of Trend Micro Vision One Container Security service
+  ## Allows for full endpoint to be provided or the Vision One region (ex: us-1).
   ##
-  ## Default value: https://container.us-1.cloudone.trendmicro.com
-  endpoint: https://container.us-1.cloudone.trendmicro.com
+  ## Default value: https://api.xdr.trendmicro.com/external/v2/direct/vcs/external/vcs
+  endpoint: https://api.xdr.trendmicro.com/external/v2/direct/vcs/external/vcs
 
   ## Fields for automated cluster registration only
   ## Cluster name to be used during automated cluster registration. This takes precedence over clusterNamePrefix
@@ -29,7 +29,7 @@ cloudOne:
   policyId:
   ## Group ID used during automated cluster registration. Defaults to the default cluster group
   ##
-  ## This is requred for automated cluster registration 
+  ## This is required for automated cluster registration
   groupId:
   ## Cluster registration key to be used with Trend Vision One Container Security
   ##
@@ -39,11 +39,11 @@ cloudOne:
   exclusion:
     ## List of namespaces for which events will not be generated.
     ## This setting helps reduce unnecessary runtime event counts for known privileged components.
-    ## 
-    ## Openshift considers the namespaces listed in `osNsPrefixes` as privileged. 
-    ## These namespaces are excluded to prevent critical components from being affected by 
+    ##
+    ## Openshift considers the namespaces listed in `osNsPrefixes` as privileged.
+    ## These namespaces are excluded to prevent critical components from being affected by
     ## admission control policies or mitigation mechanisms.
-    ## Meaning for each prefixes: 
+    ## Meaning for each prefixes:
     ##  - openshift: Excludes all namespaces with the openshift prefix
     ##  - kube: Excludes all namespaces with the kube prefix
     ##  - default: Excludes default namespace
@@ -125,7 +125,7 @@ cloudOne:
   oversight:
     enabled: true
 
-    ## syncPeriod is the time interval that how often Trend Micro Cloud One Container Security will evaluate
+    ## syncPeriod is the time interval that how often Trend Micro Vision One Container Security will evaluate
     ## the running pods.
     ##
     ## Default value: 3600s
@@ -248,8 +248,6 @@ cloudOne:
     failurePolicy: Ignore
 
   inventoryCollection:
-    ## enable the inventory collection feature
-    enabled: false
     ## Minimum value: 5m
     ## Maximum value: 1d
     period: 5m
@@ -269,7 +267,7 @@ cloudOne:
 
     ## logLevel sets the log verbosity level. Supported values are debug, info, and error
     ##
-    ## Default value: info 
+    ## Default value: info
     logLevel: info
 
   kubeRbacProxy:
@@ -324,9 +322,6 @@ cloudOne:
         initialDelaySeconds: 10
 
   policyOperator:
-    ## enable the cluster-managed policy feature
-    enabled: false
-
     ## reconciliationPeriod is the time interval at which policy operator will reconcile the custom resources
     ## Minimum value: 5m
     ## Maximum value: 1h
@@ -661,14 +656,14 @@ proxy:
 
 logConfig:
   ## devel sets the log mode defaults to development mode if set to true
-  ## Development mode defaults encoder=consoleEncoder,logLevel=Debug,stackTraceLevel=Warn) 
+  ## Development mode defaults encoder=consoleEncoder,logLevel=Debug,stackTraceLevel=Warn)
   ## Production Mode defaults(encoder=jsonEncoder,logLevel=Info,stackTraceLevel=Error)
   devel: false
 
   ## logLevel sets the log verbosity level. Supported values are debug, info, and error
   ## Overrides the logLevel set for each component
   ##
-  ## Default value: 
+  ## Default value:
   logLevel:
 
   ## encoder sets the log encoder. Supported values are json and console
@@ -676,13 +671,13 @@ logConfig:
   ## Default value: json
   encoder: json
 
-  ## stackTraceLevel sets the level above which stacktraces are captured 
+  ## stackTraceLevel sets the level above which stacktraces are captured
   ## Supported values are info, error or panic
   ##
   ## Default value: error
   stacktraceLevel: error
 
-  ## timeEncoding sets the time encoding format 
+  ## timeEncoding sets the time encoding format
   ## Supported values are epoch, millis, nano, iso8601, rfc3339 or rfc3339nano
   ##
   ## Default value: rfc3339
@@ -810,7 +805,7 @@ nodeSelector:
   ## Default Value: {}
   defaults: {}
 
-  ## inheritNodeSelectorScanner if set, will inherit the nodeSelectors from the owner resource of the pod 
+  ## inheritNodeSelectorScanner if set, will inherit the nodeSelectors from the owner resource of the pod
   ##  whose images are being scanned to the respective scanner pods.
   ## By default nodeSelectors are not inherited.
   ##
@@ -956,7 +951,7 @@ scout:
       socket:
 
     ## modernBpf, determine if falco uses ebpf CO-RE if kernel supports.
-    ## If it is false or kernel doesn't support ebpf CO-RE, the ebpf driver will be downloaded from Trend Micro Cloud One Container Security service.
+    ## If it is false or kernel doesn't support ebpf CO-RE, the ebpf driver will be downloaded from Trend Micro Vision One Container Security service.
     ## Default value: true
     modernBpf: true
 
@@ -1078,9 +1073,6 @@ images:
     ## overridden for each image by specifying the project attribute at the
     ## image level.
     ##
-    ## The images can also be accessed in Docker Hub under trendmicrocloudone project
-    # project: trendmicrocloudone
-    ##
     ## Default value: trendmicro/container-security
     project: trendmicro/container-security
 
@@ -1178,7 +1170,7 @@ images:
 useExistingSecrets:
   ## containerSecurityAuth, if set to true, will use the existing secret for container security authentication.
   ## The secret should be named trendmicro-container-security-auth in the target namespace if this is enabled.
-  ## The secret should contain base64 encoded cloud one api key in the api.key field.
+  ## The secret should contain base64 encoded Vision One bootstrap token in the api.key field.
   ##
   ## Default value: false
   containerSecurityAuth: false

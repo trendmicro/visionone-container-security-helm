@@ -1,4 +1,4 @@
-{{- if or (eq true .Values.cloudOne.runtimeSecurity.enabled) (eq true .Values.cloudOne.malwareScanning.enabled) }}
+{{- if or (eq true .Values.visionOne.runtimeSecurity.enabled) (eq true .Values.visionOne.malwareScanning.enabled) }}
 
 apiVersion: v1
 kind: Service
@@ -40,7 +40,7 @@ spec:
   template:
     metadata:
       annotations:
-{{- if eq "tls" .Values.cloudOne.k8sMetaCollector.grpcAuth.type }}
+{{- if eq "tls" .Values.visionOne.k8sMetaCollector.grpcAuth.type }}
         checksum/config: {{ include (print $.Template.BasePath "/k8s-metacollector-secret.yaml") . | sha256sum }}
 {{- end }}
 {{- with (default .Values.podAnnotations.defaults .Values.podAnnotations.k8sMetaCollector) }}
@@ -71,7 +71,7 @@ spec:
           securityContext:
 {{ toYaml $containerSecurityContext | indent 12 }}
 {{- end }}
-          {{- $project := (default (default "trendmicrocloudone" $imageDefaults.project) .project) }}
+          {{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
           {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
           {{- $tag := (default $imageDefaults.tag .tag) }}
           image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
@@ -81,14 +81,14 @@ spec:
             - /meta-collector
           args:
             - run
-{{- if eq "tls" .Values.cloudOne.k8sMetaCollector.grpcAuth.type }}
+{{- if eq "tls" .Values.visionOne.k8sMetaCollector.grpcAuth.type }}
             - --broker-server-cert
             - /etc/metacollector/certs/cert.pem
             - --broker-server-key
             - /etc/metacollector/certs/key.pem
 {{- end }}
             - --zap-devel={{ default "false" .Values.logConfig.devel }}
-            - --zap-log-level={{ include "logLevel" (list .Values.cloudOne.k8sMetaCollector.logLevel .) }}
+            - --zap-log-level={{ include "logLevel" (list .Values.visionOne.k8sMetaCollector.logLevel .) }}
             - --zap-encoder={{ default "json" .Values.logConfig.encoder }}
             - --zap-stacktrace-level={{ default "error" .Values.logConfig.stacktraceLevel }}
             - --zap-time-encoding={{ default "rfc3339" .Values.logConfig.timeEncoding }}
@@ -107,7 +107,7 @@ spec:
             # -- timeoutSeconds is the number of seconds after which the probe times out.
             timeoutSeconds: 5
             # -- periodSeconds specifies the interval at which the liveness probe will be repeated.
-            periodSeconds: 15          
+            periodSeconds: 15
           readinessProbe:
             # -- httpGet specifies that the readiness probe will make an HTTP GET request to check whether the container is ready.
             httpGet:
@@ -121,7 +121,7 @@ spec:
             timeoutSeconds: 5
             # -- periodSeconds specifies the interval at which the readiness probe will be repeated.
             periodSeconds: 15
-{{- if eq "tls" .Values.cloudOne.k8sMetaCollector.grpcAuth.type }}
+{{- if eq "tls" .Values.visionOne.k8sMetaCollector.grpcAuth.type }}
           volumeMounts:
             - name: grpc-certs
               mountPath: /etc/metacollector/certs
@@ -130,7 +130,7 @@ spec:
           resources:
 {{ toYaml (default .Values.resources.defaults .Values.resources.k8sMetaCollector) | indent 12 }}
       volumes:
-{{- if eq "tls" .Values.cloudOne.k8sMetaCollector.grpcAuth.type }}
+{{- if eq "tls" .Values.visionOne.k8sMetaCollector.grpcAuth.type }}
         - name: grpc-certs
           secret:
             secretName: {{ template "k8sMetaCollector.fullname" . }}-tls-certificate

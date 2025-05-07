@@ -1,4 +1,4 @@
-{{- if or (eq true .Values.cloudOne.vulnerabilityScanning.enabled) (eq true .Values.cloudOne.malwareScanning.enabled) }}
+{{- if or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled) }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -32,7 +32,7 @@ data:
         argocd.argoproj.io/compare-options: IgnoreExtraneous
     spec:
       backoffLimit: 2
-      activeDeadlineSeconds: {{ .Values.cloudOne.scanManager.activeDeadlineSeconds }}
+      activeDeadlineSeconds: {{ .Values.visionOne.scanManager.activeDeadlineSeconds }}
       ttlSecondsAfterFinished: 60
       template:
         metadata:
@@ -65,7 +65,7 @@ data:
             emptyDir: {}
           - name: tmp-volume
             emptyDir: {}
-{{- if and .Values.cloudOne.vulnerabilityScanning.enabled .Values.scanner.imageAnnotations.enabled }}
+{{- if and .Values.visionOne.vulnerabilityScanning.enabled .Values.scanner.imageAnnotations.enabled }}
 {{- include "containerRuntime.sock.volumes" ( list $ .Values.scanner.imageAnnotations ) | trim | nindent 10 }}
 {{- end }}
           initContainers:
@@ -88,13 +88,13 @@ data:
             image: IMAGE
             imagePullPolicy: Always
             args:
-{{- if and .Values.cloudOne.vulnerabilityScanning.enabled .Values.scanner.imageAnnotations.enabled }}
+{{- if and .Values.visionOne.vulnerabilityScanning.enabled .Values.scanner.imageAnnotations.enabled }}
 {{- include "containerRuntime.sock.args" ( list "cri-path" "/host" .Values.scanner.imageAnnotations ) | trim | nindent 14 }}
 {{- end }}
             env:
-            {{- if .Values.cloudOne.malwareScanning.enabled }}
+            {{- if .Values.visionOne.malwareScanning.enabled }}
             - name: TM_AM_SCAN_TIMEOUT_SECS
-              value: {{ .Values.cloudOne.malwareScanning.scanTimeoutSeconds }}
+              value: {{ .Values.visionOne.malwareScanning.scanTimeoutSeconds }}
             {{- end }}{{/* if */}}
             volumeMounts:
               - mountPath: /utility
@@ -102,7 +102,7 @@ data:
                 readOnly: true
               - mountPath: /tmp
                 name: tmp-volume
-{{- if and .Values.cloudOne.vulnerabilityScanning.enabled .Values.scanner.imageAnnotations.enabled }}
+{{- if and .Values.visionOne.vulnerabilityScanning.enabled .Values.scanner.imageAnnotations.enabled }}
 {{- include "containerRuntime.sock.volumeMounts" ( list "/host" .Values.scanner.imageAnnotations ) | trim | nindent 14 }}
 {{- end }}
 {{- if $securityContextEnabled }}
