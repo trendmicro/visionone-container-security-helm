@@ -57,10 +57,6 @@ spec:
             mountPath: /var/oversight
           - name: api-key
             mountPath: /secrets
-          {{- if .Values.telemetry.publicKey }}
-          - name: telemetry-secret
-            mountPath: /telemetry
-          {{- end }}{{/* .Values.telemetry.publicKey */}}
           - name: compliance-scan-job-template
             mountPath: /etc/config
         args:
@@ -89,6 +85,7 @@ spec:
         - {{ $excludeNS | quote }}
         - --cloud-one-endpoint={{ include "container.security.endpoint" . }}
         - --network-policy-label={{ default "trendmicro" .Release.Name }}
+        - --application-version=$(APPLICATION_VERSION)
         - --enable-network-policy-creation={{ default "false" .Values.visionOne.oversight.enableNetworkPolicyCreation }}
         - --trusted-images={{ include "digest" . }}
         command:
@@ -148,14 +145,6 @@ spec:
         - name: rbac-proxy-certs
           secret:
             secretName: {{ template "kubeRbacProxy.fullname" . }}-tls-certificate
-        {{- if .Values.telemetry.publicKey }}
-        - name: telemetry-secret
-          secret:
-            secretName: {{ template "container.security.fullname" . }}-telemetry
-            items:
-            - key: publicKey
-              path: key.pem
-        {{- end }}{{/* .Values.telemetry.publicKey */}}
         - name: compliance-scan-job-template
           configMap:
             name: {{ template "container.security.name" . }}-oversight-controller-config

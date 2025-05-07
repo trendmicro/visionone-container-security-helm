@@ -505,32 +505,6 @@ networkPolicy:
   malwareScanner:
     enabled: false
 
-telemetry:
-  ## enabled controls whether telemetry events will be sent.
-  ##
-  ## Default value: true
-  enabled: true
-
-  ## endpoint is the endpoint of the telemetry service.
-  ##
-  ## Default value: https://telemetry.deepsecurity.trendmicro.com
-  endpoint: https://telemetry.deepsecurity.trendmicro.com
-
-  ## interval controls the maximum interval between telemetry data reports
-  ##
-  ## Default value: 8h
-  interval: 8h
-
-  ## publicKey is the public key used when communicating with the telemetry service.
-  ##
-  ## Default value: (built-in)
-  publicKey:
-
-  ## apiKey is the API key used when communicating with the telemetry service.
-  ##
-  ## Default value: (built-in)
-  apiKey:
-
 ## securityContext specifies the security contexts that we'll apply to the pods.
 ##
 ## To use on bottlerocket, set

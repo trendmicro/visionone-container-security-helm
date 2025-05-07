@@ -100,10 +100,6 @@ spec:
             - name: api-key
               mountPath: /secrets
               readOnly: true
-            {{- if .Values.telemetry.publicKey }}
-            - name: telemetry-secret
-              mountPath: /telemetry
-            {{- end }}{{/* .Values.telemetry.publicKey */}}
             - name: policy-config
               mountPath: /etc/config
           args:
@@ -152,14 +148,6 @@ spec:
         - name: webhook-certs
           secret:
             secretName: {{ template "admissionController.fullname" . }}-tls-certificate
-        {{- if .Values.telemetry.publicKey }}
-        - name: telemetry-secret
-          secret:
-            secretName: {{ template "container.security.fullname" . }}-telemetry
-            items:
-            - key: publicKey
-              path: key.pem
-        {{- end }}{{/* .Values.telemetry.publicKey */}}
         - name: policy-config # Use projected volume to mount all policy config files in a single volume (ie. policy, rulesets)
           projected:
             sources:
