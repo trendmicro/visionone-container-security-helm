@@ -67,15 +67,13 @@ spec:
         - --auth-name={{ template "container.security.fullname" . }}-auth
         - --auto-register={{ default "false" .Values.visionOne.clusterRegistrationKey }}
         - --enable-token-rotation=true
-        {{- if .Values.visionOneFeatureGate }}
-        - --spc-mode={{ default "false" .Values.spc.enabled }}
         - --policy-sync-interval={{ include "policyOperator.policy.sync.interval" . }}
         - --policy-config-name={{ template "container.security.name" . }}-policy-config
         - --runtime-rulesets-config-name={{ template "container.security.name" . }}-runtime-rulesets-config
         - --runtime-rules-config-name={{ template "container.security.name" . }}-runtime-rules-config
         - --runtime-policy-config-name={{ template "container.security.name" . }}-runtime-policy-config
-        - --vision-one-feature-gate=true
-        {{- end }}
+        - --spc-mode={{ default "false" .Values.spc.enabled }}
+        - --vision-one-feature-gate={{ default "false" .Values.visionOneFeatureGate }}
         command:
         - /app/policy-operator
         env:
