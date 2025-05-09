@@ -120,11 +120,8 @@ spec:
             - --trusted-scan-operators
             {{- $trustedOperators := (default (list) .Values.visionOne.admissionController.trustedScanOperators) }}
             - {{ $trustedOperators | join "," | quote }}
-            - --application-version=$(APPLICATION_VERSION)
             - --trusted-images={{ include "digest" . }}
-            {{- if .Values.visionOneFeatureGate }}
-            - --vision-one-feature-gate=true
-            {{- end }}
+            - --vision-one-feature-gate={{ default "false" .Values.visionOneFeatureGate }}
             - 2>&1
           env:
             {{- include "container.security.proxy.env" . | nindent 12 }}

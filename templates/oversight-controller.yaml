@@ -57,7 +57,7 @@ spec:
             mountPath: /var/oversight
           - name: api-key
             mountPath: /secrets
-          - name: compliance-scan-job-template
+          - name: policy-config
             mountPath: /etc/config
         args:
         - --zap-devel={{ default "false" .Values.logConfig.devel }}
@@ -85,7 +85,6 @@ spec:
         - {{ $excludeNS | quote }}
         - --cloud-one-endpoint={{ include "container.security.endpoint" . }}
         - --network-policy-label={{ default "trendmicro" .Release.Name }}
-        - --application-version=$(APPLICATION_VERSION)
         - --enable-network-policy-creation={{ default "false" .Values.visionOne.oversight.enableNetworkPolicyCreation }}
         - --trusted-images={{ include "digest" . }}
         command:
@@ -145,12 +144,16 @@ spec:
         - name: rbac-proxy-certs
           secret:
             secretName: {{ template "kubeRbacProxy.fullname" . }}-tls-certificate
-        - name: compliance-scan-job-template
-          configMap:
-            name: {{ template "container.security.name" . }}-oversight-controller-config
-            items:
-              - key: compliance-scan-job-template.yaml
-                path: compliance-scan-job-template.yaml
+        - name: policy-config # Use projected volume to mount all policy config files in a single volume (ie. policy, rulesets)
+          projected:
+            sources:
+              - configMap:
+                  name: {{ template "container.security.name" . }}-policy-config
+              - configMap:
+                  name: {{ template "container.security.name" . }}-oversight-controller-config
+                  items:
+                    - key: compliance-scan-job-template.yaml
+                      path: compliance-scan-job-template.yaml
 ---
 apiVersion: v1
 kind: Service
