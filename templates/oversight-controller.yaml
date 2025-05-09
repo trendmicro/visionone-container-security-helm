@@ -55,7 +55,7 @@ spec:
         volumeMounts:
           - name: workdir
             mountPath: /var/oversight
-          - name: api-key
+          - name: auth-token
             mountPath: /secrets
           - name: policy-config
             mountPath: /etc/config
@@ -83,7 +83,7 @@ spec:
         - --excluded-namespaces
         {{- $excludeNS := include "namespaceExclusions" . }}
         - {{ $excludeNS | quote }}
-        - --cloud-one-endpoint={{ include "container.security.endpoint" . }}
+        - --vision-one-endpoint={{ include "container.security.endpoint" . }}
         - --network-policy-label={{ default "trendmicro" .Release.Name }}
         - --enable-network-policy-creation={{ default "false" .Values.visionOne.oversight.enableNetworkPolicyCreation }}
         - --trusted-images={{ include "digest" . }}
@@ -138,7 +138,7 @@ spec:
         - name: workdir
           emptyDir:
             sizeLimit: 50Mi
-        - name: api-key
+        - name: auth-token
           secret:
             secretName: {{ template "container.security.fullname" . }}-auth
         - name: rbac-proxy-certs

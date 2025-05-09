@@ -55,7 +55,7 @@ spec:
         - --zap-encoder={{ default "json" .Values.logConfig.encoder }}
         - --zap-stacktrace-level={{ default "error" .Values.logConfig.stacktraceLevel }}
         - --zap-time-encoding={{ default "rfc3339" .Values.logConfig.timeEncoding }}
-        - --cloud-one-endpoint={{ include "container.security.endpoint" . }}
+        - --vision-one-endpoint={{ include "container.security.endpoint" . }}
         - --exclude-kubernetes-service-host-from-proxy={{ default "false" .Values.proxy.excludeKubernetesServiceHost }}
         - --reconciliation-period={{ .Values.visionOne.policyOperator.reconciliationPeriod }}
         - --cluster-policy-name={{ .Values.visionOne.policyOperator.clusterPolicyName }}
@@ -90,7 +90,7 @@ spec:
         - mountPath: /var/policy-operator
           name: workdir
         - mountPath: /secrets
-          name: api-key
+          name: auth-token
         {{- if .Values.visionOne.clusterRegistrationKey }}
         - mountPath: /reg-secrets
           name: registration-key
@@ -99,7 +99,7 @@ spec:
         - name: workdir
           emptyDir:
             sizeLimit: 50Mi
-        - name: api-key
+        - name: auth-token
           secret:
             secretName: {{ template "container.security.fullname" . }}-auth
         {{- if .Values.visionOne.clusterRegistrationKey }}

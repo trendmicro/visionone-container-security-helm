@@ -68,7 +68,7 @@ spec:
         - --zap-encoder={{ default "json" .Values.logConfig.encoder }}
         - --zap-stacktrace-level={{ default "error" .Values.logConfig.stacktraceLevel }}
         - --zap-time-encoding={{ default "rfc3339" .Values.logConfig.timeEncoding }}
-        - --cloud-one-endpoint={{ include "container.security.endpoint" . }}
+        - --vision-one-endpoint={{ include "container.security.endpoint" . }}
         - --excluded-namespaces
         {{- $excludeNS := (include "namespaceExclusions" .) }}
         - {{ $excludeNS | quote }}
@@ -98,11 +98,11 @@ spec:
         {{- include "container.security.proxy.env" . | nindent 8 }}
         volumeMounts:
           - mountPath: /secrets
-            name: api-key
+            name: auth-token
         resources:
 {{ toYaml (default .Values.resources.defaults .Values.resources.workloadOperator) | indent 12 }}
       volumes:
-        - name: api-key
+        - name: auth-token
           secret:
             secretName: {{ template "container.security.fullname" . }}-auth
       terminationGracePeriodSeconds: 10

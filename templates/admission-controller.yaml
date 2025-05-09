@@ -97,7 +97,7 @@ spec:
             - name: webhook-certs
               mountPath: /etc/webhook/certs
               readOnly: true
-            - name: api-key
+            - name: auth-token
               mountPath: /secrets
               readOnly: true
             - name: policy-config
@@ -112,7 +112,7 @@ spec:
             - --tlsKeyFile=/etc/webhook/certs/key.pem
             - --tls-min-version={{ include "tlsConfig.minTLSVersion" .Values.tlsConfig }}
             - --tls-cipher-suites={{ include "tlsConfig.cipherSuites" .Values.tlsConfig }}
-            - --cloud-one-endpoint={{ include "container.security.endpoint" . }}
+            - --vision-one-endpoint={{ include "container.security.endpoint" . }}
             - --exclude-kubernetes-service-host-from-proxy={{ default "false" .Values.proxy.excludeKubernetesServiceHost }}
             - --excluded-namespaces
             {{- $excludeNS := include "namespaceExclusions" . }}
@@ -136,7 +136,7 @@ spec:
           resources:
 {{ toYaml (default .Values.resources.defaults .Values.resources.admissionController) | indent 12 }}
       volumes:
-        - name: api-key
+        - name: auth-token
           secret:
             secretName: {{ template "container.security.fullname" . }}-auth
         - name: varrun

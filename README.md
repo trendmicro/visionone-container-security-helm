@@ -83,11 +83,11 @@ To obtain a bootstrap token:
 
 By default, the helm chart expects the bootstrap token to be provided through the `visionOne.bootstrapToken` helm value in the `overrides.yaml` file. This method creates an authentication secret in the same namespace where the Container Security components are installed but can expose the bootstrap token in helm values.
 
-It is recommended to use the `useExistingSecrets.containerSecurityAuth: true` option and create a secret in the same namespace where the Container Security components will be installed. The secret should be named `trendmicro-container-security-auth` with the key `api.key` set to the bootstrap token value. This will also allow automation of the authentication secret creation and management.
+It is recommended to use the `useExistingSecrets.containerSecurityAuth: true` option and create a secret in the same namespace where the Container Security components will be installed. The secret should be named `trendmicro-container-security-auth` with the key `auth.token` set to the bootstrap token value. This will also allow automation of the authentication secret creation and management.
 
 ```sh
 kubectl create secret generic trendmicro-container-security-auth --from-literal
-api.key=<container-security-bootstrap-token> --namespace <trendmicro-namespace>
+auth.token=<container-security-bootstrap-token> --namespace <trendmicro-namespace>
 ```
 
 Then, set the `useExistingSecrets.containerSecurityAuth: true` in the `overrides.yaml` file.

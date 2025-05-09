@@ -61,8 +61,8 @@ spec:
         - --zap-encoder={{ default "json" .Values.logConfig.encoder }}
         - --zap-stacktrace-level={{ default "error" .Values.logConfig.stacktraceLevel }}
         - --zap-time-encoding={{ default "rfc3339" .Values.logConfig.timeEncoding }}
-        - --cloud-one-scan-job-image=$(SCAN_JOB_IMAGE)
-        - --cloud-one-endpoint={{ include "container.security.endpoint" . }}
+        - --vision-one-scan-job-image=$(SCAN_JOB_IMAGE)
+        - --vision-one-endpoint={{ include "container.security.endpoint" . }}
         - --exclude-kubernetes-service-host-from-proxy={{ default "false" .Values.proxy.excludeKubernetesServiceHost }}
         - --excluded-namespaces
         {{- $excludeNS := (include "namespaceExclusions" .) }}
@@ -122,7 +122,7 @@ spec:
               fieldPath: metadata.namespace
         volumeMounts:
           - mountPath: /secrets
-            name: api-key
+            name: auth-token
           - name: scan-manager-config
             mountPath: /etc/config/
           - name: grpc-certs
@@ -133,7 +133,7 @@ spec:
         resources:
 {{ toYaml (default .Values.resources.defaults .Values.resources.scanManager) | indent 12 }}
       volumes:
-        - name: api-key
+        - name: auth-token
           secret:
             secretName: {{ template "container.security.fullname" . }}-auth
         - name: scan-manager-config

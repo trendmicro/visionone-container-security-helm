@@ -56,7 +56,7 @@ spec:
         {{- if gt (int .Values.replicas.usage) 1 }}
         - --leader-elect
         {{- end }}
-        - --cloud-one-endpoint={{ include "container.security.endpoint" . }}
+        - --vision-one-endpoint={{ include "container.security.endpoint" . }}
         - --application-version={{ .Chart.AppVersion }}
         command:
         - /manager
@@ -80,12 +80,12 @@ spec:
           periodSeconds: 10
         volumeMounts:
           - mountPath: /secrets
-            name: api-key
+            name: auth-token
         resources:
 {{ toYaml (default .Values.resources.defaults .Values.resources.usage) | indent 12 }}
       - {{ include "rbacProxy" (dict "securityContext" .Values.securityContext "images" .Values.images "resources" .Values.resources "customSecurityContext" .Values.securityContext.usage "tlsConfig" .Values.tlsConfig ) | nindent 8 | trim }}
       volumes:
-        - name: api-key
+        - name: auth-token
           secret:
             secretName: {{ template "container.security.fullname" . }}-auth
         - name: rbac-proxy-certs

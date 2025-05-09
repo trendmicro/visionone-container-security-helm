@@ -673,9 +673,9 @@ metadata:
 type: Opaque
 data:
 {{- if and (hasKey .Values.visionOne "bootstrapToken") (.Values.visionOne.bootstrapToken) }}
-  api.key: {{ .Values.visionOne.bootstrapToken | toString | b64enc | quote }}
+  auth.token: {{ .Values.visionOne.bootstrapToken | toString | b64enc | quote }}
 {{- else }}
-  api.key: {{ required "A valid Vision One bootstrapToken is required" .Values.visionOne.bootstrapToken | toString | b64enc | quote }}
+  auth.token: {{ required "A valid Vision One bootstrapToken is required" .Values.visionOne.bootstrapToken | toString | b64enc | quote }}
 {{- end }}
 {{- end }}
 {{- end }}
