@@ -73,7 +73,7 @@ spec:
         - --runtime-rules-config-name={{ template "container.security.name" . }}-runtime-rules-config
         - --runtime-policy-config-name={{ template "container.security.name" . }}-runtime-policy-config
         - --spc-mode={{ default "false" .Values.spc.enabled }}
-        - --vision-one-feature-gate={{ default "false" .Values.visionOneFeatureGate }}
+        - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
         command:
         - /app/policy-operator
         env:

@@ -1,4 +1,4 @@
-{{- if or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled) }}
+{{- if and (or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled)) (not .Values.spc.enabled) }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:

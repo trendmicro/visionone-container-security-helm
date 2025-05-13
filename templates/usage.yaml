@@ -1,3 +1,4 @@
+{{- if not .Values.spc.enabled }}
 apiVersion: cloudone.trendmicro.com/v1
 kind: Usage
 metadata:
@@ -5,3 +6,4 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "usage.labels" . | nindent 4 }}
+{{- end }}

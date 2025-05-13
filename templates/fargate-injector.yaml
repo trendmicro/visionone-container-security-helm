@@ -1,4 +1,4 @@
-{{- if and (eq true .Values.visionOne.runtimeSecurity.enabled) (eq true .Values.visionOne.fargateInjector.enabled) }}
+{{- if and (eq true .Values.visionOne.runtimeSecurity.enabled) (eq true .Values.visionOne.fargateInjector.enabled) (not .Values.spc.enabled) }}
 apiVersion: v1
 kind: Service
 metadata:

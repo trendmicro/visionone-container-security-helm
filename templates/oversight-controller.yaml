@@ -87,6 +87,8 @@ spec:
         - --network-policy-label={{ default "trendmicro" .Release.Name }}
         - --enable-network-policy-creation={{ default "false" .Values.visionOne.oversight.enableNetworkPolicyCreation }}
         - --trusted-images={{ include "digest" . }}
+        - --spc-mode={{ default "false" .Values.spc.enabled }}
+        - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
         command:
         - /manager
         env:

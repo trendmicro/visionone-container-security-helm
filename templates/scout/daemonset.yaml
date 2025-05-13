@@ -349,6 +349,8 @@ spec:
             - --malware-scanning={{ default "false" .Values.visionOne.malwareScanning.enabled }}
             - --malware-event-count={{ .Values.visionOne.malwareScanning.maximumEventCount}}
             - --runtime-security={{ default "false" .Values.visionOne.runtimeSecurity.enabled }}
+            - --spc-mode={{ default "false" .Values.spc.enabled }}
+            - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
             {{- if .Values.visionOne.malwareScanning.enabled }}
             - --malware-scanner-url
             - {{ include "malwareScanner.svc.url" . }}:{{ .Values.visionOne.malwareScanning.scanner.port }}

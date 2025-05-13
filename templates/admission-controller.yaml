@@ -121,7 +121,8 @@ spec:
             {{- $trustedOperators := (default (list) .Values.visionOne.admissionController.trustedScanOperators) }}
             - {{ $trustedOperators | join "," | quote }}
             - --trusted-images={{ include "digest" . }}
-            - --vision-one-feature-gate={{ default "false" .Values.visionOneFeatureGate }}
+            - --spc-mode={{ default "false" .Values.spc.enabled }}
+            - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
             - 2>&1
           env:
             {{- include "container.security.proxy.env" . | nindent 12 }}

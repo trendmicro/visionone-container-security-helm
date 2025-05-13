@@ -1,4 +1,4 @@
-{{- if or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled) }}
+{{- if and (or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled)) (not .Values.spc.enabled) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -85,6 +85,8 @@ spec:
         {{- end }}
         {{- if .Values.visionOne.malwareScanning.enabled }}
         - --enable-malware-scanning
+        - --spc-mode={{ default "false" .Values.spc.enabled }}
+        - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
         - --scanner-endpoint={{ printf "%s:%d" (include "malwareScanner.svc.url" .) 50051 }}
         - --malware-exclude-namespaces={{ (include "namespaceExclusions" .) }}
           {{- $excludedPaths := (default (list) .Values.visionOne.malwareScanning.excludedPaths) }}
@@ -94,7 +96,7 @@ spec:
           {{- end }}{{/* range */}}
         - --malware-exclude-paths={{ $combinedListPath | join "," }}
         - --mqtt-config-file-path=/app/scanmanager.yaml
-        - --vision-one-feature-gate={{ default "false" .Values.visionOneFeatureGate }}
+        - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
         {{- end }}
         {{- if and (.Capabilities.APIVersions.Has "security.openshift.io/v1") (or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled)) }}
         - --openshift-service-account-name={{ include "scanJob.serviceAccountName" . }}

@@ -1,3 +1,4 @@
+{{- if not .Values.spc.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -58,6 +59,8 @@ spec:
         {{- end }}
         - --vision-one-endpoint={{ include "container.security.endpoint" . }}
         - --application-version={{ .Chart.AppVersion }}
+        - --spc-mode={{ default "false" .Values.spc.enabled }}
+        - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
         command:
         - /manager
         env:
@@ -164,4 +167,5 @@ metadata:
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
+{{- end }}
 {{- end }}

@@ -345,6 +345,11 @@ visionOne:
     ## Default value: info
     logLevel: info
 
+  experimental:
+    ## enable the experimental features. Experimental features are not supported in production environments,
+    ## considered unstable and may be removed or changed in future releases. 
+    enabled: false
+
 spc:
   ## enable the container security mode for Vision One Sovereign Private Cloud
   enabled: false

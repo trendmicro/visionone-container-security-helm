@@ -83,6 +83,8 @@ spec:
         - --runtime-security={{ default "false" .Values.visionOne.runtimeSecurity.enabled }}
         - --malware-scanning={{ default "false" .Values.visionOne.malwareScanning.enabled }}
         - --trusted-images={{ include "digest" . }}
+        - --spc-mode={{ default "false" .Values.spc.enabled }}
+        - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
         {{- if gt (int .Values.replicas.workloadOperator) 1 }}
         - --leader-elect
         {{- end }}
