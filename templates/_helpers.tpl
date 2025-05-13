@@ -659,7 +659,7 @@ Create an image source.
 {{- end -}}
 
 {{/*
-Vision One auth token
+Vision One bootstrap token
 */}}
 {{- define "container.security.auth.secret" -}}
 {{- if not .Values.visionOne.clusterRegistrationKey }}
@@ -667,15 +667,15 @@ Vision One auth token
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ template "container.security.fullname" . }}-auth
+  name: {{ template "container.security.fullname" . }}-bootstrap-token
   labels:
     {{- include "container.security.labels" . | nindent 4 }}
 type: Opaque
 data:
 {{- if and (hasKey .Values.visionOne "bootstrapToken") (.Values.visionOne.bootstrapToken) }}
-  auth.token: {{ .Values.visionOne.bootstrapToken | toString | b64enc | quote }}
+  bootstrap.token: {{ .Values.visionOne.bootstrapToken | toString | b64enc | quote }}
 {{- else }}
-  auth.token: {{ required "A valid Vision One bootstrapToken is required" .Values.visionOne.bootstrapToken | toString | b64enc | quote }}
+  bootstrap.token: {{ required "A valid Vision One bootstrapToken is required" .Values.visionOne.bootstrapToken | toString | b64enc | quote }}
 {{- end }}
 {{- end }}
 {{- end }}

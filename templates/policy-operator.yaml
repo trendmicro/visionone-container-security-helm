@@ -66,7 +66,6 @@ spec:
         - --namespace={{ .Release.Namespace }}
         - --auth-name={{ template "container.security.fullname" . }}-auth
         - --auto-register={{ default "false" .Values.visionOne.clusterRegistrationKey }}
-        - --enable-token-rotation=true
         - --policy-sync-interval={{ include "policyOperator.policy.sync.interval" . }}
         - --policy-config-name={{ template "container.security.name" . }}-policy-config
         - --runtime-rulesets-config-name={{ template "container.security.name" . }}-runtime-rulesets-config
@@ -90,7 +89,7 @@ spec:
         - mountPath: /var/policy-operator
           name: workdir
         - mountPath: /secrets
-          name: auth-token
+          name: bootstrap-token
         {{- if .Values.visionOne.clusterRegistrationKey }}
         - mountPath: /reg-secrets
           name: registration-key
@@ -99,9 +98,9 @@ spec:
         - name: workdir
           emptyDir:
             sizeLimit: 50Mi
-        - name: auth-token
+        - name: bootstrap-token
           secret:
-            secretName: {{ template "container.security.fullname" . }}-auth
+            secretName: {{ template "container.security.fullname" . }}-bootstrap-token
         {{- if .Values.visionOne.clusterRegistrationKey }}
             optional: true
         - name: registration-key
