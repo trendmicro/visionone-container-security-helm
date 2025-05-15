@@ -665,7 +665,7 @@ Vision One bootstrap token
 {{- if hasKey .Values.visionOne "apiKey" }}
 {{- fail "apiKey key is renamed bootstrapToken. See docs/upgrade-from-cloud-one-helm.md" }}
 {{- end }}
-{{- if and (hasKey .Values.visionOne "bootstrapToken") (not (hasPrefix "ey" .Values.visionOne.bootstrapToken))}} # bootstrap token is a JWT token
+{{- if and .Values.visionOne.bootstrapToken (not (hasPrefix "ey" .Values.visionOne.bootstrapToken))}} # bootstrap token is a JWT token
 {{- fail "Invalid bootstrapToken format." }}
 {{- end }}
 {{- if not .Values.visionOne.clusterRegistrationKey }}
