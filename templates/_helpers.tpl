@@ -662,6 +662,12 @@ Create an image source.
 Vision One bootstrap token
 */}}
 {{- define "container.security.auth.secret" -}}
+{{- if hasKey .Values.visionOne "apiKey" }}
+{{- fail "apiKey key is renamed bootstrapToken. See docs/upgrade-from-cloud-one-helm.md" }}
+{{- end }}
+{{- if and (hasKey .Values.visionOne "bootstrapToken") (not (hasPrefix "ey" .Values.visionOne.bootstrapToken))}} # bootstrap token is a JWT token
+{{- fail "Invalid bootstrapToken format." }}
+{{- end }}
 {{- if not .Values.visionOne.clusterRegistrationKey }}
 {{- if not (and .Values.useExistingSecrets (eq true .Values.useExistingSecrets.containerSecurityAuth)) }}
 apiVersion: v1
@@ -961,9 +967,15 @@ Return the trusted images digest
 {{- end -}}
 
 {{/*
-Validate input for cluster registration from override file
+Validate input from override file
 */}}
 {{- define "validateClusterInput" -}}
+{{- if hasKey .Values "cloudOne" }}
+{{- fail "cloudOne key is renamed visionOne. See docs/upgrade-from-cloud-one-helm.md" }}
+{{- end }}
+{{- if and (hasKey .Values.visionOne "endpoint") (hasPrefix "https://container." .Values.visionOne.endpoint)}}
+{{- fail "Cannot use Cloud One endpoint. See docs/upgrade-from-cloud-one-helm.md" }}
+{{- end }}
 {{- if and .Values.visionOne.bootstrapToken .Values.visionOne.clusterRegistrationKey }}
 {{- fail "Please do not specify the bootstrapToken in the override file when using automated cluster registration" }}
 {{- end }}
