@@ -48,32 +48,6 @@ metadata:
     {{- include "usage.labels" . | nindent 4 }}
 rules:
 - apiGroups:
-  - cloudone.trendmicro.com
-  resources:
-  - usages
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - cloudone.trendmicro.com
-  resources:
-  - usages/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - cloudone.trendmicro.com
-  resources:
-  - usages/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
   - ""
   resources:
   - nodes
