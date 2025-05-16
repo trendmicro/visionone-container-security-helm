@@ -345,6 +345,21 @@ visionOne:
     ## Default value: info
     logLevel: info
 
+    ## enableNetworkPolicyCreation allows policy operator to create the Kubernetes network policy if it doesn't exist.
+    ## The created network policy is used to perform `isolate` mitigation. The created network policy will not be cleaned up automatically.
+    ##
+    ## Default value: true
+    ##
+    enableNetworkPolicyCreation: true
+
+    ## enableRuntimeMitigation allows policy operator to apply runtime mitigation to the pods that violate the policy.
+    ## Mitigation sources can include runtime security, malware scans and continuous evaluation of pod spec.
+    ## Supported mitigation types are: Terminate, Isolate, and IsolateRestore
+    ##
+    ## Default value: true
+    ##
+    enableRuntimeMitigation: true
+
   experimental:
     ## enable the experimental features. Experimental features are not supported in production environments,
     ## considered unstable and may be removed or changed in future releases. 

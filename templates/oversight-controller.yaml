@@ -73,10 +73,8 @@ spec:
         {{- if gt (int .Values.replicas.oversight) 1 }}
         - --leader-elect
         {{- end }}
-        - --mitigation-handler-buffer-size={{ default 50 .Values.visionOne.oversight.mitigationHandlerBufferSize }}
         - --page-size={{ default 100 .Values.visionOne.oversight.pageSize }}
         - --sync-period={{ default "3600s" .Values.visionOne.oversight.syncPeriod }}
-        - --enable-runtime-mitigation={{ default "false" .Values.visionOne.runtimeSecurity.enabled }}
         - --enable-compliance-scan={{ default "false" .Values.visionOne.complianceScan.enabled }}
         - --job-template-path=/etc/config/compliance-scan-job-template.yaml
         - --exclude-kubernetes-service-host-from-proxy={{ default "false" .Values.proxy.excludeKubernetesServiceHost }}

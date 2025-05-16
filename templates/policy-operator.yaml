@@ -66,6 +66,7 @@ spec:
         - --namespace={{ .Release.Namespace }}
         - --auth-name={{ template "container.security.fullname" . }}-auth
         - --auto-register={{ default "false" .Values.visionOne.clusterRegistrationKey }}
+        - --enable-runtime-mitigation={{ default "false" .Values.visionOne.policyOperator.enableRuntimeMitigation }}
         - --policy-sync-interval={{ include "policyOperator.policy.sync.interval" . }}
         - --policy-config-name={{ template "container.security.name" . }}-policy-config
         - --runtime-rulesets-config-name={{ template "container.security.name" . }}-runtime-rulesets-config
@@ -73,9 +74,14 @@ spec:
         - --runtime-policy-config-name={{ template "container.security.name" . }}-runtime-policy-config
         - --spc-mode={{ default "false" .Values.spc.enabled }}
         - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
+        {{- if gt (int .Values.replicas.policyOperator) 1 }}
+        - --leader-elect
+        {{- end }}
         command:
         - /app/policy-operator
         env:
+        - name: APPLICATION_VERSION
+          value: {{ .Chart.AppVersion | quote }}
         - name: POD_NAME
           valueFrom:
             fieldRef:

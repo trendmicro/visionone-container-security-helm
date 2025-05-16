@@ -97,6 +97,15 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - get
+  - list
+  - watch
+  - create
 {{- if eq true .Values.visionOne.oversight.enableNetworkPolicyCreation }}
 - apiGroups:
   - networking.k8s.io
@@ -117,15 +126,6 @@ rules:
   - get
   - patch
   - update
-- apiGroups:
-  - batch
-  resources:
-  - jobs
-  verbs:
-  - get
-  - list
-  - watch
-  - create
 {{- end }}
 
 ---

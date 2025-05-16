@@ -196,7 +196,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: scan-manager-networkpolicy
+  name: trendmicro-scan-manager-network-policy
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "scanManager.labels" . | nindent 4 }}
