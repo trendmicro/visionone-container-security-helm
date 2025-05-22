@@ -424,6 +424,8 @@ spec:
               name: metacollector-grpc-certs
               subPath: ca-cert.pem
               readOnly: true
+            - mountPath: /etc/config
+              name: policy-config
 {{- end }}
           resources:
 {{ toYaml (default .Values.resources.defaults .Values.resources.scout) | indent 12 }}
@@ -547,6 +549,15 @@ spec:
         - name: debugfs
           hostPath:
             path: /sys/kernel/debug
+        - name: policy-config
+          projected:
+            sources:
+              - configMap: 
+                  name: {{ template "container.security.name" . }}-runtime-rulesets-config
+              - configMap: 
+                  name: {{ template "container.security.name" . }}-runtime-policy-config
+              - configMap: 
+                  name: {{ template "container.security.name" . }}-runtime-rules-config
         - name: config-volume
           configMap:
             name: {{ template "container.security.name" . }}-scout-config

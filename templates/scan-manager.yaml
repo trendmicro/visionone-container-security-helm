@@ -125,7 +125,7 @@ spec:
         volumeMounts:
           - mountPath: /secrets
             name: auth-token
-          - name: scan-manager-config
+          - name: config
             mountPath: /etc/config/
           - name: grpc-certs
             mountPath: /etc/malwarescan/certs
@@ -138,9 +138,13 @@ spec:
         - name: auth-token
           secret:
             secretName: {{ template "container.security.fullname" . }}-auth
-        - name: scan-manager-config
-          configMap:
-            name: {{ template "container.security.name" . }}-scan-manager-config
+        - name: config
+          projected:
+            sources:
+              - configMap:
+                  name: {{ template "container.security.name" . }}-scan-manager-config
+              - configMap:
+                  name: {{ template "container.security.name" . }}-runtime-policy-config
         - name: scanmanager-workdir
           emptyDir:
             sizeLimit: 50Mi
