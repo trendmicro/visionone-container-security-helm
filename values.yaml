@@ -360,6 +360,11 @@ visionOne:
     ##
     enableRuntimeMitigation: true
 
+    ## servicePort is the port that the policy operator will run the http server on to serve the policy config and handle the mitigation requests
+    ##
+    ## Default value: 8070
+    servicePort: 8070
+
   experimental:
     ## enable the experimental features. Experimental features are not supported in production environments,
     ## considered unstable and may be removed or changed in future releases. 
