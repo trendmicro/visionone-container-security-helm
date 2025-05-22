@@ -1,4 +1,4 @@
-{{- if and (or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled)) (not .Values.spc.enabled) }}
+{{- if and (or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled) (eq true .Values.visionOne.secretScanning.enabled)) (not .Values.spc.enabled) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -63,6 +63,8 @@ spec:
         - --zap-time-encoding={{ default "rfc3339" .Values.logConfig.timeEncoding }}
         - --vision-one-scan-job-image=$(SCAN_JOB_IMAGE)
         - --vision-one-endpoint={{ include "container.security.endpoint" . }}
+        - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
+        - --spc-mode={{ default "false" .Values.spc.enabled }}
         - --exclude-kubernetes-service-host-from-proxy={{ default "false" .Values.proxy.excludeKubernetesServiceHost }}
         - --excluded-namespaces
         {{- $excludeNS := (include "namespaceExclusions" .) }}
@@ -83,20 +85,26 @@ spec:
         {{- if .Values.visionOne.vulnerabilityScanning.enabled }}
         - --enable-vulnerability-scanning
         {{- end }}
+        {{- if or (eq true .Values.visionOne.malwareScanning.enabled) (eq true .Values.visionOne.secretScanning.enabled) }}
+        - --exclude-namespaces={{ (include "namespaceExclusions" .) }}
+        - --mqtt-config-file-path=/app/scanmanager.yaml
+        {{- end}}
         {{- if .Values.visionOne.malwareScanning.enabled }}
         - --enable-malware-scanning
-        - --spc-mode={{ default "false" .Values.spc.enabled }}
         - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
-        - --scanner-endpoint={{ printf "%s:%d" (include "malwareScanner.svc.url" .) 50051 }}
-        - --malware-exclude-namespaces={{ (include "namespaceExclusions" .) }}
+        - --malware-scanner-endpoint={{ printf "%s:%d" (include "malwareScanner.svc.url" .) 50051 }}
           {{- $excludedPaths := (default (list) .Values.visionOne.malwareScanning.excludedPaths) }}
           {{- $combinedListPath := .Values.malwareScanner.defaultExcludedPaths }}
           {{- range $excludedPaths }}
           {{- $combinedListPath = append $combinedListPath . }}
           {{- end }}{{/* range */}}
         - --malware-exclude-paths={{ $combinedListPath | join "," }}
-        - --mqtt-config-file-path=/app/scanmanager.yaml
-        - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
+        {{- end }}
+        {{- if .Values.visionOne.secretScanning.enabled }}
+        - --enable-secret-scanning
+        - --secret-default-exclude-paths={{ .Values.secretScanner.defaultExcludedPaths | join "," }}
+        - --secret-max-file-size={{ .Values.visionOne.secretScanning.maxFileSize | int }}
+        - --secret-scan-job-active-deadline={{ printf "%ds" (int .Values.visionOne.scanManager.secretScanActiveDeadlineSeconds) }}
         {{- end }}
         {{- if and (.Capabilities.APIVersions.Has "security.openshift.io/v1") (or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled)) }}
         - --openshift-service-account-name={{ include "scanJob.serviceAccountName" . }}
@@ -128,7 +136,7 @@ spec:
           - name: config
             mountPath: /etc/config/
           - name: grpc-certs
-            mountPath: /etc/malwarescan/certs
+            mountPath: /etc/scanner/certs
             readOnly: true
           - mountPath: /var/scanmanager
             name: scanmanager-workdir

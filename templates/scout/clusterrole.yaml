@@ -1,4 +1,4 @@
-{{- if or (eq true .Values.visionOne.runtimeSecurity.enabled)  (eq true .Values.visionOne.malwareScanning.enabled) }}
+{{- if eq (include "scout.shouldDeploy" .) "true" }}
 {{- if .Values.rbac.create }}
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1

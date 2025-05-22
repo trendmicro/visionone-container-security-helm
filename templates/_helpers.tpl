@@ -639,6 +639,21 @@ Service url of malware scanner
 {{- printf "%s.%s.svc.cluster.local" (include "malwareScanner.svc" .) .Release.Namespace -}}
 {{- end -}}
 
+
+{{/*
+Service name of secret scanner
+*/}}
+{{- define "secretScanner.svc" -}}
+{{- printf "trendmicro-secret-scanner" -}}
+{{- end -}}
+
+{{/*
+Service url of secret scanner
+*/}}
+{{- define "secretScanner.svc.url" -}}
+{{- printf "%s.%s.svc.cluster.local" (include "secretScanner.svc" .) .Release.Namespace -}}
+{{- end -}}
+
 {{/*
 Create an image source.
 */}}
@@ -1165,6 +1180,25 @@ Automatically adds any namespace with prefix to excluded namespace list for open
   {{- end -}}
 {{- end -}}
 {{- join "," $excludedNamespaces -}}
+{{- end -}}
+
+{{/* 
+   Determines whether Scout should be deployed based on enabled Vision One features.
+   This helper centralizes the deployment condition to avoid duplication in multiple templates.
+   It returns "true" (as a string) if any of the following features are enabled:
+   - Runtime Security
+   - Malware Scanning
+   - Secret Scanning
+   Otherwise, it returns "false".
+   Usage:
+   {{- if eq (include "scout.shouldDeploy" .) "true" }}
+*/}}
+{{- define "scout.shouldDeploy" -}}
+{{- if or (eq true .Values.visionOne.runtimeSecurity.enabled) (eq true .Values.visionOne.malwareScanning.enabled) (eq true .Values.visionOne.secretScanning.enabled) -}}
+true
+{{- else -}}
+false
+{{- end -}}
 {{- end -}}
 
 {{/* hec client command line arguments as env variable*/}}

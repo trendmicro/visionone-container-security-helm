@@ -1,4 +1,4 @@
-{{- if and (or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled)) (not .Values.spc.enabled) }}
+{{- if and (or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled) (eq true .Values.visionOne.secretScanning.enabled)) (not .Values.spc.enabled) }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -95,7 +95,11 @@ data:
             {{- if .Values.visionOne.malwareScanning.enabled }}
             - name: TM_AM_SCAN_TIMEOUT_SECS
               value: {{ .Values.visionOne.malwareScanning.scanTimeoutSeconds }}
-            {{- end }}{{/* if */}}
+            {{- end }}
+            {{- if .Values.visionOne.secretScanning.enabled }}
+            - name: TMAS_SCAN_TIMEOUT_SECS
+              value: {{ .Values.visionOne.secretScanning.scanTimeoutSeconds }}
+            {{- end }}
             volumeMounts:
               - mountPath: /utility
                 name: utility-volume
