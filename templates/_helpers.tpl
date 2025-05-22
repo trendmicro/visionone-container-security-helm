@@ -1207,8 +1207,51 @@ Return the policy sync interval for the policy operator
 {{- end -}}
 
 {{/*
-Return the address of the policy operator service
+Return the url of the policy operator service
 */}}
-{{- define "policyOperator.service.address" -}}
+{{- define "policyOperator.svc.url" -}}
 {{- printf "http://trendmicro-policy-operator-service.%s.svc.cluster.local:%s/api" .Release.Namespace .Values.visionOne.policyOperator.servicePort }}
 {{- end -}}
+
+{{/*
+Return the volumes for self-signed certificates
+*/}}
+{{- define "proxy.selfSignedCertificates.volumes" }}
+{{- range .Values.proxy.selfSignedCertificates}}
+- name: {{ .name }}
+{{- if eq .type "secret" }}
+  secret:
+    secretName: {{ .secretName | quote }}
+{{- else if eq .type "configMap" }}
+  configMap:
+    name: {{ .configMapName | quote }}
+{{- else if eq .type "emptyDir" }}
+  emptyDir: {}
+{{- else if eq .type "hostPath" }}
+  hostPath:
+    path: {{ .path | quote }}
+    type: File
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+Return the volume mounts for self-signed certificates
+*/}}
+{{- define "proxy.selfSignedCertificates.volumeMounts" }}
+{{- range .Values.proxy.selfSignedCertificates}}
+- name: {{ .name }}
+{{- if and (eq .type "secret") .key }}
+  mountPath: /etc/ssl/certs/{{ .key }}
+  subPath: {{ .key }}
+{{- else if and (eq .type "configMap") .key }}
+  mountPath: /etc/ssl/certs/{{ .key }}
+  subPath: {{ .key }}
+{{- else if eq .type "hostPath" }}
+  mountPath: /etc/ssl/certs/{{ base .path }}
+{{- else }}
+  mountPath: /etc/ssl/certs/{{ .name }}
+{{- end }}
+  readOnly: true
+{{- end }}
+{{- end }}

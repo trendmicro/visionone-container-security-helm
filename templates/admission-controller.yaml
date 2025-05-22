@@ -102,6 +102,7 @@ spec:
               readOnly: true
             - name: policy-config
               mountPath: /etc/config
+            {{- include "proxy.selfSignedCertificates.volumeMounts" . | nindent 12 }}
           args:
             - --zap-devel={{ default "false" .Values.logConfig.devel }}
             - --zap-log-level={{ include "logLevel" (list .Values.visionOne.admissionController.logLevel .) }}
@@ -151,6 +152,7 @@ spec:
             sources:
               - configMap:
                   name: {{ template "container.security.name" . }}-policy-config
+        {{- include "proxy.selfSignedCertificates.volumes" . | nindent 8 }}
 {{- if or .Values.nodeSelector.defaults .Values.nodeSelector.admissionController }}
       nodeSelector:
 {{ toYaml (default .Values.nodeSelector.defaults .Values.nodeSelector.admissionController) | indent 8 }}
