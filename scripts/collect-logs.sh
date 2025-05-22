@@ -74,7 +74,7 @@ COMMANDS=( "version:$KUBECTL version"
            "workloadimages: $KUBECTL get workloadimages --all-namespaces -o yaml"
            "clusterpolicies: $KUBECTL get clusterpolicies --all-namespaces -o yaml"
            "runtimerulesets: $KUBECTL get runtimerulesets --all-namespaces -o yaml"
-           "cluster: $KUBECTL get clusters.visionone.trendmicro.com --all-namespaces -o yaml")
+           "cluster: $KUBECTL get clusters.container-security.trendmicro.com --all-namespaces -o yaml")
 
 echo "Fetching setting logs..."
 for command in "${COMMANDS[@]}"; do

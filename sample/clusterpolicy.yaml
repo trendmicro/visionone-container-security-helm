@@ -1,4 +1,4 @@
-apiVersion: visionone.trendmicro.com/v1alpha1
+apiVersion: container-security.trendmicro.com/v1alpha1
 kind: ClusterPolicy
 metadata:
   labels:

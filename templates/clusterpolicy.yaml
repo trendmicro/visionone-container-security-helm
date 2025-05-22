@@ -4,9 +4,9 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.15.0
-  name: clusterpolicies.visionone.trendmicro.com
+  name: clusterpolicies.container-security.trendmicro.com
 spec:
-  group: visionone.trendmicro.com
+  group: container-security.trendmicro.com
   names:
     kind: ClusterPolicy
     listKind: ClusterPolicyList

@@ -17,7 +17,7 @@ The script handles deletion of Trend Micro Container Security resources includin
 
 - Argo CD application finalizers that may be preventing complete deletion
 - Trend Micro image pull secrets distributed across all namespaces
-- Trend Micro custom resource definitions (CRDs), specifically "workloadimages.cloudone.trendmicro.com"
+- Trend Micro custom resource definitions (CRDs), specifically "workloadimages.container-security.trendmicro.com"
 - Service accounts, cluster role bindings, and cluster roles of Trend Micro  post-delete hooks
 - Cleanup Jobs in the Trend Micro system namespace
 

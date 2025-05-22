@@ -8,7 +8,7 @@ metadata:
     {{- include "scanManager.labels" . | nindent 4 }}
 rules:
 - apiGroups:
-  - cloudone.trendmicro.com
+  - container-security.trendmicro.com
   resources:
   - workloadimages
   verbs:

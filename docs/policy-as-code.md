@@ -367,8 +367,8 @@ To remove the finalizer, edit the custom resource and remove the finalizer from 
 ```yaml
 metadata:
   finalizers:
-  - clusterpolicy.visionone.trendmicro.com/finalizer
-  - runtimeruleset.visionone.trendmicro.com/finalizer
+  - clusterpolicy.container-security.trendmicro.com/finalizer
+  - runtimeruleset.container-security.trendmicro.com/finalizer
 ```
 
 The custom resource can also be patched to remove the finalizer:

@@ -4,20 +4,20 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.15.0
-  name: clusters.visionone.trendmicro.com
+  name: runtimerulesets.container-security.trendmicro.com
 spec:
-  group: visionone.trendmicro.com
+  group: container-security.trendmicro.com
   names:
-    kind: Cluster
-    listKind: ClusterList
-    plural: clusters
-    singular: cluster
+    kind: RuntimeRuleset
+    listKind: RuntimeRulesetList
+    plural: runtimerulesets
+    singular: runtimeruleset
   scope: Cluster
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Cluster is the Schema for the clusters API
+        description: RuntimeRuleset is the Schema for the runtimerulesets API
         properties:
           apiVersion:
             description: |-
@@ -37,19 +37,20 @@ spec:
           metadata:
             type: object
           spec:
-            description: ClusterSpec defines the desired state of Cluster
             properties:
               definition:
-                description: Cluster's definition
                 x-kubernetes-preserve-unknown-fields: true
             type: object
           status:
-            description: ClusterStatus defines the observed state of Cluster
+            description: RuntimeRulesetStatus defines the observed state of RuntimeRuleset
             properties:
               conditions:
                 description: |-
-                  Represents the observations of Cluster current state.
-                  "Registered" to indicate if the cluster is registered to VisionOne.
+                  Represents the observations of RuntimeRuleset current state.
+                  "Parsed" to indicate if the ruleset is able to be parsed successfully
+                  "Applied" to indicate if the ruleset is applied in VisionOne backend
+                  "InUse" to indicate if the ruleset is assigned to a policy
+                  "Drifted" to indicate if the ruleset is drifted from the VisionOne backend
                 items:
                   description: Condition contains details for one aspect of the current
                     state of this API Resource.
@@ -113,12 +114,8 @@ spec:
                 x-kubernetes-list-map-keys:
                 - type
                 x-kubernetes-list-type: map
-              visiononeclusterid:
-                description: Visionone Cluster ID
-                type: string
-              visiononedevicetokenexpirationtime:
-                description: Visionone device token expiration time
-                format: date-time
+              visiononerulesetid:
+                description: Visionone Ruleset ID
                 type: string
             type: object
         type: object

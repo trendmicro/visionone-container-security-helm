@@ -5,11 +5,11 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.9.2
   creationTimestamp: null
-  name: workloadimages.cloudone.trendmicro.com
+  name: workloadimages.container-security.trendmicro.com
   labels:
     app.kubernetes.io/name: workloadimage-trendmicro-container-security
 spec:
-  group: cloudone.trendmicro.com
+  group: container-security.trendmicro.com
   names:
     kind: WorkloadImage
     listKind: WorkloadImageList

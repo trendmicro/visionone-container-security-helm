@@ -137,20 +137,35 @@ cleanup_post_delete_resources() {
   fi
 }
 
-delete_crd() {
-  local CRD_NAME="workloadimages.cloudone.trendmicro.com"
+delete_crds() {
+  local GROUP_NAMES=(
+    "cloudone.trendmicro.com"
+    "visionone.trendmicro.com"
+    "container-security.trendmicro.com"
+  )
 
-  if kubectl get crd "$CRD_NAME" &>/dev/null; then
-    kubectl delete crd "$CRD_NAME"
-    if [ $? -eq 0 ]; then
-      echo "[CRD] Successfully deleted $CRD_NAME"
-    else
-      echo "[CRD] Failed to delete $CRD_NAME"
-      return 1
+  for GROUP in "${GROUP_NAMES[@]}"; do
+    echo "[CRD] Looking for CRDs in group: $GROUP"
+    
+    local GROUP_CRDS=$(kubectl get crd -o jsonpath="{.items[?(@.spec.group=='$GROUP')].metadata.name}" 2>/dev/null)
+    
+    if [ -z "$GROUP_CRDS" ]; then
+      echo "[CRD] No CRDs found for group: $GROUP"
+      continue
     fi
-  else
-    echo "[CRD] $CRD_NAME not found, nothing to delete"
-  fi
+  
+    read -ra CRD_ARRAY <<< "$GROUP_CRDS"
+  
+    for CRD_NAME in "${CRD_ARRAY[@]}"; do
+      kubectl delete crd "$CRD_NAME"
+      if [ $? -eq 0 ]; then
+        echo "[CRD] Successfully deleted $CRD_NAME"
+      else
+        echo "[CRD] Failed to delete $CRD_NAME"
+        return 1
+      fi
+    done
+  done
   
   return 0
 }
@@ -248,7 +263,7 @@ cleanup_image_pull_secrets
 secret_cleanup_status=$?
 
 echo -e "\nDeleting custom resource definitions..."
-delete_crd
+delete_crds
 crd_cleanup_status=$?
 
 echo -e "\nCleaning up service accounts, cluster role bindings, clusterroles...."
