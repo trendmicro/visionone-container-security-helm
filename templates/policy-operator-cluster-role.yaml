@@ -36,11 +36,12 @@ rules:
   - patch
   - delete
 - apiGroups:
-    - container-security.trendmicro.com
+  - container-security.trendmicro.com
   resources:
     - clusterpolicies/status
     - runtimerulesets/status
     - clusters/status
+    - clusters/finalizers
   verbs:
     - get
     - update
