@@ -44,8 +44,11 @@ spec:
         securityContext:
 {{ toYaml $containerSecurityContext | indent 12 }}
 {{- end }}
-        {{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
-        {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
+        {{- $project := (default $imageDefaults.project .project) }}
+        {{- $repository := (ternary (required ".repository is required!" .repository)
+          (printf "%s/%s" $project (required ".repository is required!" .repository))
+          (not $project))
+        }}
         {{- $tag := (default $imageDefaults.tag .tag) }}
         image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
         imagePullPolicy: {{ default (default "Always" $imageDefaults.pullPolicy) .pullPolicy }}
@@ -263,8 +266,11 @@ data:
           {{- end }}
           containers:
           - name: compliance-scan-job
-            {{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
-            {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
+            {{- $project := (default $imageDefaults.project .project) }}
+            {{- $repository := (ternary (required ".repository is required!" .repository)
+              (printf "%s/%s" $project (required ".repository is required!" .repository))
+              (not $project))
+            }}
             {{- $tag := (default $imageDefaults.tag .tag) }}
             image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
             imagePullPolicy: {{ default (default "Always" $imageDefaults.pullPolicy) .pullPolicy }}

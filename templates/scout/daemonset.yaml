@@ -75,8 +75,11 @@ spec:
       containers:
         - name: falco
           {{- with .Values.images.falco }}
-          {{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
-          {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
+          {{- $project := (default $imageDefaults.project .project) }}
+          {{- $repository := (ternary (required ".repository is required!" .repository)
+          (printf "%s/%s" $project (required ".repository is required!" .repository))
+          (not $project))
+        }}
           {{- $tag := (default $imageDefaults.tag .tag) }}
           image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
           imagePullPolicy: {{ default (default "Always" $imageDefaults.pullPolicy) .pullPolicy }}
@@ -180,8 +183,11 @@ spec:
 {{- if .Values.visionOne.runtimeSecurity.customRules.enabled }}
         - name: falco-customrules
           {{- with .Values.images.falco }}
-          {{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
-          {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
+          {{- $project := (default $imageDefaults.project .project) }}
+          {{- $repository := (ternary (required ".repository is required!" .repository)
+            (printf "%s/%s" $project (required ".repository is required!" .repository))
+            (not $project))
+          }}
           {{- $tag := (default $imageDefaults.tag .tag) }}
           image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
           imagePullPolicy: {{ default (default "Always" $imageDefaults.pullPolicy) .pullPolicy }}
@@ -310,8 +316,11 @@ spec:
         - name: scout
           {{- $imageDefaults := .Values.images.defaults }}
           {{- with .Values.images.scout }}
-          {{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
-          {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
+          {{- $project := (default $imageDefaults.project .project) }}
+          {{- $repository := (ternary (required ".repository is required!" .repository)
+            (printf "%s/%s" $project (required ".repository is required!" .repository))
+            (not $project))
+          }}
           {{- $tag := (default $imageDefaults.tag .tag) }}
           image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
           imagePullPolicy: {{ default (default "Always" $imageDefaults.pullPolicy) .pullPolicy }}
@@ -445,8 +454,11 @@ spec:
         - name: falcoversion
           {{- $imageDefaults := .Values.images.defaults }}
           {{- with .Values.images.falco }}
-          {{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
-          {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
+          {{- $project := (default $imageDefaults.project .project) }}
+          {{- $repository := (ternary (required ".repository is required!" .repository)
+            (printf "%s/%s" $project (required ".repository is required!" .repository))
+            (not $project))
+          }}
           {{- $tag := (default $imageDefaults.tag .tag) }}
           image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
           imagePullPolicy: {{ default (default "Always" $imageDefaults.pullPolicy) .pullPolicy }}
@@ -469,8 +481,11 @@ spec:
         - name: downloader
           {{- $imageDefaults := .Values.images.defaults }}
           {{- with .Values.images.scout }}
-          {{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
-          {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
+          {{- $project := (default $imageDefaults.project .project) }}
+          {{- $repository := (ternary (required ".repository is required!" .repository)
+            (printf "%s/%s" $project (required ".repository is required!" .repository))
+            (not $project))
+          }}
           {{- $tag := (default $imageDefaults.tag .tag) }}
           image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
           imagePullPolicy: {{ default (default "Always" $imageDefaults.pullPolicy) .pullPolicy }}

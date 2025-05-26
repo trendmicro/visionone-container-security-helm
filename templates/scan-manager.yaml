@@ -44,8 +44,11 @@ spec:
         securityContext:
 {{ toYaml $containerSecurityContext | indent 12 }}
 {{- end }}
-        {{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
-        {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
+        {{- $project := (default $imageDefaults.project .project) }}
+        {{- $repository := (ternary (required ".repository is required!" .repository)
+          (printf "%s/%s" $project (required ".repository is required!" .repository))
+          (not $project))
+        }}
         {{- $tag := (default $imageDefaults.tag .tag) }}
         image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
         imagePullPolicy: {{ default (default "Always" $imageDefaults.pullPolicy) .pullPolicy }}
@@ -119,8 +122,11 @@ spec:
         {{- include "container.security.proxy.env" . | nindent 8 }}
         {{- $scanJobImageDefaults := .Values.images.defaults }}
         {{- with .Values.images.scanJob }}
-        {{- $scanJobProject := (default (default "trendmicro/container-security" $scanJobImageDefaults.project) .project) }}
-        {{- $scanJobRepository := printf "%s/%s" $scanJobProject (required ".repository is required!" .repository) }}
+        {{- $scanJobProject := (default $scanJobImageDefaults.project .project) }}
+        {{- $scanJobRepository := (ternary (required ".repository is required!" .repository)
+          (printf "%s/%s" $scanJobProject (required ".repository is required!" .repository))
+          (not $scanJobProject))
+        }}
         {{- $scanJobTag := (default $scanJobImageDefaults.tag .tag) }}
         {{- $scanJobImage := include "image.source" (dict "repository" $scanJobRepository "registry" .registry "tag" $scanJobTag "imageDefaults" $scanJobImageDefaults "digest" .digest)}}
         - name: SCAN_JOB_IMAGE
@@ -345,8 +351,11 @@ spec:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
 {{- end }}
-        {{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
-        {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
+        {{- $project := (default $imageDefaults.project .project) }}
+        {{- $repository := (ternary (required ".repository is required!" .repository)
+          (printf "%s/%s" $project (required ".repository is required!" .repository))
+          (not $project))
+        }}
         {{- $tag := (default $imageDefaults.tag .tag) }}
           image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
           imagePullPolicy: {{ default (default "Always" $imageDefaults.pullPolicy) .pullPolicy }}

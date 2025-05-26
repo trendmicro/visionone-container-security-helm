@@ -918,8 +918,11 @@ securityContext: {{- toYaml $containerSecurityContext | nindent 4 }}
 {{- end }}{{/* if .securityContext.enabled */}}
 {{- $imageDefaults := .images.defaults }}
 {{- with .images.rbacProxy -}}
-{{- $project := (default (default "trendmicro/container-security" $imageDefaults.project) .project) }}
-{{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
+{{- $project := (default $imageDefaults.project .project) }}
+{{- $repository := (ternary (required ".repository is required!" .repository)
+  (printf "%s/%s" $project (required ".repository is required!" .repository))
+  (not $project))
+}}
 {{- $tag := (default $imageDefaults.tag .tag) }}
 image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
 imagePullPolicy: {{ default (default "Always" $imageDefaults.pullPolicy) .pullPolicy }}
