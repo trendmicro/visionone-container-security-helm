@@ -91,6 +91,7 @@ spec:
         - --trusted-images={{ include "digest" . }}
         - --spc-mode={{ default "false" .Values.spc.enabled }}
         - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
+        - --policyOperator-service-url={{ (include "policyOperator.svc.url" .) }}
         command:
         - /manager
         env:

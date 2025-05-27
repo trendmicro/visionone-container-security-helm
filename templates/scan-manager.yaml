@@ -109,6 +109,7 @@ spec:
         - --secret-max-file-size={{ .Values.visionOne.secretScanning.maxFileSize | int }}
         - --secret-scan-job-active-deadline={{ printf "%ds" (int .Values.visionOne.scanManager.secretScanActiveDeadlineSeconds) }}
         {{- end }}
+        - --policyOperator-service-url={{ (include "policyOperator.svc.url" .) }}
         {{- if and (.Capabilities.APIVersions.Has "security.openshift.io/v1") (or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled)) }}
         - --openshift-service-account-name={{ include "scanJob.serviceAccountName" . }}
         {{- $labels := include "scanner.labels" $ }}
