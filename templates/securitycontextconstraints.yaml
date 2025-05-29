@@ -39,6 +39,9 @@ users:
 {{- if eq true .Values.visionOne.admissionController.enabled }}
 - system:serviceaccount:{{ .Release.Namespace }}:{{ include "admissionController.serviceAccountName" . }}
 {{- end }}
+{{- if eq true .Values.visionOne.oversight.enabled }}
+- system:serviceaccount:{{ .Release.Namespace }}:{{ include "oversight.serviceAccountName" . }}
+{{- end }}
 - system:serviceaccount:{{ .Release.Namespace }}:{{ include "usage.serviceAccountName" . }}
 {{- if or (or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled)) }}
 - system:serviceaccount:{{ .Release.Namespace }}:{{ include "workloadOperator.serviceAccountName" . }}
@@ -56,4 +59,5 @@ volumes:
 - downwardAPI
 - emptyDir
 - secret
+- projected
 {{- end }}
