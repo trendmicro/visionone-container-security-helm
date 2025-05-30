@@ -140,12 +140,6 @@ visionOne:
     ##
     pageSize: 100
 
-    ## enableNetworkPolicyCreation will tell the Oversight controller to create the Kubernetes network policy if it doesn't exist.
-    ## The created network policy is used to perform `isolate` mitigation. The created network policy will not get cleaned up automatically.
-    ##
-    ## Default value: true
-    ##
-    enableNetworkPolicyCreation: true
 
     ## logLevel sets the log verbosity level. Supported values are debug, info, and error
     ##

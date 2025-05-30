@@ -1247,7 +1247,7 @@ Return the policy sync interval for the policy operator
 Return the url of the policy operator service
 */}}
 {{- define "policyOperator.svc.url" -}}
-{{- printf "http://trendmicro-policy-operator-service.%s.svc.cluster.local:%s/api" .Release.Namespace .Values.visionOne.policyOperator.servicePort }}
+{{- printf "http://trendmicro-policy-operator-service.%s.svc.cluster.local:%d/api" .Release.Namespace (int .Values.visionOne.policyOperator.servicePort) }}
 {{- end -}}
 
 {{/*

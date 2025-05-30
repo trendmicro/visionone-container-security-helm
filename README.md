@@ -27,15 +27,15 @@ To install Container Security, a network plugin with NetworkPolicy support is re
 **Note**: If you are running Container Security in a **Red Hat OpenShift** environment, network isolation mitigation is only supported for pods whose security context is acceptable by oversight controller's SecurityContextConstraint.  If you want to let Container Security isolate pods that are not allowed by default, you can use overrides.yaml to override the default setting.
 
 By default, Container Security Continuous Compliance will create a Kubernetes network policy on your behalf. If you want to create it manually, follow the steps below:
-1. Change the value of `visionOne.oversight.enableNetworkPolicyCreation` to `false`, as seen below:
+1. Change the value of `visionOne.policyOperator.enableNetworkPolicyCreation` to `false`, as seen below:
 
 ```
   visionOne:
-    oversight:
+    policyOperator:
       enableNetworkPolicyCreation: false
 ```
 
-2. Create a network policy with `matchLabels` set to `trendmicro-cloud-one: isolate` in your desired namespaces.
+2. Create a network policy with `matchLabels` set to `trendmicro-vision-one-container-security/isolate: true` in your desired namespaces.
 
 ```
   apiVersion: networking.k8s.io/v1
@@ -43,17 +43,17 @@ By default, Container Security Continuous Compliance will create a Kubernetes ne
   metadata:
     labels:
       app.kubernetes.io/instance: trendmicro
-    name: trendmicro-oversight-isolate-policy
+    name: trendmicro-vision-one-container-security-isolate
   spec:
     podSelector:
       matchLabels:
-        trendmicro-cloud-one: isolate
+         trendmicro-vision-one-container-security/isolate=true
     policyTypes:
     - Ingress
     - Egress
 ```
 
-**Warning**: The network policy with matchLabels `trendmicro-cloud-one: isolate` must exist in each application namespaces in order to perform proper isolation mitigation.
+**Warning**: The network policy with matchLabels `trendmicro-vision-one-container-security/isolate: true` must exist in each application namespaces in order to perform proper isolation mitigation.
 
 ### Registering Cluster with Trend Micro Container Security
 

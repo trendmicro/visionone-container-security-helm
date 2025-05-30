@@ -63,11 +63,8 @@ rules:
   resources:
   - pods
   verbs:
-  - delete
   - get
   - list
-  - patch
-  - update
   - watch
 - apiGroups:
   - ""
@@ -76,28 +73,6 @@ rules:
   verbs:
   - get
   - patch
-  - update
-{{- if eq true .Values.visionOne.oversight.enableNetworkPolicyCreation }}
-- apiGroups:
-  - networking.k8s.io
-  resources:
-  - networkpolicies
-  verbs:
-  - create
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - networking.k8s.io
-  resources:
-  - networkpolicies/status
-  verbs:
-  - get
-  - patch
-  - update
-{{- end }}
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
