@@ -374,6 +374,7 @@ spec:
           - --release-service={{ .Release.Service }}
           - --release-name={{ .Release.Name }}
           - --container-security-name={{ include "container.security.name" . }}
+          - --auth-secret-name={{ template "container.security.fullname" . }}-auth
           {{- with .Values.images.scanManager }}
           {{- $secret := (default (default "" $imageDefaults.imagePullSecret) .imagePullSecret) }}
           {{- if not (eq "" $secret) }}

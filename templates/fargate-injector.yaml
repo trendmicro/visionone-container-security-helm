@@ -98,6 +98,9 @@ spec:
             - --excluded-namespaces
             {{- $excludeNS := include "namespaceExclusions" . }}
             - {{ $excludeNS | quote }}
+            - --release-service={{ .Release.Service }}
+            - --release-name={{ .Release.Name }}
+            - --container-security-name={{ include "container.security.name" . }}
             - --scout-image-uri
             {{- with .Values.images.scout }}
             {{- $project := (default $imageDefaults.project .project) }}
