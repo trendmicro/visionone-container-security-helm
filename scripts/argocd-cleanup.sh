@@ -14,7 +14,7 @@ fi
 
 check_namespace_exists() {
   local namespace="$1"
-  
+
   if kubectl get namespace "$namespace" &>/dev/null; then
     return 0
   else
@@ -26,7 +26,7 @@ has_post_delete_finalizers() {
   local app_name="$1"
 
   local finalizers=$(kubectl get application "${app_name}" -n $ARGOCD_NAMESPACE -o jsonpath='{.metadata.finalizers}' 2>/dev/null)
-  
+
   if [[ "$finalizers" == *"post-delete-finalizer"* ]]; then
     return 0
   else
@@ -38,10 +38,10 @@ cleanup_image_pull_secrets() {
   local success=true
 
   local label_selector="app.kubernetes.io/managed-by=$RELEASE_SERVICE,app.kubernetes.io/name=$CONTAINER_SECURITY_NAME"
-  
+
   local namespaces
   namespaces=$(kubectl get namespaces -o jsonpath='{.items[*].metadata.name}')
-  
+
   for namespace in $namespaces; do
     if [ "$namespace" = $SOURCE_NAMESPACE ]; then
       continue
@@ -53,7 +53,7 @@ cleanup_image_pull_secrets() {
     if [ -n "$secrets" ]; then
       for secret in $secrets; do
         kubectl delete secret -n "$namespace" "$secret"
-        
+
         if [ $? -ne 0 ]; then
           echo "[Secret] Failed to delete: $secret in namespace: $namespace"
           success=false
@@ -146,17 +146,34 @@ delete_crds() {
 
   for GROUP in "${GROUP_NAMES[@]}"; do
     echo "[CRD] Looking for CRDs in group: $GROUP"
-    
+
     local GROUP_CRDS=$(kubectl get crd -o jsonpath="{.items[?(@.spec.group=='$GROUP')].metadata.name}" 2>/dev/null)
-    
+
     if [ -z "$GROUP_CRDS" ]; then
       echo "[CRD] No CRDs found for group: $GROUP"
       continue
     fi
-  
+
     read -ra CRD_ARRAY <<< "$GROUP_CRDS"
-  
+
     for CRD_NAME in "${CRD_ARRAY[@]}"; do
+      # Remove finalizers from all CRs of this CRD before deleting the CRD itself
+      local KIND=$(kubectl get crd "$CRD_NAME" -o jsonpath="{.spec.names.kind}" 2>/dev/null)
+      if [ -n "$KIND" ]; then
+        local RESOURCES=$(kubectl get "$CRD_NAME" --all-namespaces -o jsonpath="{range .items[*]}{.metadata.namespace}{','}{.metadata.name}{'\n'}{end}" 2>/dev/null)
+        while IFS= read -r line; do
+          ns=$(echo "$line" | cut -d',' -f1)
+          name=$(echo "$line" | cut -d',' -f2)
+          if [ -n "$name" ]; then
+            if [ -n "$ns" ]; then
+              kubectl patch "$CRD_NAME" "$name" -n "$ns" --type=merge -p '{"metadata":{"finalizers":[]}}' 2>/dev/null
+            else
+              kubectl patch "$CRD_NAME" "$name" --type=merge -p '{"metadata":{"finalizers":[]}}' 2>/dev/null
+            fi
+          fi
+        done <<< "$RESOURCES"
+      fi
+
       kubectl delete crd "$CRD_NAME"
       if [ $? -eq 0 ]; then
         echo "[CRD] Successfully deleted $CRD_NAME"
@@ -166,13 +183,13 @@ delete_crds() {
       fi
     done
   done
-  
+
   return 0
 }
 
 cleanup_jobs() {
   local success=true
-  
+
   if ! check_namespace_exists "$SOURCE_NAMESPACE"; then
     echo "Source namespace $SOURCE_NAMESPACE does not exist, skipping cleanup"
     return 0
@@ -183,7 +200,7 @@ cleanup_jobs() {
   if [ -n "$jobs" ]; then
     for job in $jobs; do
       kubectl delete job -n "$SOURCE_NAMESPACE" "$job"
-      
+
       if [ $? -ne 0 ]; then
         echo "[Job] Failed to delete job: $job"
         success=false
@@ -205,27 +222,27 @@ cleanup_jobs() {
 # start
 if check_namespace_exists "$ARGOCD_NAMESPACE"; then
   echo "ArgoCD namespace found. Checking if applications are stuck in deleting state..."
-  
+
   app_names=($(kubectl get applications -n $ARGOCD_NAMESPACE -o jsonpath='{.items[*].metadata.name}'))
-  
+
   if [ ${#app_names[@]} -eq 0 ]; then
     echo "No ArgoCD applications found."
   else
     for app_name in "${app_names[@]}"; do
       if has_post_delete_finalizers "$app_name"; then
-        
+
         finalizers=$(kubectl get application "$app_name" -n $ARGOCD_NAMESPACE -o jsonpath='{.metadata.finalizers}')
-        
+
         deletion_timestamp=$(kubectl get application "$app_name" -n $ARGOCD_NAMESPACE -o jsonpath='{.metadata.deletionTimestamp}' 2>/dev/null)
-        
+
         if [ -n "$deletion_timestamp" ]; then
           echo -e "\nThe application is stuck in deletion state (has deletionTimestamp)."
           echo "Do you want to remove post-delete finalizers for application '$app_name' to allow successful deletion? (y/n)"
           read proceed
-          
+
           if [[ "$proceed" =~ ^[Yy]$ ]]; then
             kubectl patch application "$app_name" -n $ARGOCD_NAMESPACE -p '{"metadata":{"finalizers":null}}' --type=merge
-            
+
             if [ $? -eq 0 ]; then
               echo "Successfully removed finalizers from $app_name"
             else
