@@ -1058,6 +1058,14 @@ Usage:
 - --{{$arg}}
 - {{$pathprefix}}/run/k3s/containerd/containerd.sock
 {{- end }}{{/* if */}}
+{{- if and $context.containerd $context.containerd.enabled }}
+- --{{$arg}}
+- {{$pathprefix}}/run/containerd/containerd.sock
+{{- end }}{{/* if */}}
+{{- if and $context.crio $context.crio.enabled }}
+- --{{$arg}}
+- {{$pathprefix}}/run/crio/crio.sock
+{{- end }}{{/* if */}}
 {{- end -}}
 
 {{/*
@@ -1085,6 +1093,14 @@ Usage:
 {{- if and .k3s .k3s.enabled }}
 - -o
 - container_engines.cri.sockets[]=/run/k3s/containerd/containerd.sock
+{{- end }}{{/* if */}}
+{{- if and .containerd .containerd.enabled }}
+- -o
+- container_engines.containerd.sockets[]=/run/containerd/containerd.sock 
+{{- end }}{{/* if */}}
+{{- if and .crio .crio.enabled }}
+- -o
+- container_engines.crio.sockets[]=/run/crio/crio.sock
 {{- end }}{{/* if */}}
 {{- end -}}
 
@@ -1116,6 +1132,14 @@ Usage:
 - mountPath: {{$pathprefix}}/run/k3s/containerd/containerd.sock
   name: k3s-socket
 {{- end}}{{/* if */}}
+{{- if and $context.containerd $context.containerd.enabled }}
+- mountPath: {{$pathprefix}}/run/containerd/containerd.sock 
+  name: containerd-socket
+{{- end}}{{/* if */}}
+{{- if and $context.crio $context.crio.enabled }}
+- mountPath: {{$pathprefix}}/run/crio/crio.sock
+  name: crio-socket
+{{- end}}{{/* if */}}
 {{- end -}}
 
 {{/*
@@ -1131,15 +1155,10 @@ Usage:
   hostPath:
     path: {{ $context.docker.socket }}
 {{- end}}{{/* if */}}
-{{- if $context.cri.enabled }}
+{{- if and $context.cri.enabled $context.cri.socket}}
 - name: cri-socket
   hostPath:
-    # default is /run/crio/crio.sock on OpenShift.
-    {{- $defaultcripath := "/run/containerd/containerd.sock" }}
-    {{- if $.Capabilities.APIVersions.Has "security.openshift.io/v1" }}
-    {{- $defaultcripath = "/run/crio/crio.sock" }}
-    {{- end }}{{/* if */}}
-    path: {{ $context.cri.socket | default $defaultcripath }}
+    path: {{ $context.cri.socket }}
 {{- end }}{{/* if */}}
 {{- if (and $context.dockershim $context.dockershim.enabled) }}
 - name: dockershim-socket
@@ -1159,6 +1178,18 @@ Usage:
   hostPath:
     {{- $defaultk3spath := "/run/k3s/containerd/containerd.sock" }}
     path: {{ $context.k3s.socket | default $defaultk3spath }}
+{{- end }}{{/* if */}}
+{{- if (and $context.containerd $context.containerd.enabled) }}
+- name: containerd-socket
+  hostPath:
+    {{- $defaultcontainerdspath := "/run/containerd/containerd.sock " }}
+    path: {{ $context.containerd.socket | default $defaultcontainerdspath }}
+{{- end }}{{/* if */}}
+{{- if (and $context.crio $context.crio.enabled) }}
+- name: crio-socket
+  hostPath:
+    {{- $defaultcriospath := "/run/crio/crio.sock" }}
+    path: {{ $context.crio.socket | default $defaultcriospath}}
 {{- end }}{{/* if */}}
 {{- end -}}
 

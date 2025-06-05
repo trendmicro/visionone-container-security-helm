@@ -952,7 +952,7 @@ scout:
       socket: /var/run/docker.sock
 
     cri:
-      ## Determines if the cri (containerd or crio) socket is mounted in the falco container.
+      ## Determines if the custom cri socket is mounted in the falco container.
       ## Required for cri based runtimes
       enabled: true
 
@@ -981,6 +981,20 @@ scout:
       enabled: true
 
       ## socket, determines which socket to mount for enabling k3s based runtimes.
+      socket:
+
+    containerd:
+      ## Determines if the containerd socket is mounted in the falco container.
+      enabled: true
+
+      ## socket, determines which socket to mount for enabling containerd based runtimes.
+      socket:
+
+    crio:
+      ## Determines if the crio socket is mounted in the falco container.
+      enabled: true
+
+      ## socket, determines which socket to mount for enabling crio based runtimes.
       socket:
 
     ## modernBpf, determine if falco uses ebpf CO-RE if kernel supports.
