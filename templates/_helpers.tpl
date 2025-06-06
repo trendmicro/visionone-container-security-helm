@@ -1096,7 +1096,7 @@ Usage:
 {{- end }}{{/* if */}}
 {{- if and .containerd .containerd.enabled }}
 - -o
-- container_engines.containerd.sockets[]=/run/containerd/containerd.sock 
+- container_engines.containerd.sockets[]=/run/containerd/containerd.sock
 {{- end }}{{/* if */}}
 {{- if and .crio .crio.enabled }}
 - -o
@@ -1116,7 +1116,7 @@ Usage:
 - mountPath: {{$pathprefix}}/var/run/docker.sock
   name: docker-socket
 {{- end}}{{/* if */}}
-{{- if and $context.cri $context.cri.enabled }}
+{{- if and $context.cri.enabled $context.cri.socket}}
 - mountPath: {{$pathprefix}}/run/cri/cri.sock
   name: cri-socket
 {{- end}}{{/* if */}}
@@ -1133,7 +1133,7 @@ Usage:
   name: k3s-socket
 {{- end}}{{/* if */}}
 {{- if and $context.containerd $context.containerd.enabled }}
-- mountPath: {{$pathprefix}}/run/containerd/containerd.sock 
+- mountPath: {{$pathprefix}}/run/containerd/containerd.sock
   name: containerd-socket
 {{- end}}{{/* if */}}
 {{- if and $context.crio $context.crio.enabled }}
@@ -1216,7 +1216,7 @@ Automatically adds any namespace with prefix to excluded namespace list for open
 {{- join "," $excludedNamespaces -}}
 {{- end -}}
 
-{{/* 
+{{/*
    Determines whether Scout should be deployed based on enabled Vision One features.
    This helper centralizes the deployment condition to avoid duplication in multiple templates.
    It returns "true" (as a string) if any of the following features are enabled:
