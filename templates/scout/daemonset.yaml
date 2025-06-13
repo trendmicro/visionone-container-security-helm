@@ -584,6 +584,8 @@ spec:
                   name: {{ template "container.security.name" . }}-runtime-policy-config
               - configMap: 
                   name: {{ template "container.security.name" . }}-runtime-rules-config
+              - configMap:
+                  name: {{ template "container.security.name" . }}-policy-config
         - name: config-volume
           configMap:
             name: {{ template "container.security.name" . }}-scout-config
