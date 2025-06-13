@@ -211,7 +211,7 @@ By default, Container Security Continuous Compliance will create a Kubernetes ne
 
 ### Install a specific version of the Container Security helm chart
 
-If you want to install a specific version you can use the archive link for the tagged release. For example, to install Trend Micro Vision One Container Security helm chart version 3.0.0, run the following command:
+If you want to install a specific version you can use the archive link for the tagged release. For example, to install Trend Micro Vision One Container Security helm chart version 3.0.1, run the following command:
 
 ```sh
   helm install \
@@ -219,7 +219,7 @@ If you want to install a specific version you can use the archive link for the t
     --namespace ${namespace} \
     --create-namespace \
     trendmicro \
-    https://github.com/trendmicro/visionone-container-security-helm/archive/3.0.0.tar.gz
+    https://github.com/trendmicro/visionone-container-security-helm/archive/3.0.1.tar.gz
 ```
 
 ### Enabling or disabling a specific component
