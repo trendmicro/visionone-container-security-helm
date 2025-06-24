@@ -94,7 +94,6 @@ spec:
         {{- end}}
         {{- if .Values.visionOne.malwareScanning.enabled }}
         - --enable-malware-scanning
-        - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
         - --malware-scanner-endpoint={{ printf "%s:%d" (include "malwareScanner.svc.url" .) 50051 }}
           {{- $excludedPaths := (default (list) .Values.visionOne.malwareScanning.excludedPaths) }}
           {{- $combinedListPath := .Values.malwareScanner.defaultExcludedPaths }}
@@ -161,6 +160,8 @@ spec:
                   name: {{ template "container.security.name" . }}-scan-manager-config
               - configMap:
                   name: {{ template "container.security.name" . }}-runtime-policy-config
+              - configMap: 
+                  name: {{ template "container.security.name" . }}-policy-config
         - name: scanmanager-workdir
           emptyDir:
             sizeLimit: 50Mi
