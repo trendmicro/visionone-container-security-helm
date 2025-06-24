@@ -43,9 +43,7 @@ users:
 - system:serviceaccount:{{ .Release.Namespace }}:{{ include "oversight.serviceAccountName" . }}
 {{- end }}
 - system:serviceaccount:{{ .Release.Namespace }}:{{ include "usage.serviceAccountName" . }}
-{{- if or (or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled)) }}
 - system:serviceaccount:{{ .Release.Namespace }}:{{ include "workloadOperator.serviceAccountName" . }}
-{{- end }}
 {{- if (or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled)) }}
 - system:serviceaccount:{{ .Release.Namespace }}:{{ include "scanManager.serviceAccountName" . }}
 {{- end }}
