@@ -41,5 +41,6 @@ volumes:
 - emptyDir
 - secret
 - configMap
+- projected
 {{- end }}
 {{- end }}

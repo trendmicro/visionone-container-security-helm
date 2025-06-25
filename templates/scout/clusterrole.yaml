@@ -41,5 +41,13 @@ rules:
       - /healthz/*
     verbs:
       - get
+  - apiGroups:
+      - security.openshift.io
+    verbs:
+      - use
+    resources:
+      - securitycontextconstraints
+    resourceNames:
+      - {{ template "container.security.name" . }}-scout
 {{- end }}
 {{- end }}
