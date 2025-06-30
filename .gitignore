@@ -3,5 +3,4 @@
 *.tmp
 .idea/
 .DS_Store
-overrides.yaml
-overrides-spc.yaml
+overrides*.yaml

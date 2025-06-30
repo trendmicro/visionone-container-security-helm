@@ -1119,9 +1119,6 @@ images:
     ## If no registry is provided, images will be pulled from your default
     ## registry (which may be Amazon ECR Public Gallery).
     ##
-    ## The images can also be accessed in Docker Hub by leaving the registry field blank.
-    # registry:
-    ##
     ## Default value: public.ecr.aws
     registry: public.ecr.aws
 
