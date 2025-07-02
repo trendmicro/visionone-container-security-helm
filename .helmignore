@@ -19,3 +19,7 @@
 .project
 .idea/
 *.tmproj
+# EULA
+LICENSE.pdf
+TERMS.txt
+THIRDPARTY.txt
