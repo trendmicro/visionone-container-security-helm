@@ -379,6 +379,23 @@ visionOne:
     logLevel: debug
 ```
 
+### Configuring access to private registries for image signature verification deployment rules
+
+To verify signatures for images stored in private registries, the admission controller requires access to the registry through imagePullSecrets to retrieve and verify the signature bundles.
+We provide two options for specifying the source of the required imagePullSecrets:
+1) **readPullSecretsFrom:** `trendMicroNamespace` (default) - Create the imagePullSecrets manually in the trendmicro namespace (trendmicro-system). The admission controller directly reads these secrets from its own namespace and does not need any extra privileges into other namespaces for signature verification using this option. Note that signature verification will fail if the necessary imagePullSecrets are not created.
+Here is a kubectl command to create an example imagePullSecret named regcred in the trendmicro-system namespace:
+```bash
+kubectl create secret docker-registry regcred --docker-server=<your-registry-server> --docker-username=<your-name> --docker-password=<your-password> --namespace=trendmicro-system
+```
+2) **readPullSecretsFrom:** `customerNamespace` - Grants access to the admission controller to read the imagePullSecrets directly from the image deployment namespace. During deployment, the admission controller will look for the imagePullSecret reference in the pod specification (reference directly defined in the pod specification or automatically injected by a service account) and get the secret into the trendmicro namespace for signature verification. The admission controller only accesses secrets referenced by the image currently being deployed and discards them after rule evaluation.
+
+To configure the options, you can set the `readPullSecretsFrom` value in your `overrides.yaml` to either `trendMicroNamespace` or `customerNamespace` as follows:
+```yaml
+admissionController:
+  readPullSecretsFrom: trendMicroNamespace # or customerNamespace
+```
+
 ### Configuring Falco event outputs
 
 You can enable Falco event outputs to stdout or syslog by setting values under `scout.falco` in your `overrides.yaml` file:
