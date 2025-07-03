@@ -217,6 +217,22 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 
 {{/*
+Runtime ruleloader Common Labels
+*/}}
+{{- define "runtimeRuleloader.labels" -}}
+helm.sh/chart: {{ include "container.security.chart" . }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/part-of: {{ include "container.security.name" . }}
+{{ include "runtimeRuleloader.selectorLabels" . }}
+{{- range $k, $v := (default (dict) .Values.extraLabels) }}
+{{ $k }}: {{ quote $v }}
+{{- end }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+{{- end }}
+
+{{/*
 Admission Control Selector labels
 */}}
 {{- define "admissionController.selectorLabels" -}}
@@ -323,6 +339,15 @@ Malware Scanner Selector labels
 app.kubernetes.io/name: {{ include "malwareScanner.fullname" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/component: trendmicro-malware-scanner
+{{- end }}
+
+{{/*
+Rule Loader Selector labels
+*/}}
+{{- define "runtimeRuleloader.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "runtimeRuleloader.fullname" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: trendmicro-runtime-ruleloader
 {{- end }}
 
 {{/*
@@ -619,6 +644,26 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{/*
+Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
+*/}}
+{{- define "runtimeRuleloader.fullname" -}}
+{{- if .Values.runtimeRuleloaderFullnameOverride -}}
+{{- .Values.runtimeRuleloaderFullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.runtimeRuleloaderFullnameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- printf "%s-%s" "runtime-ruleloader" .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else if contains .Release.Name $name -}}
+{{- printf "%s-%s" "runtime-ruleloader" $name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s-%s" "runtime-ruleloader" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Service name of k8s-metacollector
 */}}
 {{- define "k8sMetaCollector.svc.url" -}}
@@ -902,6 +947,17 @@ Policy Operator service account
 {{- default (include "policyOperator.fullname" .) .Values.serviceAccount.policyOperator.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.policyOperator.name }}
+{{- end }}
+{{- end }}
+
+{{/*
+Runtime ruleloader service account
+*/}}
+{{- define "runtimeRuleloader.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create }}
+{{- default (include "runtimeRuleloader.fullname" .) .Values.serviceAccount.runtimeRuleloader.name }}
+{{- else }}
+{{- default "default" .Values.serviceAccount.runtimeRuleloader.name }}
 {{- end }}
 {{- end }}
 

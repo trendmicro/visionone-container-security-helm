@@ -126,12 +126,6 @@ spec:
               proc.ppid=%proc.ppid
               user.loginuid=%user.loginuid
               user.name=%user.name
-            - -o
-            - stdout_output.enabled={{ default "false" .Values.scout.falco.stdout_enabled }}
-            - -o
-            - syslog_output.enabled={{ default "false" .Values.scout.falco.syslog_enabled }}
-            - -o
-            - log_level={{ include "logLevel" (list .Values.scout.falco.logLevel .) }}
         {{- if .Values.scout.falco.extraArgs }}
 {{ toYaml .Values.scout.falco.extraArgs | indent 12 }}
         {{- end }}{{/* if */}}
@@ -147,6 +141,13 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            {{- if .Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName }}
+            - name: SPLUNK_HEC_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName }}
+                  key: hec_secret
+            {{- end }}{{/* .Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName */}}
           volumeMounts:
 {{- include "containerRuntime.sock.volumeMounts" ( list "/host" .Values.scout.falco ) | trim | nindent 12 }}
             - mountPath: /host/dev
@@ -180,139 +181,6 @@ spec:
             - mountPath: /root/.falco
               name: components-dir
               readOnly: true
-{{- if .Values.visionOne.runtimeSecurity.customRules.enabled }}
-        - name: falco-customrules
-          {{- with .Values.images.falco }}
-          {{- $project := (default $imageDefaults.project .project) }}
-          {{- $repository := (ternary (required ".repository is required!" .repository)
-            (printf "%s/%s" $project (required ".repository is required!" .repository))
-            (not $project))
-          }}
-          {{- $tag := (default $imageDefaults.tag .tag) }}
-          image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
-          imagePullPolicy: {{ default (default "Always" $imageDefaults.pullPolicy) .pullPolicy }}
-          {{- end }}{{/* with */}}
-          resources:
-{{ toYaml (default .Values.resources.defaults .Values.resources.falco) | indent 12 }}
-{{- if $securityContextEnabled }}
-          securityContext:
-{{ include "falco.securityContext" . | indent 12 }}
-{{- if $hasApparmorProfile }}
-            appArmorProfile:
-              type: Unconfined
-{{- end }}{{/* if */}}
-{{- end }}{{/* if $securityContextEnabled */}}
-          args:
-            - /usr/wrappers/falco-customrules-wrapper.sh
-          env:
-            - name: SKIP_DRIVER_LOADER
-              value: "true"
-            - name: TZ
-              value:
-          {{- if .Values.scout.falco.env }}
-{{ .Values.scout.falco.env | toYaml | indent 12 }}
-          {{- end }}
-          {{- range $idx, $val := .Values.scout.falco.env }}
-            {{- if hasKey $val "valueFrom" }}
-              {{- if hasKey $val.valueFrom "secretKeyRef" }}
-                {{- if not ( lookup "v1" "Secret" $.Release.Namespace $val.valueFrom.secretKeyRef.name ) -}}
-                  {{- fail ( printf "secret %s is missing from namespace %s, with key '%s', required by .Values.scout.falco.env '%s'"
-                          $val.valueFrom.secretKeyRef.name
-                          $.Release.Namespace
-                          $val.valueFrom.secretKeyRef.key
-                          $val.name
-                  ) -}}
-                {{- end}}
-              {{- end }}
-            {{- end }}
-          {{- end }}{{/* range */}}
-            - name: NODE_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: spec.nodeName
-            - name: HEC_CLIENT_PARAMS
-              value: "{{ include "hec_client_params_as_env_var" .Values.visionOne.runtimeSecurity.customRules.output.splunk }}"
-          {{- if .Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName }}
-          {{- if not ( lookup "v1" "Secret" .Release.Namespace .Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName ) -}}{{- fail (
-              printf "secret %s is expected in namespace %s, with key 'hec_secret' containing Splunk HEC token"
-                .Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName
-                .Release.Namespace
-              ) -}}{{- end}}
-            - name: SPLUNK_HEC_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName }}
-                  key: hec_secret
-          {{- end }}{{/* .Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName */}}
-          {{- if .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled }}
-            {{- with .Values.visionOne.runtimeSecurity.customRules.ociRepository.basicAuthTokenSecretName }}
-              {{- if not ( lookup "v1" "Secret" $.Release.Namespace . ) -}}{{- fail (
-                  printf "secret %s is expected in namespace %s, with key 'falcoctl' containing basic auth as for FALCOCTL_REGISTRY_AUTH_BASIC"
-                    .
-                    $.Release.Namespace
-                  ) -}}{{- end}}
-            - name: FALCOCTL_REGISTRY_AUTH_BASIC
-              valueFrom:
-                secretKeyRef:
-                  name: {{ . }}
-                  key: falcoctl
-            {{- end }}
-          {{- end }}
-          volumeMounts:
-{{- include "containerRuntime.sock.volumeMounts" ( list "/host" .Values.scout.falco ) | trim | nindent 12 }}
-            - mountPath: /host/dev
-              name: dev-fs
-              readOnly: true
-            - mountPath: /host/proc
-              name: proc-fs
-              readOnly: true
-            - mountPath: /host/boot
-              name: boot-fs
-              readOnly: true
-            - mountPath: /host/lib/modules
-              name: lib-modules
-            - mountPath: /host/usr
-              name: usr-fs
-              readOnly: true
-            - mountPath: /host/etc
-              name: etc-fs
-              readOnly: true
-            - mountPath: /sys/kernel/debug
-              name: debugfs
-              readOnly: true
-            - mountPath: /etc/falco
-              name: config-volume
-              readOnly: true
-            - mountPath: /usr/wrappers
-              name: customrules-wrappers
-              readOnly: true
-{{- if .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled }}
-            - mountPath: {{ .Values.scout.falco.ociRepository.artifacts_dir }}
-              name: oci-repository-artifacts-dir
-              readOnly: false
-            - mountPath: /etc/falcoctl-config-volume
-              name: falcoctl-config-volume
-              readOnly: true
-            - mountPath: /root/.docker
-              name: falcoctl-credentials
-              readOnly: false
-            - mountPath: {{ .Values.scout.falco.falcoctl.pipes_dir }}
-              name: falcoctl-pipes
-              readOnly: false
-            - mountPath: /root/.sigstore
-              name: falcoctl-sigstore
-              readOnly: false
-            - mountPath: /tmp
-              name: falcoctl-tmpfs
-              readOnly: false
-{{- end }}
-            - mountPath: /etc/falco/rules.d
-              name: customrules-volume
-              readOnly: true
-            - mountPath: /root/.falco
-              name: components-dir
-              readOnly: true
-{{- end }}{{/* if .Values.visionOne.runtimeSecurity.customRules.enabled */}}
         - name: scout
           {{- $imageDefaults := .Values.images.defaults }}
           {{- with .Values.images.scout }}
@@ -381,6 +249,12 @@ spec:
             - --secret-job-status-file-path={{ printf "%s%s%s" "../.." $jobStatusMntPath "/secret_scan_job_status.json" }}
             - --secret-scan-worker-count={{ .Values.secretScanner.scanWorkerCount }}
             {{- end}}{{/* if .Values.visionOne.secretScanning.enabled */}}
+            {{- if .Values.visionOne.runtimeSecurity.customRules.enabled }}
+            - --custom-rule-tags
+            - {{ .Values.visionOne.runtimeSecurity.customRules.rulesetTag }}
+            - --custom-rules-dir
+            - /var/scout/customrules.d
+            {{- end }}{{/* if .Values.visionOne.runtimeSecurity.customRules.enabled */}}
         {{- if .Values.scout.scout.extraArgs }}
 {{ toYaml .Values.scout.scout.extraArgs | indent 12 }}
         {{- end }}{{/* if */}}
@@ -446,6 +320,10 @@ spec:
               readOnly: true
             - mountPath: /etc/config
               name: policy-config
+{{- end }}
+{{- if .Values.visionOne.runtimeSecurity.customRules.enabled }}
+            - mountPath: /var/scout/customrules.d
+              name: customrules-volume
 {{- end }}
           resources:
 {{ toYaml (default .Values.resources.defaults .Values.resources.scout) | indent 12 }}
@@ -592,21 +470,8 @@ spec:
             items:
               - key: falco.yaml
                 path: falco.yaml
-{{- if .Values.visionOne.runtimeSecurity.customRules.enabled }}
-              - key: falco-customrules.yaml
-                path: falco-customrules.yaml
-{{- end }}
               - key: default_rules.yaml
                 path: default_rules.yaml
-{{- if .Values.visionOne.runtimeSecurity.customRules.enabled }}
-        - name: customrules-wrappers
-          configMap:
-            name: {{ template "container.security.name" . }}-customrules-falco-config
-            items:
-              - key: falco-customrules-wrapper.sh
-                path: falco-customrules-wrapper.sh
-                mode: 0555
-{{- end }}
         - name: grpc-socket-dir
           emptyDir:
             sizeLimit: 10Mi
@@ -616,30 +481,7 @@ spec:
 {{- if .Values.visionOne.runtimeSecurity.customRules.enabled }}
         - name: customrules-volume
           configMap:
-            name: {{ template "container.security.name" . }}-customrules
-  {{- if .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled }}
-        - name: oci-repository-artifacts-dir
-          emptyDir:
-            sizeLimit: 10Mi
-        - name: falcoctl-config-volume
-          configMap:
-            name: {{ template "container.security.name" . }}-customrules-falco-config
-            items:
-              - key: falcoctl.yaml
-                path: falcoctl.yaml
-        - name: falcoctl-tmpfs
-          emptyDir:
-            sizeLimit: 50Mi
-        - name: falcoctl-credentials
-          emptyDir:
-            sizeLimit: 1Mi
-        - name: falcoctl-sigstore
-          emptyDir:
-            sizeLimit: 50Mi
-        - name: falcoctl-pipes
-          emptyDir:
-            sizeLimit: 50Mi
-  {{- end }}
+            name: {{ template "container.security.name" . }}-runtime-customrules
 {{- end }}
         - name: scout-workdir
           emptyDir:

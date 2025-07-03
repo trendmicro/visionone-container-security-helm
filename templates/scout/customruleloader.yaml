@@ -1,0 +1,204 @@
+{{- if and .Values.visionOne.runtimeSecurity.enabled .Values.visionOne.runtimeSecurity.customRules.enabled }}
+{{- if .Values.serviceAccount.create }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "runtimeRuleloader.serviceAccountName" . }}
+  labels:
+    {{- include "runtimeRuleloader.labels" . | nindent 4 }}
+  {{- with .Values.serviceAccount.runtimeRuleloader.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: runtime-ruleloader-role
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "runtimeRuleloader.labels" . | nindent 4 }}
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - update
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: runtime-ruleloader-rolebinding
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "runtimeRuleloader.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: runtime-ruleloader-role
+subjects:
+- kind: ServiceAccount
+  name: {{ include "runtimeRuleloader.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trendmicro-runtime-ruleloader
+  labels:
+    {{- include "runtimeRuleloader.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "runtimeRuleloader.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "runtimeRuleloader.labels" . | nindent 8 }}
+      annotations:
+        checksum/falcoconfig: {{ include (print $.Template.BasePath "/scout/configmap.yaml") . | sha256sum }}
+        checksum/config: {{ include (print $.Template.BasePath "/scout/customruleloader-config.yaml") . | sha256sum }}
+{{- with (default .Values.podAnnotations.defaults .Values.podAnnotations.runtimeRuleloader) }}
+{{- toYaml . | nindent 8 }}
+{{- end }}
+    spec:
+      serviceAccountName: {{ include "runtimeRuleloader.serviceAccountName" . }}
+      {{- $imageDefaults := .Values.images.defaults }}
+      {{- with .Values.images.falco }}
+      {{- $secret := (default (default "" $imageDefaults.imagePullSecret) .imagePullSecret) }}
+      {{- if not (eq "" $secret) }}
+      imagePullSecrets:
+        - name: {{ $secret | quote }}
+      {{- end }}{{/* if */}}
+      {{- end }}{{/* with */}}
+{{- $securityContextEnabled := .Values.securityContext.enabled }}
+{{- $securityContext := default .Values.securityContext.default .Values.securityContext.runtimeRuleloader }}
+{{- $podSecurityContext := default .Values.securityContext.default.pod $securityContext.pod }}
+{{- $containerSecurityContext := default .Values.securityContext.default.container $securityContext.ruleloader }}
+{{- if $securityContextEnabled }}
+      securityContext:
+{{ toYaml $podSecurityContext | indent 8 }}
+{{- end }}
+      containers:
+      - name: ruleloader
+{{- if $securityContextEnabled }}
+        securityContext:
+{{ toYaml $containerSecurityContext | indent 12 }}
+{{- end }}
+        {{- $imageDefaults := .Values.images.defaults }}
+        {{- with .Values.images.falco }}
+        {{- $project := (default (default "trendmicrocloudone" $imageDefaults.project) .project) }}
+        {{- $repository := printf "%s/%s" $project (required ".repository is required!" .repository) }}
+        {{- $tag := (default $imageDefaults.tag .tag) }}
+        image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
+        imagePullPolicy: {{ default (default "Always" $imageDefaults.pullPolicy) .pullPolicy }}
+        {{- end }}{{/* with */}}
+        command:
+        - falcoctl
+        - artifact
+        - follow
+        - --config
+        - /etc/falcoctl/falcoctl.yaml
+        - --log-level
+        - {{ include "logLevel" (list .Values.runtimeRuleloader.logLevel .) }}
+        - --configmap-name
+        -  {{ template "container.security.name" . }}-runtime-customrules
+        - --configmap-namespace
+        - {{ .Release.Namespace }}
+        resources:
+{{ toYaml (default .Values.resources.defaults .Values.resources.runtimeRuleloader) | indent 12 }}
+        env:
+        - name: FALCOCMD
+          value: falco --dry-run -o log_level=debug -o grpc.enabled=false -r /rules/install
+        {{- if .Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName }}
+        - name: SPLUNK_HEC_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName }}
+              key: hec_secret
+        {{- end }}{{/* .Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName */}}
+        - name: SIEM_CLUSTER_NAME
+          {{- if .Values.visionOne.runtimeSecurity.customRules.params.clusterName }}
+          value: {{ .Values.visionOne.runtimeSecurity.customRules.params.clusterName | quote }}
+          {{- else if .Values.visionOne.clusterName }}
+          value: {{ .Values.visionOne.clusterName | quote }}
+          {{- else }}
+          value: ""
+          {{- end }} 
+        {{- if .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled }}
+        {{- with .Values.visionOne.runtimeSecurity.customRules.ociRepository.basicAuthTokenSecretName }}
+        - name: FALCOCTL_REGISTRY_AUTH_BASIC
+          valueFrom:
+            secretKeyRef:
+              name: {{ . }}
+              key: falcoctl
+        {{- end }}
+        {{- end }} {{/* .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled */}}
+        volumeMounts:
+        - name: rulesfiles
+          mountPath: /rules/install
+        - name: tmpdir
+          mountPath: /rules/tmp
+        - name: rootconfig
+          mountPath: /root/.config/
+        - name: falcoctlconfig
+          mountPath: /etc/falcoctl/
+        - name: dockerconfig
+          mountPath: /root/.docker/
+{{- if .Values.visionOne.runtimeSecurity.customRules.ociRepository.registryCredsSecretName }}
+        - name: registrysecret
+          mountPath: /root/.docker/config.json
+          subPath: .dockerconfigjson
+{{- end }}
+        - name: falcoconfig
+          mountPath: /etc/falco
+          readOnly: true
+      volumes:
+{{- if .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled }}
+      - name: rulesfiles
+        emptyDir:
+          sizeLimit: 50Mi
+{{- else }}
+      - name: rulesfiles
+        configMap:
+          name: {{ template "container.security.name" . }}-customrules
+{{- end }}
+      - name: tmpdir
+        emptyDir:
+          sizeLimit: 50Mi
+      - name: rootconfig
+        emptyDir:
+          sizeLimit: 10Mi
+      - name: dockerconfig
+        emptyDir:
+          sizeLimit: 10Mi
+      - name: falcoctlconfig
+        configMap:
+          name: {{ template "container.security.name" . }}-runtime-ruleloader
+{{- if .Values.visionOne.runtimeSecurity.customRules.ociRepository.registryCredsSecretName }}
+      - name: registrysecret
+        secret:
+          secretName: {{ .Values.visionOne.runtimeSecurity.customRules.ociRepository.registryCredsSecretName }}
+{{- end }}
+      - name: falcoconfig
+        configMap:
+          name: {{ template "container.security.name" . }}-scout-config
+          items:
+            - key: falco.yaml
+              path: falco.yaml
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "container.security.name" . }}-runtime-customrules
+  labels:
+    {{- include "runtimeRuleloader.labels" . | nindent 4 }}
+
+{{- end }}

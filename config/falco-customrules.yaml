@@ -380,3 +380,6 @@ container_engines:
     enabled: true
   bpm:
     enabled: true
+
+ruleset_tags:
+  - customrule

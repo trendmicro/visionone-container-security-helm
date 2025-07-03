@@ -186,6 +186,8 @@ visionOne:
   runtimeSecurity:
     enabled: false
     customRules:
+      rulesetTag: customrule
+      configMapName: customrules
       enabled: false
       output:
         json: true
@@ -197,9 +199,11 @@ visionOne:
       ociRepository:
         # These fields are subject to change
         enabled: false
+        every: 6h0m0s
         ruleFiles: []
         artifactUrls: []
         basicAuthTokenSecretName: ''
+        registryCredsSecretName: ''
       params:
         clusterName: ''
 
@@ -528,6 +532,14 @@ serviceAccount:
     ## Annotations to add to the service account
     annotations: {}
 
+  runtimeRuleloader:
+    ## The name of the service account to use.
+    ## If not set and create is true, a name is generated using the fullname of runtimeRuleloader template
+    name: ''
+
+    ## Annotations to add to the service account
+    annotations: {}
+
 rbac:
   # Create and use rbac resources
   create: true
@@ -623,6 +635,14 @@ securityContext:
     pod:
       runAsNonRoot: false
     scanner:
+      privileged: false
+      runAsNonRoot: false
+      runAsUser: 0
+
+  runtimeRuleloader:
+    pod:
+      runAsNonRoot: false
+    ruleloader:
       privileged: false
       runAsNonRoot: false
       runAsUser: 0
@@ -829,6 +849,14 @@ resources:
       cpu: '1'
       memory: 2Gi
 
+  runtimeRuleloader:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
 nodeSelector:
   ## nodeSelector if set, ensures pods are only assigned to a particular set of nodes.
   ## Defaults apply to all pods created by this chart unless overridden by a non default configuration.
@@ -1023,21 +1051,10 @@ scout:
     ## Default value: info
     logLevel: info
 
-    ociRepository:
-      # These fields are subject to change
-      # this directory is shared between falco and falcoctl ( when enabled )
-      # falcoctl installs OCI artifacts into
-      artifacts_dir: /etc/falco/rules.d.oci
-      # falco-customrules uses this log level when ociRepository also enabled
-      logLevel: debug
-
-    falcoctl:
-      # These fields are subject to change
-      # webserver for versions/healthz endpoints
-      # disabled by default, enabled together falcoctl
-      # always listens on 127.0.0.1:{web_server_port}
-      web_server_port: 8765
-      pipes_dir: /pipes
+    ## ruleset_tags, used for custom rules to identify what ruleset a rule belongs to
+    ##
+    ## Default Value: []
+    ruleset_tags: []
 
   scout:
     ## falcoInternalEvent, determines how to deal with falco internal event
@@ -1111,6 +1128,13 @@ scanner:
       ## socket, determines which socket to mount for enabling cri based runtimes.
       ## Default value: (determined by platform)
       socket:
+
+runtimeRuleloader:
+  ## logLevel sets the log verbosity level for runtimeRuleloader's logs
+  ## "error", "warning", "notice", "info", "debug".
+  ##
+  ## Default value: info
+  logLevel: info
 
 images:
   defaults:

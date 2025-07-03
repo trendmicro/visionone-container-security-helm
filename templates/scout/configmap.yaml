@@ -13,73 +13,132 @@ data:
       condition: evt.type = setuid and (evt.num=0)
       output: none
       priority: NOTICE
-{{ (.Files.Glob "config/falco.yaml").AsConfig | indent 2 }}
-{{- if .Values.scout.falco.config }}
-{{ toYaml .Values.scout.falco.config | indent 4 }}
+  falco.yaml: |-
+{{- /* default falco.yaml */}}
+{{- $falcoConfig := (.Files.Get "config/falco.yaml" | fromYaml) }}
+
+{{- /* 
+make cri sockets list
+    container_engines:
+      cri:
+        sockets:
+        - /run/containerd/containerd.sock
+        - /run/crio/crio.sock
+        - /run/k3s/containerd/containerd.sock
+*/ -}}
+{{- $containerengines := dict "cri" (dict "sockets" list) }}
+{{- with .Values.scout.falco -}}
+{{- $sockets := list 
+  (dict "path" "/run/cri/cri.sock" "enabled" (and .cri .cri.enabled))
+  (dict "path" "/run/dockershim.sock" "enabled" (and .dockershim .dockershim.enabled))
+  (dict "path" "/run/k0s/containerd.sock" "enabled" (and .k0s .k0s.enabled))
+  (dict "path" "/run/k3s/containerd/containerd.sock" "enabled" (and .k3s .k3s.enabled))
+  (dict "path" "/var/run/docker.sock" "enabled" (and .docker .docker.enabled))
+ -}}
+
+{{- range $sockets }}
+{{- if .enabled }}
+{{- $_ := set $containerengines.cri "sockets" (append $containerengines.cri.sockets .path) }}
 {{- end }}
-{{- include "falco.sanitier.ouput" . | indent 4 }}
-{{- if .Values.visionOne.runtimeSecurity.customRules.enabled }}
-{{ (.Files.Glob "config/falco-customrules.yaml").AsConfig | indent 2 }}
+{{- end }}
+{{- end }}
+
+{{- /* override config */ -}}
+{{- $overrideConfig := dict 
+  "stdout_output" (dict "enabled" (default false .Values.scout.falco.stdout_enabled))
+  "syslog_output" (dict "enabled" (default false .Values.scout.falco.syslog_enabled))
+  "log_level" (include "logLevel" (list .Values.scout.falco.logLevel .))
+  "container_engines" $containerengines
+}}
+
+{{- /* custom rules config */ -}}
+{{- with .Values.visionOne.runtimeSecurity.customRules }}
+{{- if .enabled }}
+{{- /* 
     rules_files:
-      - /etc/falco/default_rules.yaml
-      - /etc/falco/rules.d
-    {{- if .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled }}
-      {{- range .Values.visionOne.runtimeSecurity.customRules.ociRepository.ruleFiles }}
-      - {{ $.Values.scout.falco.ociRepository.artifacts_dir }}/{{- . -}}
-      {{- end }}
-    {{- end }}
-    json_output: {{.Values.visionOne.runtimeSecurity.customRules.output.json}}
-  {{ if .Values.visionOne.runtimeSecurity.customRules.output.splunk.url }}
-    http_output:
-      enabled: true
-      url: {{ .Values.visionOne.runtimeSecurity.customRules.output.splunk.url }}
-      {{ if .Values.visionOne.runtimeSecurity.customRules.output.splunk.headers }}
-      custom_headers:
-        {{- range .Values.visionOne.runtimeSecurity.customRules.output.splunk.headers}}
-        {{- if contains "Authorization:" . }}
-        {{- if $.Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName -}}
-        {{- fail "customRules.output.splunk.hecTokenSecretName automatically adds Splunk HEC auth header, no other Authorization headers allowed" -}}
-        {{- end}}{{- end}}
-        - "{{ . }}"
-        {{- end }}
-        {{- if $.Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName }}
-        - "Authorization: Splunk ${SPLUNK_HEC_TOKEN}"
-        {{- end }}
-      {{- end }}
-      ca_path: "/etc/ssl/certs"
-      ca_cert: "/etc/ssl/certs/ca-certificates.crt"
-  {{- end }}
-  {{- if .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled }}
-    # falcoctl queries version via http
-    webserver:
-      enabled: true
-      # When the `threadiness` value is set to 0, Falco will automatically determine
-      # the appropriate number of threads based on the number of online cores in the system.
-      threadiness: 0
-      listen_port: {{ .Values.scout.falco.falcoctl.web_server_port }}
-      # faloctl runs in the same container, localhost is fine
-      # connections from other hosts are not accepted
-      listen_address: 127.0.0.1
-      k8s_healthz_endpoint: /healthz
-      # [Incubating] `prometheus_metrics_enabled`
-      #
-      # Enable the metrics endpoint providing Prometheus values
-      # It will only have an effect if metrics.enabled is set to true as well.
-      prometheus_metrics_enabled: false
-      ssl_enabled: false
-      ssl_certificate: /etc/falco/falco.pem
-    # rulesfiles may be updated by falcoctl
-    watch_config_files: true
-    # logs are monitored, need debug level to determine falco state properly
-    log_level: {{ .Values.scout.falco.ociRepository.logLevel | quote }}
-  {{ else }}
-    # no changes to rulesfiles are expected
-    watch_config_files: false
-    # logs just informational
-    log_level: {{ .Values.scout.falco.logLevel | quote }}
-  {{ end }}
-{{- include "falco.sanitier.ouput" . | indent 4 }}
+    ...
+    - /etc/scout/rules.d/customrules.d
+    - /etc/scout/rules.d/custom_rules_override.yaml
+*/ -}}
+{{- $customruleFiles := list }}
+{{- if and .ociRepository.enabled .ociRepository.ruleFiles }}
+{{- range .ociRepository.ruleFiles }}
+{{- $customruleFiles = append $customruleFiles (printf "/etc/scout/rules.d/customrules.d/%s" .) }}
 {{- end }}
+{{- end }}
+
+{{- if not $customruleFiles }}
+{{- $customruleFiles = append $customruleFiles "/etc/scout/rules.d/customrules.d" }}
+{{- end }}
+{{- $customruleFiles = append $customruleFiles "/etc/scout/rules.d/custom_rules_override.yaml" }}
+
+{{- $_ := set $overrideConfig "rules_files" (concat $falcoConfig.rules_files $customruleFiles) }}
+
+{{- /*
+    ruleset_tags:
+    - customrule
+*/ -}}
+{{- $_ := set $overrideConfig "ruleset_tags" (list .rulesetTag) }}
+
+{{- /*
+   http_output:
+    enabled: true
+    url: http://some.url
+    user_agent: "falcosecurity/falco"
+    ruleset_tag: customrule
+    custom_headers:
+    - "Authorization: Splunk ${SPLUNK_HEC_TOKEN}"
+    ca_path: "/etc/ssl/certs"
+    ca_cert: "/etc/ssl/certs/ca-certificates.crt"
+*/ -}}
+{{- $customHeaders := list }}
+{{- $hasHecTokenSecretName := (and .output.splunk.hecTokenSecretName (ne .output.splunk.hecTokenSecretName "")) -}}
+{{- range .output.splunk.headers}}
+{{- if contains "Authorization:" . }}
+{{- if $hasHecTokenSecretName -}}
+{{- fail "customRules.output.splunk.hecTokenSecretName automatically adds Splunk HEC auth header, no other Authorization headers allowed" -}}
+{{- end}}
+{{- end}}
+{{- $customHeaders = append $customHeaders . }}
+{{- end }}
+{{- if $hasHecTokenSecretName }}
+{{- $customHeaders = append $customHeaders "Authorization: Splunk ${SPLUNK_HEC_TOKEN}" }}
+{{- end }}
+
+{{- $_ := set $overrideConfig
+  "http_output" (dict 
+    "enabled" (default false (ne .output.splunk.url ""))
+    "url" (default "" .output.splunk.url)
+    "ruleset_tag" (default "" .rulesetTag)
+    "custom_headers" $customHeaders
+    "ca_path" "/etc/ssl/certs"
+    "ca_cert" "/etc/ssl/certs/ca-certificates.crt") 
+}}
+{{- end }}{{/*if .enabled*/}}
+{{- end }}{{/*with customRules*/}}
+
+{{- /* 
+  Congfiguration for sensitive data redaction
+  sanitizer_output:
+    enabled: true
+    patterns:
+      proc.pcmdline: (?<=--process\s)\s?(\S+)|(?<=--root\s)\s?(\S+)
+      fd.sip: (?<=169\.254\.)(\S+) 
+*/ -}}
+{{- if .Values.scout.falco.sanitizer_output.enabled }}
+{{- if .Values.scout.falco.sanitizer_output.patterns }}
+{{- $_ := set $overrideConfig "sanitizer_output" (dict "enabled" true "patterns" .Values.scout.falco.sanitizer_output.patterns) }}
+{{- else }}
+{{- fail "Redaction pattern is required if output sanitizer is enabled." }}
+{{- end }}
+{{- end }}
+
+{{- /* extra config */ -}}
+{{- if .Values.scout.falco.config }}
+{{ $overrideConfig = mergeOverwrite $overrideConfig .Values.scout.falco.config }}
+{{- end -}}
+{{ toYaml (mergeOverwrite $falcoConfig $overrideConfig) | nindent 4 }}
+
 ---
 {{- if .Values.visionOne.runtimeSecurity.customRules.enabled }}
 apiVersion: v1
