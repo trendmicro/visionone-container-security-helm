@@ -229,6 +229,7 @@ spec:
             - --runtime-security={{ default "false" .Values.visionOne.runtimeSecurity.enabled }}
             - --spc-mode={{ default "false" .Values.spc.enabled }}
             - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
+            - --policyOperator-service-url={{ (include "policyOperator.svc.url" .) }}
             {{- if .Values.visionOne.malwareScanning.enabled }}
             - --malware-scanner-url
             - {{ include "malwareScanner.svc.url" . }}:{{ .Values.visionOne.malwareScanning.scanner.port }}
