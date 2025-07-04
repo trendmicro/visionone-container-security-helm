@@ -90,7 +90,6 @@ spec:
         {{- end }}
         {{- if or (eq true .Values.visionOne.malwareScanning.enabled) (eq true .Values.visionOne.secretScanning.enabled) }}
         - --exclude-namespaces={{ (include "namespaceExclusions" .) }}
-        - --mqtt-config-file-path=/app/scanmanager.yaml
         {{- end}}
         {{- if .Values.visionOne.malwareScanning.enabled }}
         - --enable-malware-scanning
