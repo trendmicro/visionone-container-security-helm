@@ -228,6 +228,7 @@ spec:
             - --malware-event-count={{ .Values.visionOne.malwareScanning.maximumEventCount}}
             - --runtime-security={{ default "false" .Values.visionOne.runtimeSecurity.enabled }}
             - --spc-mode={{ default "false" .Values.spc.enabled }}
+            - --fargate-mode={{ default "false" .Values.visionOne.fargateInjector.enabled }}
             - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
             - --policyOperator-service-url={{ (include "policyOperator.svc.url" .) }}
             {{- if .Values.visionOne.malwareScanning.enabled }}
