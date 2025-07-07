@@ -28,3 +28,81 @@ subjects:
   name: {{ include "admissionController.serviceAccountName" . }}
   namespace: {{ .Release.Namespace }}
 {{- end }}
+---
+{{- if (eq true .Values.visionOne.admissionController.enabled) }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: admission-controller-secret-reader-role
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "admissionController.labels" . | nindent 4 }}
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: admission-controller-namespace-rolebinding
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "admissionController.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: admission-controller-secret-reader-role
+subjects:
+- kind: ServiceAccount
+  name: {{ include "admissionController.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}
+---
+{{- if and (.Values.visionOne.experimental.enabled) (eq .Values.visionOne.admissionController.readPullSecretsFrom "customerNamespace") }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: admission-controller-secrets-other-ns-role
+  labels:
+    {{- include "admissionController.labels" . | nindent 4 }}
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - serviceaccounts
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - create
+  - update
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admission-controller-secrets-other-ns-rolebinding
+  labels:
+    {{- include "admissionController.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admission-controller-secrets-other-ns-role
+subjects:
+- kind: ServiceAccount
+  name: {{ include "admissionController.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}
+---

@@ -103,6 +103,8 @@ spec:
             - name: auth-token
               mountPath: /secrets
               readOnly: true
+            - name: sigstore
+              mountPath: /.sigstore
             - name: policy-config
               mountPath: /etc/config
             {{- include "proxy.selfSignedCertificates.volumeMounts" . | nindent 12 }}
@@ -118,6 +120,9 @@ spec:
             - --tls-cipher-suites={{ include "tlsConfig.cipherSuites" .Values.tlsConfig }}
             - --vision-one-endpoint={{ include "container.security.endpoint" . }}
             - --exclude-kubernetes-service-host-from-proxy={{ default "false" .Values.proxy.excludeKubernetesServiceHost }}
+            {{- if .Values.visionOne.experimental.enabled }}
+            - --read-pull-secrets-from={{ default "trendMicroNamespace" .Values.visionOne.admissionController.readPullSecretsFrom }}
+            {{- end }}{{/* .Values.visionOne.experimental */}}
             - --excluded-namespaces
             {{- $excludeNS := include "namespaceExclusions" . }}
             - {{ $excludeNS | quote }}
@@ -150,11 +155,15 @@ spec:
         - name: webhook-certs
           secret:
             secretName: {{ template "admissionController.fullname" . }}-tls-certificate
+        - name: sigstore
+          emptyDir: {}
         - name: policy-config # Use projected volume to mount all policy config files in a single volume (ie. policy, rulesets)
           projected:
             sources:
               - configMap:
                   name: {{ template "container.security.name" . }}-policy-config
+              - configMap:
+                  name: {{ template "container.security.name" . }}-attestors-config
         {{- include "proxy.selfSignedCertificates.volumes" . | nindent 8 }}
 {{- if or .Values.nodeSelector.defaults .Values.nodeSelector.admissionController }}
       nodeSelector:

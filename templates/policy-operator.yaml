@@ -76,6 +76,7 @@ spec:
         - --runtime-rulesets-config-name={{ template "container.security.name" . }}-runtime-rulesets-config
         - --runtime-rules-config-name={{ template "container.security.name" . }}-runtime-rules-config
         - --runtime-policy-config-name={{ template "container.security.name" . }}-runtime-policy-config
+        - --attestors-config-name={{ template "container.security.name" . }}-attestors-config
         - --spc-mode={{ default "false" .Values.spc.enabled }}
         - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
         - --network-policy-label={{ default "trendmicro" .Release.Name }}

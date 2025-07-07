@@ -82,6 +82,14 @@ visionOne:
     ## Default value: false
     scannerValidation: false
 
+    ## Specify the source of the imagePullSecrets (kubernetes.io/dockerconfigjson secrets) that provide the private registry credentials needed for image signature verification deployment rules. 
+    ## 
+    ## Supported values are trendMicroNamespace and customerNamespace
+    ## If source is trendMicroNamespace, ensure that the imagePullSecrets have been created in the trendmicro-system namespace.
+    ##
+    ## Default value if enabled is trendMicroNamespace.
+    readPullSecretsFrom: trendMicroNamespace
+
     ## List of K8s usernames that admission-controller will let handle scan jobs pods
     ##
     ## Default value:
