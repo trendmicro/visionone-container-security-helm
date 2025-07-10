@@ -1,0 +1,14 @@
+apiVersion: container-security.trendmicro.com/v1alpha1
+kind: Attestor
+metadata:
+  labels:
+    app.kubernetes.io/name: attestor
+    app.kubernetes.io/managed-by: kustomize
+  name: attestor-sample
+spec:
+  type: cosignPublicKey
+  publicKey: -----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEfYN/6YIrWgBNkpAs40uTuBmOtqR/\np6E1qdiSWwnHyb8Sy/ii1FM1l+uqF93sPcnoDYOOUeFpUQGzx8mAQ6d4Xg==\n-----END PUBLIC KEY-----
+  transparencyLogEnabled: false
+  transparencyLogOptions: # leave those 2 fields below empty to use the default Rekor server
+    server: # set to override default rekor server; example: https://my-transparency-log-server.dev
+    publicKey: # set only if overriding server above; example: -----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----

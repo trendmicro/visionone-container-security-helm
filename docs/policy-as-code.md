@@ -32,6 +32,7 @@ Note: Only one cluster policy can be active at a time. The name of the cluster p
 To interact with the custom resources, use the following kind names:
 - `clusterpolicy` for Cluster Policy
 - `runtimeruleset` for Runtime Ruleset
+- `attestor` for Attestor
 
 ## Policy Custom Resource
 
@@ -274,6 +275,38 @@ The Cluster Policy defines the rules and exceptions for admission control and co
         </ul>
     </td>
   </tr>
+  <tr>
+    <td>verifyImages</td>
+    <td>Rules for verifying signatures on container images</td>
+    <td>
+        <code>attestors</code> - a list of attestor names in one of the following arrays
+        <ul>
+            <li>all</li>
+            <li>any</li>
+        </ul>
+        <code>conditions</code> - an array of match or exclude rules
+        <ul>
+            <li>type - whether to evaluate or ignore requests that match this specification. A request must match all Matches, and any Excludes will take priority over a Match</li>
+            <ul>
+              <li>match</li>
+              <li>exclude</li>
+            </ul>
+            <li>resourceFilter - filter for resources to match</li>
+            <ul>
+              <li>registry</li>
+              <li>repository</li>
+            </ul>
+            <li>operatorOrFunction - the operator or function to apply to value</li>
+            <ul>
+              <li>beginsWith</li>
+              <li>endsWith</li>
+              <li>contains</li>
+              <li>equals</li>
+            </ul>
+            <li>value - pattern to apply operator or function against</li>
+        </ul>
+    </td>
+  </tr>
 </table>
 
 ### Sample ClusterPolicy Custom Resource
@@ -308,6 +341,28 @@ To create the runtime ruleset, apply the custom resource yaml:
 kubectl apply -f runtimeruleset.yaml
 ```
 
+
+## Attestor Custom Resource
+
+The attestor defines the signature for verifying images and whether to use a transparency log server when performing the verification.
+
+- **type**: the type of attestor. Supported types: `cosignPublicKey`.
+- **publicKey**: the public key of an attestor of type cosignPublicKey
+- **transparencyLogEnabled**: whether to verify the signature using a transparency log server
+- **transparencyLogOptions**: the options for the transparency log server. If not provided, the default is to use the Rekor server.
+  - **server**: the server used to verify the cosign signature using a transparency log
+  - **publicKey**: the public key used to verify the transparency log entry
+
+### Sample Attestor Custom Resource
+
+You can find a sample `Attestor` custom resource in [sample/attestor.yaml](../sample/attestor.yaml).
+
+To create the attestor, apply the custom resource yaml:
+
+```shell
+kubectl apply -f attestor.yaml
+```
+
 ## Understanding the Custom Resource Status
 
 The policy operator will update the status of the custom resources to reflect the status of the policy resources in Vision One.
@@ -317,7 +372,7 @@ For the `ClusterPolicy` custom resource, the status will include the following f
 - **Conditions**: An array of conditions of the following types:
   - **Parsed**: The policy has been parsed into a format that can be applied for enforcement
   - **Applied**: The policy has been created in Vision One
-  - **Attached**: The policy has been assigned to the cluster
+  - **InUse**: The policy has been assigned to the cluster
   - **Drifted**: The policy in Vision One has drifted from the custom resource spec
 - **VisionOnePolicyID**: The ID of the policy in Vision One
 - **VisionOneClusterID**: The ID of the cluster in Vision One
@@ -327,15 +382,25 @@ For the `RuntimeRuleset` custom resource, the status will include the following 
 - **Conditions**: An array of conditions of the following types:
   - **Parsed**: The ruleset has been parsed into a format that can be applied for enforcement
   - **Applied**: The ruleset has been created in Vision One
-  - **Attached**: The ruleset has been assigned to the policy
+  - **InUse**: The ruleset has been assigned to the policy
   - **Drifted**: The ruleset in Vision One has drifted from the custom resource spec
 - **VisionOneRulesetID**: The ID of the ruleset in Vision One
+
+For the `Attestor` custom resource, the status will include the following fields:
+
+- **Conditions**: An array of conditions of the following types:
+  - **Parsed**: The attestor has been parsed into a format that can be applied for enforcement
+  - **Applied**: The attestor has been created in Vision One
+  - **InUse**: The attestor has been assigned to a rule in a policy
+  - **Drifted**: The attestor in Vision One has drifted from the custom resource spec
+- **VisionOneAttestorID**: The ID of the attestor in Vision One
 
 To view the status of the custom resources, use the following command:
 
 ```shell
 kubectl get clusterpolicy <name> -o json | jq .status
 kubectl get runtimeruleset <name> -o json | jq .status
+kubectl get attestor <name> -o json | jq .status
 ```
 
 ### Policy Parsing and Validation
@@ -369,6 +434,7 @@ metadata:
   finalizers:
   - clusterpolicy.container-security.trendmicro.com/finalizer
   - runtimeruleset.container-security.trendmicro.com/finalizer
+  - attestor.container-security.trendmicro.com/finalizer
 ```
 
 The custom resource can also be patched to remove the finalizer:

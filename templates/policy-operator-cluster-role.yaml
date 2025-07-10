@@ -30,6 +30,7 @@ rules:
   - clusterpolicies
   - runtimerulesets
   - clusters
+  - attestors
   verbs:
   - get
   - list
@@ -43,8 +44,10 @@ rules:
   resources:
     - clusterpolicies/status
     - runtimerulesets/status
+    - attestors/status
     - clusters/status
     - clusters/finalizers
+    - attestors/finalizers
   verbs:
     - get
     - update

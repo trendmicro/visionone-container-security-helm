@@ -125,6 +125,23 @@ spec:
       action: block
       mitigation: isolate
 
+    # Image signature verification
+    - type: verifyImages
+      action: log
+      properties:
+        attestors:
+          all:
+            - attestor-sample
+        conditions:
+          - type: "match"
+            operatorOrFunction: "contains"
+            resourceFilter: "repository"
+            value: "gcr.io"
+          - type: "exclude"
+            operatorOrFunction: "endsWith"
+            resourceFilter: "registry"
+            value: "test.com"
+            
   # Exceptions
   exceptions:
     - type: imageName
