@@ -120,9 +120,7 @@ spec:
             - --tls-cipher-suites={{ include "tlsConfig.cipherSuites" .Values.tlsConfig }}
             - --vision-one-endpoint={{ include "container.security.endpoint" . }}
             - --exclude-kubernetes-service-host-from-proxy={{ default "false" .Values.proxy.excludeKubernetesServiceHost }}
-            {{- if .Values.visionOne.experimental.enabled }}
             - --read-pull-secrets-from={{ default "trendMicroNamespace" .Values.visionOne.admissionController.readPullSecretsFrom }}
-            {{- end }}{{/* .Values.visionOne.experimental */}}
             - --excluded-namespaces
             {{- $excludeNS := include "namespaceExclusions" . }}
             - {{ $excludeNS | quote }}
