@@ -34,6 +34,8 @@ make cri sockets list
   (dict "path" "/run/k0s/containerd.sock" "enabled" (and .k0s .k0s.enabled))
   (dict "path" "/run/k3s/containerd/containerd.sock" "enabled" (and .k3s .k3s.enabled))
   (dict "path" "/var/run/docker.sock" "enabled" (and .docker .docker.enabled))
+  (dict "path" "/run/crio/crio.sock" "enabled" (and .crio .crio.enabled))
+  (dict "path" "/run/containerd/containerd.sock" "enabled" (and .containerd .containerd.enabled))
  -}}
 
 {{- range $sockets }}
