@@ -123,7 +123,7 @@ rules:
   resources: ["clusterroles", "clusterrolebindings"]
   verbs: ["get", "list", "delete"]
 - apiGroups: ["container-security.trendmicro.com"]
-  resources: ["clusterpolicies", "runtimerulesets"]
+  resources: ["clusterpolicies", "runtimerulesets", "attestors"]
   verbs: ["get", "list", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
