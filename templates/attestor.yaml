@@ -12,7 +12,7 @@ spec:
     listKind: AttestorList
     plural: attestors
     singular: attestor
-  scope: Namespaced
+  scope: Cluster
   versions:
   - name: v1alpha1
     schema:
