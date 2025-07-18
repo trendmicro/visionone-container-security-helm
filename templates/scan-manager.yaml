@@ -267,24 +267,6 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 {{- end }}
-
----
-{{- $cn := (printf "trendmicro-scan-manager-service.%s.svc.cluster.local:8071" .Release.Namespace) }}
-{{- $ca := genCA (printf "trendmicro-scan-manager-service-ca") 3650 -}}
-{{- $cert := genSignedCert $cn nil (list $cn) 3650 $ca -}}
-apiVersion: v1
-kind: Secret
-metadata:
-  name:  trendmicro-scan-manager-tls-certificate
-  namespace: {{ .Release.Namespace }}
-  labels:
-    {{- include "scanManager.labels" . | nindent 4 }}
-type: Opaque
-data:
-  key.pem: {{ $cert.Key | b64enc | quote }}
-  cert.pem: {{ $cert.Cert | b64enc | quote }}
-  ca-cert.pem: {{ $ca.Cert | b64enc | quote }}
-
 {{- end }}
 ---
 apiVersion: v1
