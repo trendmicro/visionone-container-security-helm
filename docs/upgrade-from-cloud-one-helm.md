@@ -15,6 +15,8 @@ To obtain the new values:
 
 As an alternative, you can also get a bootstrap token for an existing cluster using the [public API](https://automation.trendmicro.com/xdr/api-beta/#tag/Kubernetes-Clusters). Please note that for now the API is only available in the beta version.
 
+If you are using the `useExistingSecrets.containerSecurityAuth` option, you must now name the secret `trendmicro-container-security-bootstrap-token` with the key `bootstrap.token` set to the bootstrap token value. The bootstrap token expires after 24 hours, so you must have Container Security installed within that time frame.
+
 ### Upgrade instructions
 Note that these instructions are the same as the ones shown in the console.
 

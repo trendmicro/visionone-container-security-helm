@@ -1254,8 +1254,8 @@ images:
 ##
 useExistingSecrets:
   ## containerSecurityAuth, if set to true, will use the existing secret for container security authentication.
-  ## The secret should be named trendmicro-container-security-auth in the target namespace if this is enabled.
-  ## The secret should contain base64 encoded Vision One bootstrap token in the auth.token field.
+  ## The secret should be named trendmicro-container-security-bootstrap-token in the target namespace if this is enabled.
+  ## The secret should contain base64 encoded Vision One bootstrap token in the bootstrap.token field.
   ##
   ## Default value: false
   containerSecurityAuth: false
