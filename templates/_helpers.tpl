@@ -1059,17 +1059,17 @@ Validate input from override file
 {{- if and .Values.visionOne.clusterName (gt (float64 (len .Values.visionOne.clusterName)) 64.0) }}
 {{- fail "The cluster name must be less than 64 characters" }}
 {{- end }}
+{{- if and .Values.visionOne.clusterName (not (regexMatch "^[a-zA-Z0-9._]+$" .Values.visionOne.clusterName)) }}
+{{- fail "The cluster name must only contain alphanumeric characters, dots, and underscores" }}
+{{- end }}
 {{- if and .Values.visionOne.clusterNamePrefix (gt (float64 (len .Values.visionOne.clusterNamePrefix)) 16.0) }}
 {{- fail "The cluster name prefix must be less than 16 characters" }}
+{{- end }}
+{{- if and .Values.visionOne.clusterNamePrefix (not (regexMatch "^[a-zA-Z0-9._]+$" .Values.visionOne.clusterNamePrefix)) }}
+{{- fail "The cluster name prefix must only contain alphanumeric characters, dots, and underscores" }}
 {{- end }}
 {{- if and (not .Values.visionOne.groupId ) (.Values.visionOne.clusterRegistrationKey) }}
 {{- fail "Please specify the groupId in the override file when using automated cluster registration" }}
-{{- end }}
-{{- if and .Values.visionOne.clusterName (gt (float64 (len .Values.visionOne.clusterName)) 64.0) }}
-{{- fail "The cluster name must be less than 64 characters" }}
-{{- end }}
-{{- if and .Values.visionOne.clusterNamePrefix (gt (float64 (len .Values.visionOne.clusterNamePrefix)) 16.0) }}
-{{- fail "The cluster name prefix must be less than 16 characters" }}
 {{- end }}
 {{- end -}}
 

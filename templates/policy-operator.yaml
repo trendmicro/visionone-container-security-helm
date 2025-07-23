@@ -80,6 +80,8 @@ spec:
         - --spc-mode={{ default "false" .Values.spc.enabled }}
         - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
         - --network-policy-label={{ default "trendmicro" .Release.Name }}
+        - --name-label={{ template "container.security.name" . }}
+        - --instance-label={{ default "trendmicro" .Release.Name }}
         {{- if gt (int .Values.replicas.policyOperator) 1 }}
         - --leader-elect
         {{- end }}
