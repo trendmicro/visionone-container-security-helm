@@ -70,15 +70,31 @@ rules:
   verbs:
   - create
   - patch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - "apps"
+  resources:
+  - deployments
+  - replicasets
+  - daemonsets
+  verbs:
+  - get
+  - list
+  - watch
 {{- if eq true .Values.visionOne.policyOperator.enableRuntimeMitigation }}
 - apiGroups:
   - ""
   resources:
   - pods
   verbs:
-  - get
-  - list
-  - watch
   - patch
   - update
   - delete

@@ -82,6 +82,13 @@ spec:
         - --network-policy-label={{ default "trendmicro" .Release.Name }}
         - --name-label={{ template "container.security.name" . }}
         - --instance-label={{ default "trendmicro" .Release.Name }}
+        - --admission-control-enabled={{ default "false" .Values.visionOne.admissionController.enabled }}
+        - --continuous-oversight-enabled={{ default "false" .Values.visionOne.oversight.enabled }}
+        - --compliance-scan-enabled={{ default "false" .Values.visionOne.complianceScan.enabled }}
+        - --runtime-security-enabled={{ default "false" .Values.visionOne.runtimeSecurity.enabled }}
+        - --vulnerability-scan-enabled={{ default "false" .Values.visionOne.vulnerabilityScanning.enabled }}
+        - --malware-scan-enabled={{ default "false" .Values.visionOne.malwareScanning.enabled }}
+        - --secret-scan-enabled={{ default "false" .Values.visionOne.secretScanning.enabled }}      
         {{- if gt (int .Values.replicas.policyOperator) 1 }}
         - --leader-elect
         {{- end }}
