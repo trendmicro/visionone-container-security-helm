@@ -93,6 +93,7 @@ spec:
         command:
         - /manager
         env:
+        {{- include "proxy.selfSignedCertificates.env" . | nindent 8}}
         {{- include "container.security.proxy.env" . | nindent 8 }}
         - name: APPLICATION_VERSION
           value: {{ .Chart.AppVersion | quote }}
@@ -279,6 +280,7 @@ data:
             env:
             - name: LOG_LEVEL
               value: info
+            {{- include "proxy.selfSignedCertificates.env" . | nindent 12}}
             resources:
 {{ toYaml (default .Values.resources.defaults .Values.resources.complianceScanner) | indent 14 }}
             volumeMounts:

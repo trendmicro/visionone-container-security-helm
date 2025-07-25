@@ -132,6 +132,7 @@ spec:
             - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
             - 2>&1
           env:
+            {{- include "proxy.selfSignedCertificates.env" . | nindent 12}}
             {{- include "container.security.proxy.env" . | nindent 12 }}
             - name: SCAN_MANAGER_SERVICE_ACCOUNT
               value: {{ include "scanManager.serviceAccountName" . }}

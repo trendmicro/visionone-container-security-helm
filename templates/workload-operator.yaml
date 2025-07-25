@@ -102,11 +102,13 @@ spec:
         - name: CREATION_TIMESTAMP
           value: "{{ now.Unix }}"
         {{- include "container.security.proxy.env" . | nindent 8 }}
+        {{- include "proxy.selfSignedCertificates.env" . | nindent 8}}
         volumeMounts:
           - name: auth-token
             mountPath: /secrets
           - name: policy-config
             mountPath: /etc/config
+          {{- include "proxy.selfSignedCertificates.volumeMounts" . | nindent 10 }}
         resources:
 {{ toYaml (default .Values.resources.defaults .Values.resources.workloadOperator) | indent 12 }}
       volumes:
@@ -118,6 +120,7 @@ spec:
             sources:
               - configMap:
                   name: {{ template "container.security.name" . }}-policy-config
+        {{- include "proxy.selfSignedCertificates.volumes" . | nindent 8 }}
       terminationGracePeriodSeconds: 10
 {{- if or .Values.nodeSelector.defaults .Values.nodeSelector.workloadOperator }}
       nodeSelector:

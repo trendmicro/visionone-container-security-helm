@@ -95,6 +95,8 @@ spec:
             - --zap-encoder={{ default "json" .Values.logConfig.encoder }}
             - --zap-stacktrace-level={{ default "error" .Values.logConfig.stacktraceLevel }}
             - --zap-time-encoding={{ default "rfc3339" .Values.logConfig.timeEncoding }}
+          env:
+            {{- include "proxy.selfSignedCertificates.env" . | nindent 12}}
           ports:
             - name: "broker-grpc"
               containerPort: 45000

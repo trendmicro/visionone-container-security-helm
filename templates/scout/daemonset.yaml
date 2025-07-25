@@ -130,6 +130,7 @@ spec:
 {{ toYaml .Values.scout.falco.extraArgs | indent 12 }}
         {{- end }}{{/* if */}}
           env:
+            {{- include "proxy.selfSignedCertificates.env" . | nindent 12}}
             - name: SKIP_DRIVER_LOADER
               value: "true"
             - name: TZ
@@ -181,6 +182,7 @@ spec:
             - mountPath: /root/.falco
               name: components-dir
               readOnly: true
+            {{- include "proxy.selfSignedCertificates.volumeMounts" . | nindent 12 }}
         - name: scout
           {{- $imageDefaults := .Values.images.defaults }}
           {{- with .Values.images.scout }}
@@ -261,6 +263,7 @@ spec:
 {{ toYaml .Values.scout.scout.extraArgs | indent 12 }}
         {{- end }}{{/* if */}}
           env:
+          {{- include "proxy.selfSignedCertificates.env" . | nindent 12}}
           {{- include "container.security.proxy.env" . | nindent 12 }}
           {{- range $key, $value := .Values.scout.scout.env }}
             - name: "{{ $key }}"
@@ -327,6 +330,7 @@ spec:
             - mountPath: /var/scout/customrules.d
               name: customrules-volume
 {{- end }}
+            {{- include "proxy.selfSignedCertificates.volumeMounts" . | nindent 12 }}
           resources:
 {{ toYaml (default .Values.resources.defaults .Values.resources.scout) | indent 12 }}
       initContainers:
@@ -387,6 +391,7 @@ spec:
 {{ toYaml .Values.scout.downloader.extraArgs | indent 12 }}
         {{- end }}{{/* if */}}
           env:
+          {{- include "proxy.selfSignedCertificates.env" . | nindent 12}}
           {{- include "container.security.proxy.env" . | nindent 12 }}
           {{- range $key, $value := .Values.scout.downloader.env }}
             - name: "{{ $key }}"
@@ -416,6 +421,7 @@ spec:
             - mountPath: /secrets
               name: auth-token
               readOnly: true
+            {{- include "proxy.selfSignedCertificates.volumeMounts" . | nindent 12 }}
 {{- if $securityContextEnabled }}
           securityContext:
 {{ toYaml $downloaderSecurityContext | indent 12 }}
@@ -496,6 +502,7 @@ spec:
           secret:
             secretName: {{ template "k8sMetaCollector.fullname" . }}-tls-certificate
 {{- end }}
+        {{- include "proxy.selfSignedCertificates.volumes" . | nindent 8 }}
   updateStrategy:
     type: RollingUpdate
 {{- end }}{{/* if or (eq true .Values.visionOne.runtimeSecurity.enabled) (eq true .Values.visionOne.malwareScanning.enabled) */}}

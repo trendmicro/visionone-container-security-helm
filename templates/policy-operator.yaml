@@ -106,6 +106,7 @@ spec:
             fieldRef:
               fieldPath: metadata.namespace
         {{- include "container.security.proxy.env" . | nindent 8 }}
+        {{- include "proxy.selfSignedCertificates.env" . | nindent 8}}
         volumeMounts:
         - mountPath: /var/policy-operator
           name: workdir

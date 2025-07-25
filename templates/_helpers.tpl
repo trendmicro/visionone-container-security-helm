@@ -1349,8 +1349,6 @@ Return the volumes for self-signed certificates
 {{- else if eq .type "configMap" }}
   configMap:
     name: {{ .configMapName | quote }}
-{{- else if eq .type "emptyDir" }}
-  emptyDir: {}
 {{- else if eq .type "hostPath" }}
   hostPath:
     path: {{ .path | quote }}
@@ -1365,17 +1363,23 @@ Return the volume mounts for self-signed certificates
 {{- define "proxy.selfSignedCertificates.volumeMounts" }}
 {{- range .Values.proxy.selfSignedCertificates}}
 - name: {{ .name }}
+  mountPath: /etc/self-signed-certs/certificate.crt
 {{- if and (eq .type "secret") .key }}
-  mountPath: /etc/ssl/certs/{{ .key }}
   subPath: {{ .key }}
 {{- else if and (eq .type "configMap") .key }}
-  mountPath: /etc/ssl/certs/{{ .key }}
   subPath: {{ .key }}
-{{- else if eq .type "hostPath" }}
-  mountPath: /etc/ssl/certs/{{ base .path }}
-{{- else }}
-  mountPath: /etc/ssl/certs/{{ .name }}
 {{- end }}
   readOnly: true
+{{- end }}
+{{- end }}
+
+
+{{/*
+Return the SSL_CERT_FILE env for self-signed certificates
+*/}}
+{{- define "proxy.selfSignedCertificates.env" }}
+{{- if .Values.proxy.selfSignedCertificates }}
+- name: SSL_CERT_FILE
+  value: /etc/self-signed-certs/certificate.crt
 {{- end }}
 {{- end }}
