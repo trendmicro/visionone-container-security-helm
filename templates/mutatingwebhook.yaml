@@ -1,19 +1,44 @@
 {{- if and (eq true .Values.visionOne.runtimeSecurity.enabled) (eq true .Values.visionOne.fargateInjector.enabled) }}
-{{- $cn := printf "%s.%s.svc" "trendmicro-fargate-injector" .Release.Namespace }}
-{{- $ca := genCA (printf "%s-ca" "trendmicro-fargate-injector") (default 3650 (int .Values.visionOne.fargateInjector.certificate.lifetime)) -}}
-{{- $cert := genSignedCert (default $cn .Values.visionOne.fargateInjector.certificate.commonName) (default nil .Values.visionOne.fargateInjector.certificate.ipAlternativeNames) (default (list $cn) .Values.visionOne.fargateInjector.certificate.dnsAlternativeNames) (default 3650 (int .Values.visionOne.fargateInjector.certificate.lifetime)) $ca -}}
 
+{{- $secretName := printf "%s-tls-certificate" (include "fargateInjector.fullname" .) }}
+{{- $useExisting := and .Values.useExistingSecrets (eq "true" (.Values.useExistingSecrets.operatorSecrets | toString)) }}
+{{- $existingSecret := "" }}
+{{- if $useExisting }}
+  {{- $existingSecret = lookup "v1" "Secret" .Release.Namespace $secretName }}
+{{- end }}
+
+{{- $keyPem := "" }}
+{{- $certPem := "" }}
+{{- $caCertPem := "" }}
+{{- $cn := printf "%s.%s.svc" "trendmicro-fargate-injector" .Release.Namespace }}
+
+{{- if and $useExisting $existingSecret }}
+  {{- /* Use existing certificate data */ -}}
+  {{- $keyPem = index $existingSecret.data "key.pem" }}
+  {{- $certPem = index $existingSecret.data "cert.pem" }}
+  {{- $caCertPem = index $existingSecret.data "ca-cert.pem" }}
+{{- else }}
+  {{- /* Generate new certificates */ -}}
+  {{- $ca := genCA (printf "%s-ca" "trendmicro-fargate-injector") (default 3650 (int .Values.visionOne.fargateInjector.certificate.lifetime)) }}
+  {{- $cert := genSignedCert (default $cn .Values.visionOne.fargateInjector.certificate.commonName) (default nil .Values.visionOne.fargateInjector.certificate.ipAlternativeNames) (default (list $cn) .Values.visionOne.fargateInjector.certificate.dnsAlternativeNames) (default 3650 (int .Values.visionOne.fargateInjector.certificate.lifetime)) $ca }}
+  {{- $keyPem = $cert.Key | b64enc }}
+  {{- $certPem = $cert.Cert | b64enc }}
+  {{- $caCertPem = $ca.Cert | b64enc }}
+{{- end }}
+
+---
 apiVersion: v1
 kind: Secret
 metadata:
-  name:  {{ template "fargateInjector.fullname" . }}-tls-certificate
+  name: {{ $secretName }}
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "fargateInjector.labels" . | nindent 4 }}
 type: Opaque
 data:
-  key.pem: {{ $cert.Key | b64enc | quote }}
-  cert.pem: {{ $cert.Cert | b64enc | quote }}
+  key.pem: {{ $keyPem | quote }}
+  cert.pem: {{ $certPem | quote }}
+  ca-cert.pem: {{ $caCertPem | quote }}
 
 ---
 apiVersion: admissionregistration.k8s.io/v1
@@ -49,8 +74,9 @@ webhooks:
         name: trendmicro-fargate-injector
         namespace: {{ .Release.Namespace }}
         path: "/"
-      caBundle: {{ $ca.Cert | b64enc | quote }}
+      caBundle: {{ $caCertPem | quote }}
     admissionReviewVersions: ["v1", "v1beta1"]
     sideEffects: None
     timeoutSeconds: {{ default 30 .Values.visionOne.fargateInjector.webhookTimeoutSeconds }}
+
 {{- end }}

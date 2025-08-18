@@ -117,20 +117,42 @@ data:
 {{ toYaml (default .Values.resources.defaults .Values.resources.scanner) | indent 14 }}
 
 ---
-{{- $cn := (printf "trendmicro-scan-manager-service.%s.svc.cluster.local:8071" .Release.Namespace) }}
-{{- $ca := genCA (printf "trendmicro-scan-manager-service-ca") 3650 -}}
-{{- $cert := genSignedCert $cn nil (list $cn) 3650 $ca -}}
+{{- $secretName := "trendmicro-scan-manager-tls-certificate" }}
+{{- $useExisting := and .Values.useExistingSecrets (eq "true" (.Values.useExistingSecrets.operatorSecrets | toString)) }}
+{{- $existingSecret := "" }}
+{{- if $useExisting }}
+  {{- $existingSecret = lookup "v1" "Secret" .Release.Namespace $secretName }}
+{{- end }}
+
+{{- $keyPem := "" }}
+{{- $certPem := "" }}
+{{- $caCertPem := "" }}
+
+{{- if and $useExisting $existingSecret }}
+  {{- /* Use existing certificate data */ -}}
+  {{- $keyPem = index $existingSecret.data "key.pem" }}
+  {{- $certPem = index $existingSecret.data "cert.pem" }}
+  {{- $caCertPem = index $existingSecret.data "ca-cert.pem" }}
+{{- else }}
+  {{- /* Generate new certificates */ -}}
+  {{- $cn := (printf "trendmicro-scan-manager-service.%s.svc.cluster.local:8071" .Release.Namespace) }}
+  {{- $ca := genCA (printf "trendmicro-scan-manager-service-ca") 3650 }}
+  {{- $cert := genSignedCert $cn nil (list $cn) 3650 $ca }}
+  {{- $keyPem = $cert.Key | b64enc }}
+  {{- $certPem = $cert.Cert | b64enc }}
+  {{- $caCertPem = $ca.Cert | b64enc }}
+{{- end }}
+
 apiVersion: v1
 kind: Secret
 metadata:
-  name:  trendmicro-scan-manager-tls-certificate
+  name: {{ $secretName }}
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "scanManager.labels" . | nindent 4 }}
 type: Opaque
 data:
-  key.pem: {{ $cert.Key | b64enc | quote }}
-  cert.pem: {{ $cert.Cert | b64enc | quote }}
-  ca-cert.pem: {{ $ca.Cert | b64enc | quote }}
-
+  key.pem: {{ $keyPem | quote }}
+  cert.pem: {{ $certPem | quote }}
+  ca-cert.pem: {{ $caCertPem | quote }}
 {{- end }}

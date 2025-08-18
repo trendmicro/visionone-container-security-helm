@@ -1266,3 +1266,16 @@ useExistingSecrets:
   ##
   ## Default value: false
   outboundProxy: false
+
+  ## operatorSecrets, if set to true, will attempt to reuse existing secret values when deploying.
+  ## If these secrets are not found, new values will be generated.
+  ## operatorSecrets will be set to true in Helm deployed as part of the OpenShift Operator.
+  ##
+  ## trendmicro-admission-controller-tls-certificate
+  ## trendmicro-scan-manager-tls-certificate
+  ## trendmicro-fargate-injector-tls-certificate
+  ## trendmicro-kube-rbac-proxy-tls-certificate
+  ## trendmicro-k8s-metacollector-tls-certificate
+  ## 
+  ## Default value: false
+  operatorSecrets: false

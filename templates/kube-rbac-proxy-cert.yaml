@@ -1,15 +1,39 @@
-{{- $cn := printf "%s.%s.svc" "trendmicro-kube-rbac-proxy" .Release.Namespace }}
-{{- $ca := genCA (printf "%s-ca" "trendmicro-kube-rbac-proxy") (default 3650 (int .Values.visionOne.kubeRbacProxy.certificate.lifetime)) -}}
-{{- $cert := genSignedCert (default $cn .Values.visionOne.kubeRbacProxy.certificate.commonName) (default nil .Values.visionOne.kubeRbacProxy.certificate.ipAlternativeNames) (default (list $cn) .Values.visionOne.kubeRbacProxy.certificate.dnsAlternativeNames) (default 3650 (int .Values.visionOne.kubeRbacProxy.certificate.lifetime)) $ca -}}
+{{- $secretName := printf "%s-tls-certificate" (include "kubeRbacProxy.fullname" .) }}
+{{- $useExisting := and .Values.useExistingSecrets (eq "true" (.Values.useExistingSecrets.operatorSecrets | toString)) }}
+{{- $existingSecret := "" }}
+{{- if $useExisting }}
+  {{- $existingSecret = lookup "v1" "Secret" .Release.Namespace $secretName }}
+{{- end }}
 
+{{- $keyPem := "" }}
+{{- $certPem := "" }}
+{{- $caCertPem := "" }}
+
+{{- if and $useExisting $existingSecret }}
+  {{- /* Use existing certificate data */ -}}
+  {{- $keyPem = index $existingSecret.data "key.pem" }}
+  {{- $certPem = index $existingSecret.data "cert.pem" }}
+  {{- $caCertPem = index $existingSecret.data "ca-cert.pem" }}
+{{- else }}
+  {{- /* Generate new certificates */ -}}
+  {{- $cn := printf "%s.%s.svc" "trendmicro-kube-rbac-proxy" .Release.Namespace }}
+  {{- $ca := genCA (printf "%s-ca" "trendmicro-kube-rbac-proxy") (default 3650 (int .Values.visionOne.kubeRbacProxy.certificate.lifetime)) }}
+  {{- $cert := genSignedCert (default $cn .Values.visionOne.kubeRbacProxy.certificate.commonName) (default nil .Values.visionOne.kubeRbacProxy.certificate.ipAlternativeNames) (default (list $cn) .Values.visionOne.kubeRbacProxy.certificate.dnsAlternativeNames) (default 3650 (int .Values.visionOne.kubeRbacProxy.certificate.lifetime)) $ca }}
+  {{- $keyPem = $cert.Key | b64enc }}
+  {{- $certPem = $cert.Cert | b64enc }}
+  {{- $caCertPem = $ca.Cert | b64enc }}
+{{- end }}
+
+---
 apiVersion: v1
 kind: Secret
 metadata:
-  name:  {{ template "kubeRbacProxy.fullname" . }}-tls-certificate
+  name: {{ $secretName }}
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "container.security.labels" . | nindent 4 }}
 type: Opaque
 data:
-  key.pem: {{ $cert.Key | b64enc | quote }}
-  cert.pem: {{ $cert.Cert | b64enc | quote }}
+  key.pem: {{ $keyPem | quote }}
+  cert.pem: {{ $certPem | quote }}
+  ca-cert.pem: {{ $caCertPem | quote }}
