@@ -71,7 +71,7 @@ spec:
         - --auto-register={{ default "false" .Values.visionOne.clusterRegistrationKey }}
         - --enable-runtime-mitigation={{ default "false" .Values.visionOne.policyOperator.enableRuntimeMitigation }}
         - --policy-service-port={{ .Values.visionOne.policyOperator.servicePort }}
-        - --policy-sync-interval={{ include "policyOperator.policy.sync.interval" . }}
+        - --policy-sync-interval={{ .Values.visionOne.policyOperator.policySyncInterval }}
         - --policy-config-name={{ template "container.security.name" . }}-policy-config
         - --runtime-rulesets-config-name={{ template "container.security.name" . }}-runtime-rulesets-config
         - --runtime-rules-config-name={{ template "container.security.name" . }}-runtime-rules-config

@@ -1320,17 +1320,6 @@ sanitizer_output:
 {{- end -}}
 
 {{/*
-Return the policy sync interval for the policy operator
-*/}}
-{{- define "policyOperator.policy.sync.interval" -}}
-{{- if .Values.spc.enabled }}
-{{- .Values.spc.policySyncInterval }}
-{{- else }}
-{{- .Values.visionOne.policyOperator.policySyncInterval }}
-{{- end }}
-{{- end -}}
-
-{{/*
 Return the url of the policy operator service
 */}}
 {{- define "policyOperator.svc.url" -}}
