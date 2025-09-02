@@ -88,7 +88,8 @@ spec:
         - --runtime-security-enabled={{ default "false" .Values.visionOne.runtimeSecurity.enabled }}
         - --vulnerability-scan-enabled={{ default "false" .Values.visionOne.vulnerabilityScanning.enabled }}
         - --malware-scan-enabled={{ default "false" .Values.visionOne.malwareScanning.enabled }}
-        - --secret-scan-enabled={{ default "false" .Values.visionOne.secretScanning.enabled }}      
+        - --secret-scan-enabled={{ default "false" .Values.visionOne.secretScanning.enabled }}
+        - --custom-rules-config-name={{ template "container.security.name" . }}-runtime-customrules      
         {{- if gt (int .Values.replicas.policyOperator) 1 }}
         - --leader-elect
         {{- end }}

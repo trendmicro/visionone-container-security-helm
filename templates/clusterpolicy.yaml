@@ -126,8 +126,16 @@ spec:
                   "InUse" to indicate if the policy is assigned to the cluster
                   "Drifted" to indicate if the ruleset is drifted from the VisionOne backend
                 items:
-                  description: Condition contains details for one aspect of the current
-                    state of this API Resource.
+                  description: "Condition contains details for one aspect of the current
+                    state of this API Resource.\n---\nThis struct is intended for
+                    direct use as an array at the field path .status.conditions.  For
+                    example,\n\n\n\ttype FooStatus struct{\n\t    // Represents the
+                    observations of a foo's current state.\n\t    // Known .status.conditions.type
+                    are: \"Available\", \"Progressing\", and \"Degraded\"\n\t    //
+                    +patchMergeKey=type\n\t    // +patchStrategy=merge\n\t    // +listType=map\n\t
+                    \   // +listMapKey=type\n\t    Conditions []metav1.Condition `json:\"conditions,omitempty\"
+                    patchStrategy:\"merge\" patchMergeKey:\"type\" protobuf:\"bytes,1,rep,name=conditions\"`\n\n\n\t
+                    \   // other fields\n\t}"
                   properties:
                     lastTransitionTime:
                       description: |-
@@ -190,6 +198,9 @@ spec:
                 x-kubernetes-list-type: map
               visiononeclusterid:
                 description: Visionone Cluster ID
+                type: string
+              visiononecustomrulesetid:
+                description: Visionone Custom Ruleset ID
                 type: string
               visiononepolicyid:
                 description: Visionone Policy ID

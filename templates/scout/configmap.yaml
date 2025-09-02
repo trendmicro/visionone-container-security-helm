@@ -109,7 +109,7 @@ make cri sockets list
 
 {{- $_ := set $overrideConfig
   "http_output" (dict 
-    "enabled" (default false (ne .output.splunk.url ""))
+    "enabled" (and (eq .enabled true) (eq .output.visionOne.enabled false))
     "url" (default "" .output.splunk.url)
     "ruleset_tag" (default "" .rulesetTag)
     "custom_headers" $customHeaders

@@ -221,6 +221,7 @@ spec:
             {{- if .Values.visionOne.runtimeSecurity.customRules.enabled }}
             - --custom-rule-tags={{ .Values.visionOne.runtimeSecurity.customRules.rulesetTag }}
             - --custom-rules-dir=/var/scout/customrules.d
+            - --forward-to-vision-one={{ default "false" .Values.visionOne.runtimeSecurity.customRules.output.visionOne.enabled }}
             {{- end }}{{/* if .Values.visionOne.runtimeSecurity.customRules.enabled */}}
         {{- if .Values.scout.scout.extraArgs }}
 {{ toYaml .Values.scout.scout.extraArgs | indent 12 }}
