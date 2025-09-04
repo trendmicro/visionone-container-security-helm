@@ -863,7 +863,7 @@ resources:
 nodeSelector:
   ## nodeSelector if set, ensures pods are only assigned to a particular set of nodes.
   ## Defaults apply to all pods created by this chart unless overridden by a non default configuration.
-  ## Does not apply to scanner pods. Use inheritNodeSelectorScanner instead.
+  ## For scanner pods, if inheritNodeSelectorScanner is true, then the overrides specified here will be ignored in favor of the owner resource's nodeSelector.
   ##
   ## Type: map[string]string
   ## Default Value: {}
@@ -887,7 +887,7 @@ nodeSelector:
 tolerations:
   ## tolerations if set, allows (but does not require) the pods to schedule onto nodes with matching taints.
   ## Defaults apply to all pods created by this chart unless overridden by a non default configuration.
-  ## Does not apply to scanner pods. Use inheritTolerationsScanner instead.
+  ## For scanner pods, if inheritTolerationsScanner is true, then the overrides specified here will be ignored in favor of the owner resource's tolerations.
   ##
   ## Type: list of map[string]string
   ## Default Value: {}

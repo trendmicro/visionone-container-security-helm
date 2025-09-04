@@ -321,14 +321,14 @@ securityContext:
 To configure the scheduling of the Container Security components, you can set the `nodeSelector` and `tolerations` values in your `overrides.yaml` file:
 ```yaml
 nodeSelector:
-  defaults: # Node selector applied to all components except scanner pods (see below)
+  defaults: # Node selector applied to all components except those with specific node selectors below
     kubernetes.io/arch: arm64
 
   admissionController: # Node selector applied to specific component
     kubernetes.io/arch: amd64
 
 tolerations:
-  defaults: # Tolerations applied to all components except scanner pods (see below)
+  defaults: # Tolerations applied to all components except those with specific tolerations below
   - key: kubernetes.io/arch
     operator: Equal
     value: amd64
@@ -340,7 +340,29 @@ tolerations:
     effect: NoSchedule
 ```
 
-For scanner pods, since they run images from the pods being scanned, you can configure the scanner to inherit the node selectors and tolerations from the owner resource (ie. deployment, daemonset, pod, etc.):
+For scanner pods you have two options for configuring node selectors and tolerations:
+1) Set the `nodeSelector` and `tolerations` values in your `overrides.yaml` file similar to the other components as mentioned above. For example:
+```yaml
+nodeSelector:
+  defaults: # Node selector applied to all components except scanner pods
+    kubernetes.io/arch: arm64
+
+  scanner: # Node selector applied to the scanner pods
+    kubernetes.io/arch: amd64
+
+tolerations:
+  defaults: # Tolerations applied to all components except scanner pods 
+  - key: kubernetes.io/arch
+    operator: Equal
+    value: amd64
+    effect: NoSchedule
+
+  scanner: # Tolerations applied to the scanner pods
+  - key: kubernetes.io/os
+    operator: Exists
+    effect: NoSchedule
+```
+2) Inherit node selectors and tolerations - Since they run images from the pods being scanned, you can configure the scanner to inherit the node selectors and tolerations from the owner resource (ie. deployment, daemonset, pod, etc.):
 ```yaml
 nodeSelector:
   inheritNodeSelectorScanner: true # Inherit node selector from the owner resource (default: false)
