@@ -400,6 +400,16 @@ spc:
   ## enable the container security mode for Vision One Sovereign Private Cloud
   enabled: false
 
+  ## policySyncInterval is the time interval at which policy operator will sync the policy config from vision one
+  ## Minimum value: 10s
+  ## Maximum value: 5m
+  policySyncInterval: 1m
+
+  ## encryptionKey is the key for encryption when spc is enabled
+  ##
+  ## Default value: (none)
+  encryptionKey:
+
 securityContextConstraints:
   # enable the Security Context Constraints creation in Openshift
   create: true
