@@ -381,6 +381,8 @@ spec:
             - --exclude-kubernetes-service-host-from-proxy={{ default "false" .Values.proxy.excludeKubernetesServiceHost }}
             - --log-level
             - debug
+            - --legacy-ebpf-kernel
+            - {{ .Values.scout.downloader.legacyEbpfKernels | join "," }}
             - --componentdir
             - {{ .Values.scout.downloader.componentDir }}
 {{- if .Values.scout.falco.modernBpf }}

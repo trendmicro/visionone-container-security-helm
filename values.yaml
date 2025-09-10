@@ -1107,6 +1107,9 @@ scout:
     ## componentDir, the directory where the component to be downloaded
     componentDir: /var/component
 
+    ## legacyEbpfKernels, the list of kernel versions that use legacy ebpf
+    legacyEbpfKernels: []
+
 malwareScanner:
   defaultExcludedPaths:
   - /proc
