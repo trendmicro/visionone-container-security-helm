@@ -150,7 +150,9 @@ spec:
             secretName: {{ template "container.security.fullname" . }}-auth
         - name: varrun
           emptyDir:
+{{- if not (.Capabilities.APIVersions.Has "oci.oraclecloud.com/v1beta1") }}
             sizeLimit: 1Mi
+{{- end }}
         - name: webhook-certs
           secret:
             secretName: {{ template "admissionController.fullname" . }}-tls-certificate

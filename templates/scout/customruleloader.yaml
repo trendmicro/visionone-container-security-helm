@@ -163,7 +163,9 @@ spec:
 {{- if .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled }}
       - name: rulesfiles
         emptyDir:
+{{- if not (.Capabilities.APIVersions.Has "oci.oraclecloud.com/v1beta1") }}
           sizeLimit: 50Mi
+{{- end }}
 {{- else }}
       - name: rulesfiles
         configMap:
@@ -171,13 +173,19 @@ spec:
 {{- end }}
       - name: tmpdir
         emptyDir:
+{{- if not (.Capabilities.APIVersions.Has "oci.oraclecloud.com/v1beta1") }}
           sizeLimit: 50Mi
+{{- end }}
       - name: rootconfig
         emptyDir:
+{{- if not (.Capabilities.APIVersions.Has "oci.oraclecloud.com/v1beta1") }}
           sizeLimit: 10Mi
+{{- end }}
       - name: dockerconfig
         emptyDir:
+{{- if not (.Capabilities.APIVersions.Has "oci.oraclecloud.com/v1beta1") }}
           sizeLimit: 10Mi
+{{- end }}
       - name: falcoctlconfig
         configMap:
           name: {{ template "container.security.name" . }}-runtime-ruleloader

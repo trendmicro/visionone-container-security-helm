@@ -164,7 +164,9 @@ spec:
                   name: {{ template "container.security.name" . }}-policy-config
         - name: scanmanager-workdir
           emptyDir:
+{{- if not (.Capabilities.APIVersions.Has "oci.oraclecloud.com/v1beta1") }}
             sizeLimit: 50Mi
+{{- end }}
         - name: grpc-certs
           secret:
             secretName: trendmicro-scan-manager-tls-certificate
@@ -376,7 +378,9 @@ spec:
       volumes:
       - name: scanmanager-workdir
         emptyDir:
+{{- if not (.Capabilities.APIVersions.Has "oci.oraclecloud.com/v1beta1") }}
           sizeLimit: 50Mi
+{{- end }}
 {{- if or .Values.nodeSelector.defaults .Values.nodeSelector.scanManager }}
       nodeSelector:
 {{ toYaml (default .Values.nodeSelector.defaults .Values.nodeSelector.scanManager) | indent 8 }}

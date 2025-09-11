@@ -459,7 +459,9 @@ spec:
             type: Directory
         - name: status-dir
           emptyDir:
+{{- if not (.Capabilities.APIVersions.Has "oci.oraclecloud.com/v1beta1") }}
             sizeLimit: 1Mi
+{{- end }}
         - name: debugfs
           hostPath:
             path: /sys/kernel/debug
@@ -484,10 +486,14 @@ spec:
                 path: default_rules.yaml
         - name: grpc-socket-dir
           emptyDir:
+{{- if not (.Capabilities.APIVersions.Has "oci.oraclecloud.com/v1beta1") }}
             sizeLimit: 10Mi
+{{- end }}
         - name: rules-volume
           emptyDir:
+{{- if not (.Capabilities.APIVersions.Has "oci.oraclecloud.com/v1beta1") }}
             sizeLimit: 50Mi
+{{- end }}
 {{- if .Values.visionOne.runtimeSecurity.customRules.enabled }}
         - name: customrules-volume
           configMap:
@@ -495,10 +501,14 @@ spec:
 {{- end }}
         - name: scout-workdir
           emptyDir:
+{{- if not (.Capabilities.APIVersions.Has "oci.oraclecloud.com/v1beta1") }}
             sizeLimit: 50Mi
+{{- end }}
         - name: components-dir
           emptyDir:
+{{- if not (.Capabilities.APIVersions.Has "oci.oraclecloud.com/v1beta1") }}
             sizeLimit: 50Mi
+{{- end }}
 {{- if eq "tls" .Values.visionOne.k8sMetaCollector.grpcAuth.type }}
         - name: metacollector-grpc-certs
           secret:

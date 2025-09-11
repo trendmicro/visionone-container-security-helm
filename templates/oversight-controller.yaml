@@ -141,7 +141,9 @@ spec:
       volumes:
         - name: workdir
           emptyDir:
+{{- if not (.Capabilities.APIVersions.Has "oci.oraclecloud.com/v1beta1") }}
             sizeLimit: 50Mi
+{{- end }}
         - name: auth-token
           secret:
             secretName: {{ template "container.security.fullname" . }}-auth
