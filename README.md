@@ -484,11 +484,8 @@ The following matrix shows the Falco version that is bundled with each Helm char
 
 | **Helm Chart Version** | **Falco Version** |
 |------------------------|-------------------|
-| 2.6.x                  | 0.39.2            |
-| 2.5.x                  | 0.37.1            |
-| 2.4.x                  | 0.37.1            |
-| 2.3.24 - 2.3.47        | 0.36.1            |
-| 2.3.14 - 2.3.23        | 0.34.1            |
+| 3.1.x                  | 0.39.2            |
+| 3.0.x                  | 0.39.2            |
 
 ## Troubleshooting
 
