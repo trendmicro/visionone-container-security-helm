@@ -232,6 +232,10 @@ spec:
             - --custom-rules-dir=/var/scout/customrules.d
             - --forward-to-vision-one={{ default "false" .Values.visionOne.runtimeSecurity.customRules.output.visionOne.enabled }}
             {{- end }}{{/* if .Values.visionOne.runtimeSecurity.customRules.enabled */}}
+            {{- if .Values.visionOne.fileIntegrityMonitoring.enabled }}
+            - --file-integrity-monitoring=true
+            - --fim-sweep-interval={{ default "1m" .Values.visionOne.fileIntegrityMonitoring.sweepInterval }}
+            {{- end}}{{/* if .Values.visionOne.fileIntegrityMonitoring.enabled */}}
         {{- if .Values.scout.scout.extraArgs }}
 {{ toYaml .Values.scout.scout.extraArgs | indent 12 }}
         {{- end }}{{/* if */}}
@@ -298,6 +302,10 @@ spec:
               readOnly: true
             - mountPath: /etc/config
               name: policy-config
+{{- end }}
+{{- if .Values.visionOne.fileIntegrityMonitoring.enabled }}
+            - mountPath: /etc/config/fim/
+              name: fim-policy
 {{- end }}
 {{- if .Values.visionOne.runtimeSecurity.customRules.enabled }}
             - mountPath: /var/scout/customrules.d
@@ -507,6 +515,12 @@ spec:
         - name: metacollector-grpc-certs
           secret:
             secretName: {{ template "k8sMetaCollector.fullname" . }}-tls-certificate
+{{- end }}
+{{- if .Values.visionOne.fileIntegrityMonitoring.enabled }}
+        - name: fim-policy
+          configMap:
+            name: {{ template "container.security.name" . }}-fim-policy
+            optional: true
 {{- end }}
         {{- include "proxy.selfSignedCertificates.volumes" . | nindent 8 }}
   updateStrategy:

@@ -96,6 +96,11 @@ spec:
         {{- if gt (int .Values.replicas.policyOperator) 1 }}
         - --leader-elect
         {{- end }}
+        - --excluded-namespaces
+        - {{ include "namespaceExclusions" . | quote }}
+{{- if .Values.visionOne.fileIntegrityMonitoring.enabled }}
+        - --fim-enabled=true
+{{- end }}
         command:
         - /app/policy-operator
         env:

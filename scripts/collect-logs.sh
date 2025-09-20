@@ -60,6 +60,12 @@ echo "Results folder will be: $RESULTS_DIR"
 #####
 # setting logs
 #####
+collect_fimpolicy () {
+  $KUBECTL get fimpolicies --all-namespaces -o yaml
+  while read -r ns name rest; do
+    $KUBECTL get configmap "$name" --namespace "$ns" -o yaml
+  done < <($KUBECTL get fimpolicies --all-namespaces --no-headers)
+}
 COMMANDS=( "version:$KUBECTL version"
            "components:$KUBECTL get componentstatuses"
            "events:$KUBECTL get events --all-namespaces"
@@ -85,6 +91,7 @@ COMMANDS=( "version:$KUBECTL version"
            "ruleset-config:$KUBECTL get configmap trendmicro-container-security-runtime-rulesets-config $NAMESPACE_PARAM -o yaml"
            "rules-config:$KUBECTL get configmap trendmicro-container-security-runtime-rules-config $NAMESPACE_PARAM -o yaml"
            "runtime-policy-config:$KUBECTL get configmap trendmicro-container-security-runtime-policy-config $NAMESPACE_PARAM -o yaml"
+           "fimpolicy: collect_fimpolicy"
            )
 
 echo "Fetching setting logs..."

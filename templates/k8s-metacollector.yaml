@@ -1,4 +1,4 @@
-{{- if or (eq true .Values.visionOne.runtimeSecurity.enabled) (eq true .Values.visionOne.malwareScanning.enabled) (eq true .Values.visionOne.secretScanning.enabled)}}
+{{- if eq (include "metacollector.shouldDeploy" .) "true"}}
 
 apiVersion: v1
 kind: Service

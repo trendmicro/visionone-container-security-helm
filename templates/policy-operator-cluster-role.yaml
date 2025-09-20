@@ -31,6 +31,7 @@ rules:
   - runtimerulesets
   - clusters
   - attestors
+  - fimpolicies
   verbs:
   - get
   - list
@@ -48,6 +49,7 @@ rules:
     - clusters/status
     - clusters/finalizers
     - attestors/finalizers
+    - fimpolicies/finalizers
   verbs:
     - get
     - update

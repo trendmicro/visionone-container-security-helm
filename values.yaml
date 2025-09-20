@@ -352,6 +352,13 @@ visionOne:
     ## Default value: 300
     scanTimeoutSeconds: 300
 
+## fileIntegrityMonitoring is a section that controls the file integrity monitoring feature
+  fileIntegrityMonitoring:
+    enabled: false
+
+    ## sweepInterval is the time interval at which FIM will refresh containers
+    sweepInterval: 1m
+
   policyOperator:
     ## reconciliationPeriod is the time interval at which policy operator will reconcile the custom resources
     ## Minimum value: 5m

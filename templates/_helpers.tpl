@@ -1279,12 +1279,33 @@ Automatically adds any namespace with prefix to excluded namespace list for open
    - Runtime Security
    - Malware Scanning
    - Secret Scanning
+   - File Integrity Monitoring
    Otherwise, it returns "false".
    Usage:
    {{- if eq (include "scout.shouldDeploy" .) "true" }}
 */}}
 {{- define "scout.shouldDeploy" -}}
-{{- if or (eq true .Values.visionOne.runtimeSecurity.enabled) (eq true .Values.visionOne.malwareScanning.enabled) (eq true .Values.visionOne.secretScanning.enabled) -}}
+{{- if or (eq true .Values.visionOne.runtimeSecurity.enabled) (eq true .Values.visionOne.malwareScanning.enabled) (eq true .Values.visionOne.secretScanning.enabled) (eq true .Values.visionOne.fileIntegrityMonitoring.enabled) -}}
+true
+{{- else -}}
+false
+{{- end -}}
+{{- end -}}
+
+{{/*
+   Determines whether k8s-metacollector should be deployed based on enabled Vision One features.
+   This helper centralizes the deployment condition to avoid duplication in multiple templates.
+   It returns "true" (as a string) if any of the following features are enabled:
+   - Runtime Security
+   - Malware Scanning
+   - Secret Scanning
+   - File Integrity Monitoring
+   Otherwise, it returns "false".
+   Usage:
+   {{- if eq (include "metacollector.shouldDeploy" .) "true" }}
+*/}}
+{{- define "metacollector.shouldDeploy" -}}
+{{- if or (eq true .Values.visionOne.runtimeSecurity.enabled) (eq true .Values.visionOne.malwareScanning.enabled) (eq true .Values.visionOne.secretScanning.enabled) (eq true .Values.visionOne.fileIntegrityMonitoring.enabled) -}}
 true
 {{- else -}}
 false
