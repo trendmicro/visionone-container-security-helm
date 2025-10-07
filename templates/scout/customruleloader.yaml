@@ -121,7 +121,7 @@ spec:
 {{ toYaml (default .Values.resources.defaults .Values.resources.runtimeRuleloader) | indent 12 }}
         env:
         - name: FALCOCMD
-          value: falco --dry-run -o log_level=debug -o grpc.enabled=false -r /rules/install
+          value: falco --dry-run -o log_level=debug -o grpc.enabled=false -o stdout_output.enabled=true -r /rules/install
         {{- if .Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName }}
         - name: SPLUNK_HEC_TOKEN
           valueFrom:
