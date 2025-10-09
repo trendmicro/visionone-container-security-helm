@@ -89,7 +89,9 @@ spec:
         - --vulnerability-scan-enabled={{ default "false" .Values.visionOne.vulnerabilityScanning.enabled }}
         - --malware-scan-enabled={{ default "false" .Values.visionOne.malwareScanning.enabled }}
         - --secret-scan-enabled={{ default "false" .Values.visionOne.secretScanning.enabled }}
-        - --custom-rules-config-name={{ template "container.security.name" . }}-runtime-customrules      
+        - --custom-rules-config-name={{ template "container.security.name" . }}-runtime-customrules     
+        - --oci-repository-provided={{ default "false" .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled }}
+        - --oci-repository-url={{ join "," .Values.visionOne.runtimeSecurity.customRules.ociRepository.artifactUrls | quote }}
         {{- if gt (int .Values.replicas.policyOperator) 1 }}
         - --leader-elect
         {{- end }}
