@@ -182,7 +182,7 @@ spec:
             {{- if .Values.scout.excludeSameNamespace }}
                 {{- $excludeNS = append $excludeNS .Release.Namespace }}
             {{- end}}{{/* if */}}
-            - --excluded-namespaces={{ $excludeNS | join "," | quote }}
+            - --excluded-namespaces={{ $excludeNS | join "," }}
             - --falco-event-max-diff=90s
             {{- if ne (len .Values.scout.scout.falcoInternalEvent) 0 }}
             - --falco-internal-event
@@ -208,7 +208,7 @@ spec:
             {{- range $excludedPaths }}
               {{- $combinedListPath = append $combinedListPath . }}
             {{- end }}{{/* range */}}
-            - --malware-default-exclude-paths={{ $combinedListPath | join "," | quote }}
+            - --malware-default-exclude-paths={{ $combinedListPath | join "," }}
             - --malware-job-status-file-path={{ printf "%s%s%s" "../.." $jobStatusMntPath "/malware_scan_job_status.json" }}
             - --malware-scan-worker-count={{ .Values.malwareScanner.scanWorkerCount }}
             {{- end }}{{/* if .Values.visionOne.malwareScanning.enabled */}}
