@@ -130,6 +130,9 @@ visionOne:
     ## Default value: info
     logLevel: info
 
+  gkeAllowlistSynchronizer:
+    enabled: false
+
   oversight:
     enabled: true
 

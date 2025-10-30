@@ -1,0 +1,17 @@
+{{- if eq true .Values.visionOne.gkeAllowlistSynchronizer.enabled }}
+apiVersion: auto.gke.io/v1
+kind: AllowlistSynchronizer
+metadata:
+  name: trendmicro-scout-allowlist
+  namespace: kube-system
+  annotations:
+    autopilot.gke.io/partner: "trendmicro"
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation
+  labels:
+    {{- include "container.security.labels" . | nindent 4 }}
+spec:
+  allowlistPaths:
+  - "Trend-Vision-One/trendmicro-scout/v3.1.8/trend-vision-one-scout-v3.1.8.yaml"
+{{- end }}

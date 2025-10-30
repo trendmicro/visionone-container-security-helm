@@ -1,0 +1,84 @@
+{{- if eq true .Values.visionOne.gkeAllowlistSynchronizer.enabled }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: trendmicro-allowlist-cleanup
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": pre-delete
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
+  labels:
+    {{- include "container.security.labels" . | nindent 4 }}
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: trendmicro-allowlist-cleanup
+  annotations:
+    "helm.sh/hook": pre-delete
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
+  labels:
+    {{- include "container.security.labels" . | nindent 4 }}
+rules:
+- apiGroups: ["auto.gke.io"]
+  resources: ["allowlistsynchronizers"]
+  verbs: ["get", "list", "delete"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: trendmicro-allowlist-cleanup
+  annotations:
+    "helm.sh/hook": pre-delete
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
+  labels:
+    {{- include "container.security.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: trendmicro-allowlist-cleanup
+subjects:
+- kind: ServiceAccount
+  name: trendmicro-allowlist-cleanup
+  namespace: {{ .Release.Namespace }}
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: trendmicro-allowlist-cleanup
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": pre-delete
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
+  labels:
+    {{- include "container.security.labels" . | nindent 4 }}
+spec:
+  backoffLimit: 3
+  activeDeadlineSeconds: 60
+  ttlSecondsAfterFinished: 30
+  template:
+    metadata:
+      labels:
+        {{- include "container.security.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: trendmicro-allowlist-cleanup
+      restartPolicy: Never
+      containers:
+      - name: cleanup-allowlist
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/bash
+        - -c
+        - |
+          echo "Deleting AllowlistSynchronizer trendmicro-scout-allowlist..."
+          kubectl delete allowlistsynchronizer trendmicro-scout-allowlist -n kube-system --ignore-not-found=true
+          echo "AllowlistSynchronizer deleted successfully!"
+{{- end }}
