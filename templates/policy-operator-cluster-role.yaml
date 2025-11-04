@@ -29,6 +29,7 @@ rules:
   resources:
   - clusterpolicies
   - runtimerulesets
+  - customrulesets
   - clusters
   - attestors
   - fimpolicies
@@ -45,8 +46,10 @@ rules:
   resources:
     - clusterpolicies/status
     - runtimerulesets/status
+    - customrulesets/status
     - attestors/status
     - clusters/status
+    - customrulesets/finalizers
     - clusters/finalizers
     - attestors/finalizers
     - fimpolicies/finalizers

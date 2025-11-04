@@ -93,6 +93,7 @@ spec:
         - --custom-rules-config-name={{ template "container.security.name" . }}-runtime-customrules     
         - --oci-repository-provided={{ default "false" .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled }}
         - --oci-repository-url={{ join "," .Values.visionOne.runtimeSecurity.customRules.ociRepository.artifactUrls | quote }}
+        - --enable-custom-ruleset={{ default "false" .Values.visionOne.runtimeSecurity.customRules.enabled }}
         {{- if gt (int .Values.replicas.policyOperator) 1 }}
         - --leader-elect
         {{- end }}
