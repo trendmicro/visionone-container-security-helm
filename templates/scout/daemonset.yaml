@@ -155,6 +155,14 @@ spec:
             - mountPath: /root/.falco
               name: components-dir
               readOnly: true
+            {{- if .Values.serviceGateway.enabled }}
+            - name: service-gateway-config
+              mountPath: /etc/service-gateway/config
+              readOnly: true
+            - name: service-gateway-credentials
+              mountPath: /etc/service-gateway/credentials
+              readOnly: true
+            {{- end }}
             {{- include "proxy.selfSignedCertificates.volumeMounts" . | nindent 12 }}
         - name: scout
           {{- $imageDefaults := .Values.images.defaults }}
@@ -193,6 +201,7 @@ spec:
             - --k8s-metacollector-cert=/etc/scout/metacollector-ca-cert.pem
             {{- end}}
 {{- include "containerRuntime.sock.args" ( list "cri" "" .Values.scout.falco ) | trim | nindent 12 }}
+            - --service-gateway-enabled={{ default "false" .Values.serviceGateway.enabled }}
             - --malware-scanning={{ default "false" .Values.visionOne.malwareScanning.enabled }}
             - --secret-scanning={{ default "false" .Values.visionOne.secretScanning.enabled }}
             - --malware-event-count={{ .Values.visionOne.malwareScanning.maximumEventCount}}
@@ -294,6 +303,14 @@ spec:
             - mountPath: /var/scout/customrules.d
               name: customrules-volume
 {{- end }}
+            {{- if .Values.serviceGateway.enabled }}
+            - name: service-gateway-config
+              mountPath: /etc/service-gateway/config
+              readOnly: true
+            - name: service-gateway-credentials
+              mountPath: /etc/service-gateway/credentials
+              readOnly: true
+            {{- end }}
             {{- include "proxy.selfSignedCertificates.volumeMounts" . | nindent 12 }}
           resources:
 {{ toYaml (default .Values.resources.defaults .Values.resources.scout) | indent 12 }}
@@ -349,6 +366,7 @@ spec:
 {{- if .Values.scout.falco.modernBpf }}
             - --btfpath=/sys/kernel/btf/vmlinux
 {{- end }}{{/* if */}}
+            - --service-gateway-enabled={{ default "false" .Values.serviceGateway.enabled }}
         {{- if .Values.scout.downloader.extraArgs }}
 {{ toYaml .Values.scout.downloader.extraArgs | indent 12 }}
         {{- end }}{{/* if */}}
@@ -383,6 +401,14 @@ spec:
             - mountPath: /secrets
               name: auth-token
               readOnly: true
+            {{- if .Values.serviceGateway.enabled }}
+            - name: service-gateway-config
+              mountPath: /etc/service-gateway/config
+              readOnly: true
+            - name: service-gateway-credentials
+              mountPath: /etc/service-gateway/credentials
+              readOnly: true
+            {{- end }}
             {{- include "proxy.selfSignedCertificates.volumeMounts" . | nindent 12 }}
 {{- if $securityContextEnabled }}
           securityContext:
@@ -394,6 +420,14 @@ spec:
         - name: auth-token
           secret:
             secretName: {{ template "container.security.fullname" . }}-auth
+        {{- if .Values.serviceGateway.enabled }}
+        - name: service-gateway-config
+          configMap:
+            name: {{ template "container.security.name" . }}-service-gateway
+        - name: service-gateway-credentials
+          secret:
+            secretName: {{ template "container.security.name" . }}-service-gateway-credentials
+        {{- end }}
 {{- include "containerRuntime.sock.volumes" ( list $ .Values.scout.falco ) | trim | nindent 8 }}
         - name: dev-fs
           hostPath:

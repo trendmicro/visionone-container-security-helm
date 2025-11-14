@@ -1,0 +1,15 @@
+{{- if .Values.serviceGateway.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "container.security.name" . }}-service-gateway
+  labels:
+    {{- include "container.security.labels" . | nindent 4 }}
+data:
+  {{- if .Values.serviceGateway.appliances }}
+  urls: {{ toJson .Values.serviceGateway.appliances | quote }}
+  {{- else }}
+  urls: "[]"
+  {{- end }}
+  allAppliances: {{ default "false" .Values.serviceGateway.allAppliances | toString | quote }}
+{{- end }}

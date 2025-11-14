@@ -101,6 +101,7 @@ spec:
             - --release-service={{ .Release.Service }}
             - --release-name={{ .Release.Name }}
             - --container-security-name={{ include "container.security.name" . }}
+            - --service-gateway-enabled={{ default "false" .Values.serviceGateway.enabled }}
             - --scout-image-uri
             {{- with .Values.images.scout }}
             {{- $project := (default $imageDefaults.project .project) }}
@@ -170,12 +171,28 @@ spec:
             - name: webhook-certs
               mountPath: /etc/webhook/certs
               readOnly: true
+            {{- if .Values.serviceGateway.enabled }}
+            - name: service-gateway-config
+              mountPath: /etc/service-gateway/config
+              readOnly: true
+            - name: service-gateway-credentials
+              mountPath: /etc/service-gateway/credentials
+              readOnly: true
+            {{- end }}
           resources:
 {{ toYaml (default .Values.resources.defaults .Values.resources.fargateInjector) | indent 12 }}
       volumes:
         - name: webhook-certs
           secret:
             secretName: {{ template "fargateInjector.fullname" . }}-tls-certificate
+        {{- if .Values.serviceGateway.enabled }}
+        - name: service-gateway-config
+          configMap:
+            name: {{ template "container.security.name" . }}-service-gateway
+        - name: service-gateway-credentials
+          secret:
+            secretName: {{ template "container.security.name" . }}-service-gateway-credentials
+        {{- end }}
 {{- if or .Values.nodeSelector.defaults .Values.nodeSelector.fargateInjector }}
       nodeSelector:
 {{ toYaml (default .Values.nodeSelector.defaults .Values.nodeSelector.fargateInjector) | indent 8 }}

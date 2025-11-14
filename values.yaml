@@ -1250,6 +1250,56 @@ images:
     digest: sha256:0a93f0e1e5758e8022b728959edf63a99107c7e912d1566a63e51c462a72ad5d
 
 ##
+## Service Gateway Configuration
+## Enables Service Gateway proxy support for outbound traffic
+##
+## Example:
+## serviceGateway:
+##   enabled: true
+##   auth:
+##     password: "ABC123456789"
+##     expiredDateTime: "2024-12-31T23:59:59Z"
+##   appliances:
+##     - "192.168.1.100"
+##     - "192.168.1.101"
+##     - "10.0.0.50"
+##   allAppliances: false
+##
+serviceGateway:
+  ## enabled controls whether Service Gateway functionality is enabled
+  ##
+  ## Default value: false
+  enabled: false
+
+  ## allAppliances, when true, retrieves all available service gateway appliances automatically
+  ## When false, only uses the appliances specified in the appliances list
+  ##
+  ## Default value: false
+  allAppliances: false
+
+  ## auth contains authentication credentials for Service Gateway
+  auth:
+    ## password is the Client Security Network credential for Service Gateway authentication
+    ## This will be stored in the secret if the secret doesn't exist
+    ## After the secret is created, it will use the secret
+    ##
+    ## Default value: ""
+    password: ""
+
+    ## expiredDateTime is the expiration date for the CSN credential
+    ## Format: "2024-12-31T23:59:59Z"
+    ##
+    ## Default value: ""
+    expiredDateTime: ""
+
+  ## appliances is a list of Service Gateway appliance endpoints
+  ## Each entry should be in the format "ip:port"
+  ## Only used when allAppliances is false
+  ##
+  ## Default value: []
+  appliances: []
+
+##
 ## Determine whether to use existing secrets in the target namespace rather than
 ## specifying in overrides.yaml. Useful if you want to manage secrets on your own, e.g., in argocd.
 ##
@@ -1279,6 +1329,13 @@ useExistingSecrets:
   ##
   ## Default value: false
   outboundProxy: false
+
+  ## serviceGateway, if set to true, will use the existing secret for service gateway credentials.
+  ## The secret should be named trendmicro-container-security-service-gateway-credentials in the target namespace if this is enabled.
+  ## For secret format, see templates/service-gateway-secret.yaml
+  ##
+  ## Default value: false
+  serviceGateway: false
 
   ## operatorSecrets, if set to true, will attempt to reuse existing secret values when deploying.
   ## If these secrets are not found, new values will be generated.

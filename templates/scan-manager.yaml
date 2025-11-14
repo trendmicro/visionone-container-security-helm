@@ -117,6 +117,7 @@ spec:
         - --openshift-service-account-annotations={{ $annotations | replace "\n" "," | replace " " "" }}
         {{- end }}
         {{- end }}
+        - --service-gateway-enabled={{ default "false" .Values.serviceGateway.enabled }}
         env:
         {{- include "proxy.selfSignedCertificates.env" . | nindent 8}}
         {{- include "container.security.proxy.env" . | nindent 8 }}
@@ -146,6 +147,14 @@ spec:
             readOnly: true
           - mountPath: /var/scanmanager
             name: scanmanager-workdir
+          {{- if .Values.serviceGateway.enabled }}
+          - name: service-gateway-config
+            mountPath: /etc/service-gateway/config
+            readOnly: true
+          - name: service-gateway-credentials
+            mountPath: /etc/service-gateway/credentials
+            readOnly: true
+          {{- end }}
           {{- include "proxy.selfSignedCertificates.volumeMounts" . | nindent 10 }}
         resources:
 {{ toYaml (default .Values.resources.defaults .Values.resources.scanManager) | indent 12 }}
@@ -170,6 +179,14 @@ spec:
         - name: grpc-certs
           secret:
             secretName: trendmicro-scan-manager-tls-certificate
+        {{- if .Values.serviceGateway.enabled }}
+        - name: service-gateway-config
+          configMap:
+            name: {{ template "container.security.name" . }}-service-gateway
+        - name: service-gateway-credentials
+          secret:
+            secretName: {{ template "container.security.name" . }}-service-gateway-credentials
+        {{- end }}
         {{- include "proxy.selfSignedCertificates.volumes" . | nindent 8 }}
       terminationGracePeriodSeconds: 10
 {{- if or .Values.nodeSelector.defaults .Values.nodeSelector.scanManager }}

@@ -62,6 +62,14 @@ spec:
             mountPath: /secrets
           - name: policy-config
             mountPath: /etc/config
+          {{- if .Values.serviceGateway.enabled }}
+          - name: service-gateway-config
+            mountPath: /etc/service-gateway/config
+            readOnly: true
+          - name: service-gateway-credentials
+            mountPath: /etc/service-gateway/credentials
+            readOnly: true
+          {{- end }}
           {{- include "proxy.selfSignedCertificates.volumeMounts" . | nindent 10 }}
         args:
         - --zap-devel={{ default "false" .Values.logConfig.devel }}
@@ -90,6 +98,7 @@ spec:
         - --spc-mode={{ default "false" .Values.spc.enabled }}
         - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
         - --policyOperator-service-url={{ (include "policyOperator.svc.url" .) }}
+        - --service-gateway-enabled={{ default "false" .Values.serviceGateway.enabled }}
         command:
         - /manager
         env:
@@ -160,6 +169,14 @@ spec:
                   items:
                     - key: compliance-scan-job-template.yaml
                       path: compliance-scan-job-template.yaml
+        {{- if .Values.serviceGateway.enabled }}
+        - name: service-gateway-config
+          configMap:
+            name: {{ template "container.security.name" . }}-service-gateway
+        - name: service-gateway-credentials
+          secret:
+            secretName: {{ template "container.security.name" . }}-service-gateway-credentials
+        {{- end }}
         {{- include "proxy.selfSignedCertificates.volumes" . | nindent 8 }}
 ---
 apiVersion: v1

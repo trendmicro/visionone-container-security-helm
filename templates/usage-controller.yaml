@@ -64,6 +64,7 @@ spec:
         - --application-version={{ .Chart.AppVersion }}
         - --spc-mode={{ default "false" .Values.spc.enabled }}
         - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
+        - --service-gateway-enabled={{ default "false" .Values.serviceGateway.enabled }}
         command:
         - /manager
         env:
@@ -88,6 +89,14 @@ spec:
         volumeMounts:
           - mountPath: /secrets
             name: auth-token
+          {{- if .Values.serviceGateway.enabled }}
+          - name: service-gateway-config
+            mountPath: /etc/service-gateway/config
+            readOnly: true
+          - name: service-gateway-credentials
+            mountPath: /etc/service-gateway/credentials
+            readOnly: true
+          {{- end }}
           {{- include "proxy.selfSignedCertificates.volumeMounts" . | nindent 10 }}
         resources:
 {{ toYaml (default .Values.resources.defaults .Values.resources.usage) | indent 12 }}
@@ -99,6 +108,14 @@ spec:
         - name: rbac-proxy-certs
           secret:
             secretName: {{ template "kubeRbacProxy.fullname" . }}-tls-certificate
+        {{- if .Values.serviceGateway.enabled }}
+        - name: service-gateway-config
+          configMap:
+            name: {{ template "container.security.name" . }}-service-gateway
+        - name: service-gateway-credentials
+          secret:
+            secretName: {{ template "container.security.name" . }}-service-gateway-credentials
+        {{- end }}
         {{- include "proxy.selfSignedCertificates.volumes" . | nindent 8 }}
       terminationGracePeriodSeconds: 10
 {{- if or .Values.nodeSelector.defaults .Values.nodeSelector.usage }}

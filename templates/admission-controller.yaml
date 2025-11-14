@@ -107,6 +107,14 @@ spec:
               mountPath: /.sigstore
             - name: policy-config
               mountPath: /etc/config
+            {{- if .Values.serviceGateway.enabled }}
+            - name: service-gateway-config
+              mountPath: /etc/service-gateway/config
+              readOnly: true
+            - name: service-gateway-credentials
+              mountPath: /etc/service-gateway/credentials
+              readOnly: true
+            {{- end }}
             {{- include "proxy.selfSignedCertificates.volumeMounts" . | nindent 12 }}
           args:
             - --zap-devel={{ default "false" .Values.logConfig.devel }}
@@ -130,6 +138,7 @@ spec:
             - --trusted-images={{ include "digest" . }}
             - --spc-mode={{ default "false" .Values.spc.enabled }}
             - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
+            - --service-gateway-enabled={{ default "false" .Values.serviceGateway.enabled }}
             - 2>&1
           env:
             {{- include "proxy.selfSignedCertificates.env" . | nindent 12}}
@@ -165,6 +174,14 @@ spec:
                   name: {{ template "container.security.name" . }}-policy-config
               - configMap:
                   name: {{ template "container.security.name" . }}-attestors-config
+        {{- if .Values.serviceGateway.enabled }}
+        - name: service-gateway-config
+          configMap:
+            name: {{ template "container.security.name" . }}-service-gateway
+        - name: service-gateway-credentials
+          secret:
+            secretName: {{ template "container.security.name" . }}-service-gateway-credentials
+        {{- end }}
         {{- include "proxy.selfSignedCertificates.volumes" . | nindent 8 }}
 {{- if or .Values.nodeSelector.defaults .Values.nodeSelector.admissionController }}
       nodeSelector:
