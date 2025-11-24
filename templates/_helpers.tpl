@@ -198,6 +198,12 @@ helm.sh/chart: {{ include "container.security.chart" . }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/part-of: {{ include "container.security.name" . }}
 {{ include "malwareScanner.selectorLabels" . }}
+{{- range $k, $v := (default (dict) .Values.extraLabels) }}
+{{ $k }}: {{ quote $v }}
+{{- end }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
 {{- end }}
 
 {{/*
