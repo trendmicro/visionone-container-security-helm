@@ -499,7 +499,7 @@ spec:
 {{- if .Values.visionOne.runtimeSecurity.customRules.enabled }}
         - name: customrules-volume
           configMap:
-            name: {{ template "container.security.name" . }}-runtime-customrules
+            name: {{ template "container.security.name" . }}-runtime-customrules-config
 {{- end }}
         - name: scout-workdir
           emptyDir:

@@ -90,7 +90,8 @@ spec:
         - --malware-scan-enabled={{ default "false" .Values.visionOne.malwareScanning.enabled }}
         - --secret-scan-enabled={{ default "false" .Values.visionOne.secretScanning.enabled }}
         - --service-gateway-enabled={{ default "false" .Values.serviceGateway.enabled }}
-        - --custom-rules-config-name={{ template "container.security.name" . }}-runtime-customrules     
+        - --custom-rules-config-name={{ template "container.security.name" . }}-runtime-customrules-config
+        - --custom-rules-input-name={{ template "container.security.name" . }}-runtime-customrules     
         - --oci-repository-provided={{ default "false" .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled }}
         - --oci-repository-url={{ join "," .Values.visionOne.runtimeSecurity.customRules.ociRepository.artifactUrls | quote }}
         - --enable-custom-ruleset={{ default "false" .Values.visionOne.runtimeSecurity.customRules.enabled }}
