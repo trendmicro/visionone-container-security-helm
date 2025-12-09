@@ -82,40 +82,6 @@ make cri sockets list
 */ -}}
 {{- $_ := set $overrideConfig "ruleset_tags" (list .rulesetTag) }}
 
-{{- /*
-   http_output:
-    enabled: true
-    url: http://some.url
-    user_agent: "falcosecurity/falco"
-    ruleset_tag: customrule
-    custom_headers:
-    - "Authorization: Splunk ${SPLUNK_HEC_TOKEN}"
-    ca_path: "/etc/ssl/certs"
-    ca_cert: "/etc/ssl/certs/ca-certificates.crt"
-*/ -}}
-{{- $customHeaders := list }}
-{{- $hasHecTokenSecretName := (and .output.splunk.hecTokenSecretName (ne .output.splunk.hecTokenSecretName "")) -}}
-{{- range .output.splunk.headers}}
-{{- if contains "Authorization:" . }}
-{{- if $hasHecTokenSecretName -}}
-{{- fail "customRules.output.splunk.hecTokenSecretName automatically adds Splunk HEC auth header, no other Authorization headers allowed" -}}
-{{- end}}
-{{- end}}
-{{- $customHeaders = append $customHeaders . }}
-{{- end }}
-{{- if $hasHecTokenSecretName }}
-{{- $customHeaders = append $customHeaders "Authorization: Splunk ${SPLUNK_HEC_TOKEN}" }}
-{{- end }}
-
-{{- $_ := set $overrideConfig
-  "http_output" (dict 
-    "enabled" (and (eq .enabled true) (eq .output.visionOne.enabled false))
-    "url" (default "" .output.splunk.url)
-    "ruleset_tag" (default "" .rulesetTag)
-    "custom_headers" $customHeaders
-    "ca_path" "/etc/ssl/certs"
-    "ca_cert" "/etc/ssl/certs/ca-certificates.crt") 
-}}
 {{- end }}{{/*if .enabled*/}}
 {{- end }}{{/*with customRules*/}}
 

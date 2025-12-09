@@ -115,13 +115,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
-            {{- if .Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName }}
-            - name: SPLUNK_HEC_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName }}
-                  key: hec_secret
-            {{- end }}{{/* .Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName */}}
           volumeMounts:
 {{- include "containerRuntime.sock.volumeMounts" ( list "/host" .Values.scout.falco ) | trim | nindent 12 }}
             - mountPath: /host/dev

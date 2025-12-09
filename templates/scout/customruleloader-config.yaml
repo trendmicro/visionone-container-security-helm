@@ -24,21 +24,5 @@ data:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       {{- end }}
-        {{- if .output.splunk.url }}
-        splunk:
-          url: {{ .output.splunk.url }}
-          {{- if .output.splunk.headers }}
-          headers:
-          {{- $hasHecTokenSecretName := (and .output.splunk.hecTokenSecretName (ne .output.splunk.hecTokenSecretName "")) -}}
-          {{- range .output.splunk.headers }}
-          {{- if contains "Authorization:" . }}
-          {{- if $hasHecTokenSecretName }}
-          {{- fail "customRules.output.splunk.hecTokenSecretName automatically adds Splunk HEC auth header, no other Authorization headers allowed" -}}
-          {{- end }}
-          {{- end }}
-          - "{{ . }}"
-          {{- end }} {{/* range .output.splunk.headers */}}
-          {{- end }} {{/* if .output.splunk.headers */}}
-        {{- end }} {{/* if .output.splunk.url */}}
 {{- end }}
 {{- end }}

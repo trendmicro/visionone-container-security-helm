@@ -1318,16 +1318,6 @@ false
 {{- end -}}
 {{- end -}}
 
-{{/* hec client command line arguments as env variable*/}}
-{{- define "hec_client_params_as_env_var" -}}
-  {{- printf "-v" -}}
-  {{- with .url -}}{{- printf " -U \\\"%s\\\"" . -}}{{- end -}}
-  {{- range .headers -}}{{- printf " -H \\\"%s\\\"" . -}}{{- end -}}
-  {{- with .hecTokenSecretName -}}
-    {{- printf " -H \\\"%s\\\"" "Authorization: Splunk $(echo ${SPLUNK_HEC_TOKEN})" -}}
-  {{- end -}}
-{{- end -}}
-
 {{/*
 Return the sanitizer output configuration
 */}}

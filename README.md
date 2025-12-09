@@ -453,10 +453,6 @@ In your Falco event and V1CS UI you will see:
 proc.pcmdline=sampleProgram --password ********
 ```
 
-### Configuring Splunk HEC token for Falco Custom Rules
-
-To learn more about configuring the Splunk HEC token for falco custom rules, see the Splunk HEC Secret docs [here](./docs/falco-splunk-hec-secret.md).
-
 ### Configuring OCI repository artifacts for Falco Custom Rules
 
 To learn more about configuring OCI repository artifacts for falco custom rules, see the OCI repo docs [here](./docs/oci-artifact-with-falcoctl.md).

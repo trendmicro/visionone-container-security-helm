@@ -122,21 +122,6 @@ spec:
         env:
         - name: FALCOCMD
           value: falco --dry-run -o log_level=debug -o grpc.enabled=false -o stdout_output.enabled=true -r /rules/install
-        {{- if .Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName }}
-        - name: SPLUNK_HEC_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName }}
-              key: hec_secret
-        {{- end }}{{/* .Values.visionOne.runtimeSecurity.customRules.output.splunk.hecTokenSecretName */}}
-        - name: SIEM_CLUSTER_NAME
-          {{- if .Values.visionOne.runtimeSecurity.customRules.params.clusterName }}
-          value: {{ .Values.visionOne.runtimeSecurity.customRules.params.clusterName | quote }}
-          {{- else if .Values.visionOne.clusterName }}
-          value: {{ .Values.visionOne.clusterName | quote }}
-          {{- else }}
-          value: ""
-          {{- end }} 
         {{- if .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled }}
         {{- with .Values.visionOne.runtimeSecurity.customRules.ociRepository.basicAuthTokenSecretName }}
         - name: FALCOCTL_REGISTRY_AUTH_BASIC
