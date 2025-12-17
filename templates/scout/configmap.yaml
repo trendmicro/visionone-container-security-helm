@@ -140,16 +140,4 @@ make cri sockets list
 {{ $overrideConfig = mergeOverwrite $overrideConfig .Values.scout.falco.config }}
 {{- end -}}
 {{ toYaml (mergeOverwrite $falcoConfig $overrideConfig) | nindent 4 }}
-
----
-{{- if .Values.visionOne.runtimeSecurity.customRules.enabled }}
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ template "container.security.name" . }}-customrules
-  labels:
-    {{- include "scout.labels" . | nindent 4 }}
-data:
-{{ (tpl (.Files.Glob "config/customrules/*.{yaml,yml}").AsConfig .) | indent 2 }}
-{{- end }}
 {{- end }}

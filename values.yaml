@@ -209,6 +209,8 @@ visionOne:
         visionOne:
           ## enabled controls whether runtime events are forwarded to Vision One. Attention: enabling this will make Container Security stop sending events to your Splunk server.
           enabled: false
+      configmap:
+        name: ''
       ociRepository:
         # These fields are subject to change
         enabled: false

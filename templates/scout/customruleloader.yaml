@@ -175,7 +175,7 @@ spec:
 {{- else }}
       - name: rulesfiles
         configMap:
-          name: {{ template "container.security.name" . }}-customrules
+          name: {{ required "visionOne.runtimeSecurity.customRules.configmap.name is required when ociRepository is disabled" .Values.visionOne.runtimeSecurity.customRules.configmap.name }}
 {{- end }}
       - name: tmpdir
         emptyDir:
