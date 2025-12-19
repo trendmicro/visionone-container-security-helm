@@ -198,11 +198,6 @@ visionOne:
     enabled: false
     customRules:
       rulesetTag: customrule
-      enabled: true
-      output:
-        visionOne:
-          ## enabled controls whether custom runtime events are forwarded to Vision One. This field is deprecated and will be removed in future releases as forward to Vision One is the only option.
-          enabled: true
       configmap:
         name: ''
       ociRepository:

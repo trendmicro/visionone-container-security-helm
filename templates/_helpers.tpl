@@ -1389,3 +1389,13 @@ Return the SSL_CERT_FILE env for self-signed certificates
   value: /etc/self-signed-certs/certificate.crt
 {{- end }}
 {{- end }}
+
+{{/*
+Check if custom rules are enabled (either via OCI repository or configmap)
+Returns "true" if custom rules should be enabled, empty string otherwise
+*/}}
+{{- define "customRules.enabled" -}}
+{{- if or .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled .Values.visionOne.runtimeSecurity.customRules.configmap.name -}}
+true
+{{- end -}}
+{{- end -}}

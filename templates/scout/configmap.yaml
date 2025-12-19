@@ -55,7 +55,7 @@ make cri sockets list
 
 {{- /* custom rules config */ -}}
 {{- with .Values.visionOne.runtimeSecurity.customRules }}
-{{- if .enabled }}
+{{- if or .ociRepository.enabled .configmap.name }}
 {{- /* 
     rules_files:
     ...
