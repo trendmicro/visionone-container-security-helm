@@ -25,6 +25,10 @@ metadata:
     gardener.cloud/role: extension
 spec:
   replicas: {{ default 1 .Values.replicas.apiServerModifier }}
+{{- if eq (include "container.security.deployOnSeedCluster" .) "true" }}
+  strategy:
+    type: Recreate
+{{- end }}
   selector:
     matchLabels:
       {{- include "apiServerModifier.selectorLabels" . | nindent 6 }}

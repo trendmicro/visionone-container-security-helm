@@ -8,6 +8,10 @@ metadata:
     {{- include "policyOperator.labels" . | nindent 4 }}
 spec:
   replicas: 1
+{{- if eq (include "container.security.deployOnSeedCluster" .) "true" }}
+  strategy:
+    type: Recreate
+{{- end }}
   selector:
     matchLabels:
       {{- include "policyOperator.selectorLabels" . | nindent 6 }}

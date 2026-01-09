@@ -23,6 +23,10 @@ metadata:
     {{- include "auditLogCollector.labels" . | nindent 4 }}
 spec:
   replicas: {{ default 1 .Values.replicas.auditLogCollector }}
+{{- if eq (include "container.security.deployOnSeedCluster" .) "true" }}
+  strategy:
+    type: Recreate
+{{- end }}
   selector:
     matchLabels:
       {{- include "auditLogCollector.selectorLabels" . | nindent 6 }}
