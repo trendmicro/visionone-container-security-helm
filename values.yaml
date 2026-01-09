@@ -1429,11 +1429,11 @@ images:
 
   auditLogCollector:
     repository: audit-log-collector
-    # digest: sha256:TBD
+    digest: sha256:351992fa324b2a16c3f3509557eaed0d7d0476eae3880d77f04fa33f757b4902
 
   apiServerModifier:
     repository: api-server-modifier
-    # digest: sha256:TBD
+    digest: sha256:02b571088a57cd65721d7fe1910016efb58a28f81f108b7bafb935340abebbf4
 
 ##
 ## Service Gateway Configuration
