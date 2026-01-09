@@ -1,4 +1,4 @@
-{{- if and (eq true .Values.visionOne.admissionController.enabled) (eq true .Values.visionOne.vulnerabilityScanning.enabled) }}
+{{- if and (eq true .Values.visionOne.admissionController.enabled) (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq (include "container.security.skipStandardComponents" .) "false") }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -29,7 +29,7 @@ subjects:
   namespace: {{ .Release.Namespace }}
 {{- end }}
 ---
-{{- if (eq true .Values.visionOne.admissionController.enabled) }}
+{{- if and (eq true .Values.visionOne.admissionController.enabled) (eq (include "container.security.skipStandardComponents" .) "false") }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -64,7 +64,7 @@ subjects:
   namespace: {{ .Release.Namespace }}
 {{- end }}
 ---
-{{- if eq .Values.visionOne.admissionController.readPullSecretsFrom "customerNamespace" }}
+{{- if and (eq .Values.visionOne.admissionController.readPullSecretsFrom "customerNamespace") (eq (include "container.security.skipStandardComponents" .) "false") }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:

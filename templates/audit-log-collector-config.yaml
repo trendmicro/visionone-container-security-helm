@@ -1,0 +1,53 @@
+{{- if and .Values.auditLogCollection.enabled (eq .Values.auditLogCollection.provider "gardener") .Values.auditLogCollection.gardener.seedCluster }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "container.security.name" . }}-audit-log-collector-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "auditLogCollector.labels" . | nindent 4 }}
+data:
+  falco.yaml: |
+    rules_files:
+      - /etc/audit-log-collector/rbac_filter_rule.yaml
+
+    # Run in userspace mode - no kernel driver needed for k8saudit plugin
+    engine:
+      kind: nodriver
+
+    # Enable stdout output for debugging
+    stdout_output:
+      enabled: false
+
+    # Enable gRPC output for audit-log-collector
+    grpc_output:
+      enabled: true
+
+    grpc:
+      enabled: true
+      threadiness: 0
+      bind_address: "unix:///var/run/audit-log-collector/audit-log-collector.sock"
+
+    plugins:
+      - name: k8saudit
+        library_path: libk8saudit.so
+        init_config: ""
+        open_params: "http://0.0.0.0:{{ .Values.visionOne.auditLogCollector.webhookPort }}/k8s-audit"
+      - name: json
+        library_path: libjson.so
+        init_config: ""
+
+    load_plugins: [k8saudit, json]
+
+    # Ensure Falco waits for plugin events
+    watch_config_files: false
+
+  rbac_filter_rule.yaml: |
+    - rule: RBAC Activity Detected
+      desc: Detect any Kubernetes RBAC-related API activity
+      condition: ka.target.resource in ("roles", "clusterroles", "rolebindings", "clusterrolebindings") and jevt.value[/stage]=ResponseComplete
+      output: level=%jevt.value[/level] auditID=%ka.auditid stage=%ka.stage requestURI=%ka.uri verb=%ka.verb user.name=%ka.user.name user.groups=%ka.user.groups user.extra=%jevt.value[/user/extra] sourceIPs=%jevt.value[/sourceIPs] userAgent=%ka.useragent objectRef.resource=%ka.target.resource objectRef.namespace=%ka.target.namespace objectRef.name=%ka.target.name objectRef.apiGroup=%jevt.value[/objectRef/apiGroup] objectRef.apiVersion=%jevt.value[/objectRef/apiVersion] objectRef.subresource=%ka.target.subresource objectRef.uid=%jevt.value[/objectRef/uid] responseStatus.code=%ka.response.code responseStatus.reason=%ka.response.reason responseStatus.status=%jevt.value[/responseStatus/status] responseStatus.message=%jevt.value[/responseStatus/message] requestReceivedTimestamp=%jevt.value[/requestReceivedTimestamp] stageTimestamp=%jevt.value[/stageTimestamp] annotations.decision=%ka.auth.decision annotations.reason=%ka.auth.reason
+      priority: NOTICE
+      source: k8s_audit
+      tags: [k8s, audit, rbac]
+{{- end }}

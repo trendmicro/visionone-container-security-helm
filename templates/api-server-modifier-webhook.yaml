@@ -1,0 +1,85 @@
+{{- if eq (include "container.security.deployOnSeedCluster" .) "true" }}
+
+{{- $secretName := printf "%s-api-server-modifier-tls" (include "container.security.name" .) }}
+{{- $useExisting := and .Values.useExistingSecrets (eq "true" (.Values.useExistingSecrets.operatorSecrets | toString)) }}
+{{- $existingSecret := "" }}
+{{- if $useExisting }}
+  {{- $existingSecret = lookup "v1" "Secret" .Release.Namespace $secretName }}
+{{- end }}
+
+{{- $keyPem := "" }}
+{{- $certPem := "" }}
+{{- $caCertPem := "" }}
+{{- $cn := printf "%s.%s.svc" "trendmicro-api-server-modifier" .Release.Namespace }}
+
+{{- if and $useExisting $existingSecret }}
+  {{- /* Use existing certificate data */ -}}
+  {{- $keyPem = index $existingSecret.data "key.pem" }}
+  {{- $certPem = index $existingSecret.data "cert.pem" }}
+  {{- $caCertPem = index $existingSecret.data "ca-cert.pem" }}
+{{- else }}
+  {{- /* Generate new certificates */ -}}
+  {{- $ca := genCA (printf "%s-ca" "trendmicro-api-server-modifier") (default 3650 (int .Values.visionOne.apiServerModifier.certificate.lifetime)) }}
+  {{- $cert := genSignedCert (default $cn .Values.visionOne.apiServerModifier.certificate.commonName) (default nil .Values.visionOne.apiServerModifier.certificate.ipAlternativeNames) (default (list $cn) .Values.visionOne.apiServerModifier.certificate.dnsAlternativeNames) (default 3650 (int .Values.visionOne.apiServerModifier.certificate.lifetime)) $ca }}
+  {{- $keyPem = $cert.Key | b64enc }}
+  {{- $certPem = $cert.Cert | b64enc }}
+  {{- $caCertPem = $ca.Cert | b64enc }}
+{{- end }}
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $secretName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "apiServerModifier.labels" . | nindent 4 }}
+type: kubernetes.io/tls
+data:
+  tls.key: {{ $keyPem | quote }}
+  tls.crt: {{ $certPem | quote }}
+  ca.crt: {{ $caCertPem | quote }}
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: {{ include "container.security.clusterResourceName" (dict "name" "trendmicro-api-server-modifier-webhook" "context" .) }}
+  labels:
+    {{- include "apiServerModifier.labels" . | nindent 4 }}
+    gardener.cloud/role: extension
+    gardener.cloud/extension-type: apiserver-modifier
+webhooks:
+- name: {{ default $cn .Values.visionOne.apiServerModifier.certificate.commonName }}
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    service:
+      name: trendmicro-api-server-modifier
+      namespace: {{ .Release.Namespace }}
+      path: /mutate-deployment
+      port: 443
+    caBundle: {{ $caCertPem | quote }}
+  failurePolicy: {{ .Values.visionOne.apiServerModifier.failurePolicy | default "Fail" }}
+  matchPolicy: Equivalent
+  rules:
+  - apiGroups:
+    - apps
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - deployments
+    scope: Namespaced
+  sideEffects: None
+  timeoutSeconds: {{ .Values.visionOne.apiServerModifier.webhookTimeoutSeconds | default 30 }}
+  namespaceSelector:
+    matchLabels:
+      gardener.cloud/role: shoot
+  objectSelector:
+    matchLabels:
+      app: kubernetes
+      role: apiserver
+{{- end }}

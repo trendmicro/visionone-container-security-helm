@@ -1,4 +1,4 @@
-{{- if eq true .Values.visionOne.admissionController.enabled }}
+{{- if and (eq true .Values.visionOne.admissionController.enabled) (eq (include "container.security.skipStandardComponents" .) "false") }}
 
 {{- $secretName := printf "%s-tls-certificate" (include "admissionController.fullname" .) }}
 {{- $useExisting := and .Values.useExistingSecrets (eq "true" (.Values.useExistingSecrets.operatorSecrets | toString)) }}

@@ -1,3 +1,4 @@
+{{- if eq (include "container.security.skipStandardComponents" .) "false" }}
 {{- $secretName := printf "%s-tls-certificate" (include "kubeRbacProxy.fullname" .) }}
 {{- $useExisting := and .Values.useExistingSecrets (eq "true" (.Values.useExistingSecrets.operatorSecrets | toString)) }}
 {{- $existingSecret := "" }}
@@ -37,3 +38,4 @@ data:
   key.pem: {{ $keyPem | quote }}
   cert.pem: {{ $certPem | quote }}
   ca-cert.pem: {{ $caCertPem | quote }}
+{{- end }}

@@ -1,4 +1,4 @@
-{{- if or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled) (eq true .Values.visionOne.secretScanning.enabled) }}
+{{- if and (or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled) (eq true .Values.visionOne.secretScanning.enabled)) (eq (include "container.security.skipStandardComponents" .) "false") }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -288,6 +288,7 @@ metadata:
   {{- end }}
 {{- end }}
 {{- end }}
+{{- if eq (include "container.security.skipStandardComponents" .) "false" }}
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -324,6 +325,17 @@ spec:
         {{- include "scanManager.labels" . | nindent 8 }}
     spec:
       serviceAccountName: scan-manager-cleanup-resources-service-account
+{{- if eq (include "container.security.deployOnSeedCluster" .) "true" }}
+      # hostNetwork and dnsPolicy are required for the controller to access the seed cluster API
+      # in Gardener shoot namespaces. When deployed in a shoot namespace, pods use the shoot cluster's DNS
+      # (not the seed cluster's DNS), which prevents the controller from resolving "kubernetes.default.svc"
+      # and connecting to the seed cluster API server to watch and manage resources.
+      # hostNetwork: true allows the pod to use the host's network namespace and access seed cluster services.
+      # dnsPolicy: ClusterFirstWithHostNet ensures Kubernetes DNS resolution still works with hostNetwork enabled.
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+{{- end }}
+
 {{- $securityContextEnabled := .Values.securityContext.enabled }}
 {{- $securityContext := default .Values.securityContext.default .Values.securityContext.scanManager }}
 {{- $podSecurityContext := default .Values.securityContext.default.pod $securityContext.pod }}
@@ -413,4 +425,5 @@ spec:
 {{- $classname := (default (default "" .Values.priorityClassName.default ) .Values.priorityClassName.scanManager) }}
 {{- if not (eq "" $classname) }}
       priorityClassName: "{{ $classname }}"
+{{- end }}
 {{- end }}

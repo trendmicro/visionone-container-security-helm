@@ -1,4 +1,4 @@
-{{- if and (eq true .Values.visionOne.runtimeSecurity.enabled) (eq true .Values.visionOne.fargateInjector.enabled) }}
+{{- if and (eq true .Values.visionOne.runtimeSecurity.enabled) (eq true .Values.visionOne.fargateInjector.enabled) (eq (include "container.security.skipStandardComponents" .) "false") }}
 
 {{- $secretName := printf "%s-tls-certificate" (include "fargateInjector.fullname" .) }}
 {{- $useExisting := and .Values.useExistingSecrets (eq "true" (.Values.useExistingSecrets.operatorSecrets | toString)) }}

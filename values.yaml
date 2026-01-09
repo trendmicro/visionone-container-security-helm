@@ -343,12 +343,96 @@ visionOne:
     ## Default value: 300
     scanTimeoutSeconds: 300
 
-## fileIntegrityMonitoring is a section that controls the file integrity monitoring feature
+  ## fileIntegrityMonitoring is a section that controls the file integrity monitoring feature
   fileIntegrityMonitoring:
     enabled: false
 
     ## sweepInterval is the time interval at which FIM will refresh containers
     sweepInterval: 1m
+
+  auditLogCollector:
+    ## logLevel sets the log verbosity level. Supported values are debug, info, and error
+    ##
+    ## Default value: info
+    logLevel: info
+
+    ## webhookPort is the port for the audit webhook endpoint
+    ## Used by Falco to receive K8s audit logs
+    ##
+    ## Default value: 8030
+    webhookPort: 8030
+
+  apiServerModifier:
+    ## logLevel sets the log verbosity level. Supported values are debug, info, and error
+    ##
+    ## Default value: info
+    logLevel: info
+
+    ## failurePolicy defines the behavior if an unrecognized error or timeout occurs.
+    ## For Gardener seed cluster deployment, use "Fail" to ensure audit configuration is always injected.
+    ##
+    ## Default value: Fail
+    failurePolicy: Fail
+
+    ## webhookTimeoutSeconds defines the timeout used in mutating webhook.
+    ##
+    ## Default value: 30
+    webhookTimeoutSeconds: 30
+
+    ## tlsConfig contains TLS configuration for the API server modifier webhook
+    tlsConfig:
+      ## minTLSVersion is the minimum TLS version that the server will accept.
+      ## Value must match version names from https://golang.org/pkg/crypto/tls/#pkg-constants.
+      ##
+      ## Default value: VersionTLS12
+      minTLSVersion: VersionTLS12
+
+      ## cipherSuites is a list of supported secure go cipher suites for TLS 1.2 and 1.3.
+      ##
+      ## Default value: List of secure cipher suites
+      cipherSuites:
+      - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+      - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+      - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+      - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+
+    certificate:
+      ## commonName is the common name to use in the default signed certificate.
+      ##
+      ## Default value:
+      commonName:
+
+      ## ipAlternativeNames is a list of IP addresses to include as alternate names.
+      ## in the default signed certificate.
+      ##
+      ## Default value: []
+      ipAlternativeNames: []
+
+      ## dnsAlternativeNames is a list of DNS names to include as alternate names
+      ## in the default signed certificate.
+      ##
+      ## Default value: []
+      dnsAlternativeNames: []
+
+      ## lifetime is the lifetime in days of the default signed certificate.
+      ##
+      ## Default value: 3650
+      lifetime: 3650
+
+    ## metricsPort is the port for the metrics endpoint
+    ##
+    ## Default value: 8040
+    metricsPort: 8040
+
+    ## healthProbePort is the port for the health probe endpoint
+    ##
+    ## Default value: 8050
+    healthProbePort: 8050
+
+    ## webhookPort is the port for the mutating webhook endpoint
+    ##
+    ## Default value: 8060
+    webhookPort: 8060
 
   policyOperator:
     ## reconciliationPeriod is the time interval at which policy operator will reconcile the custom resources
@@ -394,10 +478,53 @@ visionOne:
     ## Default value: 8070
     servicePort: 8070
 
+    ## metricsPort is the port for the metrics endpoint
+    ##
+    ## Default value: 8080
+    metricsPort: 8080
+
+    ## healthProbePort is the port for the health probe endpoint
+    ##
+    ## Default value: 8090
+    healthProbePort: 8090
+
   experimental:
     ## enable the experimental features. Experimental features are not supported in production environments,
-    ## considered unstable and may be removed or changed in future releases. 
+    ## considered unstable and may be removed or changed in future releases.
     enabled: false
+
+## Audit Log Collection Configuration
+## Enables collection of Kubernetes API server audit logs for RBAC tracking
+auditLogCollection:
+  ## enabled controls whether audit log collection is enabled
+  ##
+  ## Default value: false
+  enabled: false
+
+  ## provider specifies the audit log provider type
+  ## Supported values: selfManaged, aks, gke, gardener
+  ##
+  ## Default value: ""
+  provider: ""
+
+  gardener:
+    ## seedCluster determines whether this is a Gardener seed cluster deployment
+    ## When true: deploys only seed cluster components (audit-log-collector, api-server-modifier, policy-operator)
+    ## When false: deploys standard V1CS components with audit log collection enabled
+    ##
+    ## Default value: false
+    seedCluster: false
+
+    ## CRD Installation Configuration for Seed Cluster
+    ## Only applies when seedCluster is true
+    crds:
+      ## install controls whether CRDs are created in seed cluster mode
+      ## When true: CRDs are installed only if they don't already exist (auto-detection via lookup)
+      ## When false: CRDs are never installed (force skip)
+      ## In non-seed-cluster mode, CRDs are always installed regardless of this setting
+      ##
+      ## Default value: true
+      install: true
 
 spc:
   ## enable the container security mode for Vision One Sovereign Private Cloud
@@ -556,6 +683,22 @@ serviceAccount:
     ## Annotations to add to the service account
     annotations: {}
 
+  auditLogCollector:
+    ## The name of the service account to use.
+    ## If not set and create is true, a name is generated using the fullname of auditLogCollector template
+    name: ''
+
+    ## Annotations to add to the service account
+    annotations: {}
+
+  apiServerModifier:
+    ## The name of the service account to use.
+    ## If not set and create is true, a name is generated using the fullname of apiServerModifier template
+    name: ''
+
+    ## Annotations to add to the service account
+    annotations: {}
+
 rbac:
   # Create and use rbac resources
   create: true
@@ -662,6 +805,27 @@ securityContext:
       privileged: false
       runAsNonRoot: false
       runAsUser: 0
+
+  auditLogCollector:
+    pod:
+      runAsNonRoot: false
+      seccompProfile:
+        type: Unconfined
+    container:
+      falco:
+        privileged: true
+        readOnlyRootFilesystem: true
+        runAsNonRoot: false
+        runAsUser: 0
+      auditLogCollector:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        privileged: false
+        readOnlyRootFilesystem: true
+        runAsNonRoot: false
+        runAsUser: 0
 
 proxy:
   ## httpProxy, if set, will be used as the proxy for outbound HTTP traffic.
@@ -872,6 +1036,22 @@ resources:
     limits:
       cpu: 500m
       memory: 512Mi
+
+  auditLogCollector:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: '1'
+      memory: 512Mi
+
+  apiServerModifier:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
 
 nodeSelector:
   ## nodeSelector if set, ensures pods are only assigned to a particular set of nodes.
@@ -1246,6 +1426,14 @@ images:
   malwareScanner:
     repository: malware-scanner
     digest: sha256:0a93f0e1e5758e8022b728959edf63a99107c7e912d1566a63e51c462a72ad5d
+
+  auditLogCollector:
+    repository: audit-log-collector
+    # digest: sha256:TBD
+
+  apiServerModifier:
+    repository: api-server-modifier
+    # digest: sha256:TBD
 
 ##
 ## Service Gateway Configuration

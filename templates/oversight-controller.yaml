@@ -1,4 +1,4 @@
-{{- if eq true .Values.visionOne.oversight.enabled }}
+{{- if and (eq true .Values.visionOne.oversight.enabled) (eq (include "container.security.skipStandardComponents" .) "false") }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

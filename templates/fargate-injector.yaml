@@ -1,4 +1,4 @@
-{{- if and (eq true .Values.visionOne.runtimeSecurity.enabled) (eq true .Values.visionOne.fargateInjector.enabled) (not .Values.spc.enabled) }}
+{{- if and (eq true .Values.visionOne.runtimeSecurity.enabled) (eq true .Values.visionOne.fargateInjector.enabled) (not .Values.spc.enabled) (eq (include "container.security.skipStandardComponents" .) "false") }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -211,7 +211,7 @@ spec:
 {{- end }}
       restartPolicy: Always
 {{- end }}
-{{ if .Values.serviceAccount.create }}
+{{- if and .Values.serviceAccount.create (eq (include "container.security.skipStandardComponents" .) "false") }}
 ---
 apiVersion: v1
 kind: ServiceAccount

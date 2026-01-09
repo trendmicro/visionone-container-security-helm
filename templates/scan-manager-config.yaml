@@ -1,4 +1,4 @@
-{{- if or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled) (eq true .Values.visionOne.secretScanning.enabled) }}
+{{- if and (or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled) (eq true .Values.visionOne.secretScanning.enabled)) (eq (include "container.security.skipStandardComponents" .) "false") }}
 ---
 apiVersion: v1
 kind: ConfigMap

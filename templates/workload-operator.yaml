@@ -1,3 +1,4 @@
+{{- if eq (include "container.security.skipStandardComponents" .) "false" }}
 {{ if .Values.serviceAccount.create }}
 apiVersion: v1
 kind: ServiceAccount
@@ -87,10 +88,14 @@ spec:
         - --malware-scanning={{ default "false" .Values.visionOne.malwareScanning.enabled }}
         - --file-integrity-monitoring={{ default "false" .Values.visionOne.fileIntegrityMonitoring.enabled }}
         - --secret-scanning={{ default "false" .Values.visionOne.secretScanning.enabled }}
+        - --audit-log-collection={{ default "false" .Values.auditLogCollection.enabled}}
         - --trusted-images={{ include "digest" . }}
         - --spc-mode={{ default "false" .Values.spc.enabled }}
         - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
         - --service-gateway-enabled={{ default "false" .Values.serviceGateway.enabled }}
+        {{- if and .Values.auditLogCollection.enabled (eq .Values.auditLogCollection.provider "gardener") (not .Values.auditLogCollection.gardener.seedCluster) }}
+        - --audit-log-collection=true
+        {{- end }}
         {{- if gt (int .Values.replicas.workloadOperator) 1 }}
         - --leader-elect
         {{- end }}
@@ -159,3 +164,4 @@ spec:
       priorityClassName: "{{ $classname }}"
 {{- end }}
       restartPolicy: Always
+{{- end }}

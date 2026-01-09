@@ -1,4 +1,4 @@
-{{- if and (eq true .Values.visionOne.complianceScan.enabled) (not .Values.spc.enabled) }}
+{{- if and (eq true .Values.visionOne.complianceScan.enabled) (not .Values.spc.enabled) (eq (include "container.security.skipStandardComponents" .) "false") }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:

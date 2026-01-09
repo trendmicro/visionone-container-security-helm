@@ -1,4 +1,4 @@
-{{- if eq true .Values.visionOne.oversight.enabled }}
+{{- if and (eq true .Values.visionOne.oversight.enabled) (eq (include "container.security.skipStandardComponents" .) "false") }}
 {{- if .Values.rbac.create }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role

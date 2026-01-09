@@ -1,4 +1,4 @@
-{{- if eq true .Values.visionOne.gkeAllowlistSynchronizer.enabled }}
+{{- if and (eq true .Values.visionOne.gkeAllowlistSynchronizer.enabled) (eq (include "container.security.skipStandardComponents" .) "false") }}
 ---
 apiVersion: v1
 kind: ServiceAccount

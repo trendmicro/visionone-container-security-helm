@@ -2,7 +2,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   creationTimestamp: null
-  name: policy-operator-cluster-role
+  name: {{ include "container.security.clusterResourceName" (dict "name" "policy-operator-cluster-role" "context" .) }}
   labels:
     {{- include "policyOperator.labels" . | nindent 4 }}
 rules:
@@ -155,13 +155,13 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: policy-operator-cluster-role-rolebinding
+  name: {{ include "container.security.clusterResourceName" (dict "name" "policy-operator-cluster-role-rolebinding" "context" .) }}
   labels:
     {{- include "policyOperator.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: policy-operator-cluster-role
+  name: {{ include "container.security.clusterResourceName" (dict "name" "policy-operator-cluster-role" "context" .) }}
 subjects:
 - kind: ServiceAccount
   name: {{ include "policyOperator.serviceAccountName" . }}

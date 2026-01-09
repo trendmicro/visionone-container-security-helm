@@ -1,0 +1,167 @@
+{{- include "validateClusterInput" . -}}
+{{- if eq (include "container.security.deployOnSeedCluster" .) "true" }}
+{{ if .Values.serviceAccount.create }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "apiServerModifier.serviceAccountName" . }}
+  labels:
+    {{- include "apiServerModifier.labels" . | nindent 4 }}
+    gardener.cloud/role: extension
+  {{- with .Values.serviceAccount.apiServerModifier.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trendmicro-api-server-modifier
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "apiServerModifier.labels" . | nindent 4 }}
+    gardener.cloud/role: extension
+spec:
+  replicas: {{ default 1 .Values.replicas.apiServerModifier }}
+  selector:
+    matchLabels:
+      {{- include "apiServerModifier.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/webhook-config: {{ include (print $.Template.BasePath "/audit-webhook-config-secret.yaml") . | sha256sum }}
+        checksum/audit-policy: {{ include (print $.Template.BasePath "/audit-policy-configmap.yaml") . | sha256sum }}
+        # Force the pods to restart when api-server-modifier-webhook.yaml is updated. This is to ensure certificate is in sync.
+        checksum/cert: {{ include (print $.Template.BasePath "/api-server-modifier-webhook.yaml") . | sha256sum }}
+{{- with (default .Values.podAnnotations.defaults .Values.podAnnotations.apiServerModifier) }}
+{{- toYaml . | nindent 8 }}
+{{- end }}
+      labels:
+        {{- include "apiServerModifier.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "apiServerModifier.serviceAccountName" . }}
+      # hostNetwork and dnsPolicy are required for the controller to modify kube-apiserver Deployments
+      # in Gardener shoot namespaces. When deployed in a shoot namespace, pods use the shoot cluster's DNS
+      # (not the seed cluster's DNS), which prevents the controller from resolving "kubernetes.default.svc"
+      # and connecting to the seed cluster API server to watch and mutate the kube-apiserver Deployment.
+      # hostNetwork: true allows the pod to use the host's network namespace and access seed cluster services.
+      # dnsPolicy: ClusterFirstWithHostNet ensures Kubernetes DNS resolution still works with hostNetwork enabled.
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+{{- $securityContextEnabled := .Values.securityContext.enabled }}
+{{- $securityContext := default .Values.securityContext.default .Values.securityContext.apiServerModifier }}
+{{- $podSecurityContext := default .Values.securityContext.default.pod $securityContext.pod }}
+{{- $containerSecurityContext := default .Values.securityContext.default.container $securityContext.container.apiServerModifier }}
+{{- if $securityContextEnabled }}
+      securityContext:
+{{ toYaml $podSecurityContext | indent 8 }}
+{{- end }}
+      {{- $imageDefaults := .Values.images.defaults }}
+      {{- with .Values.images.apiServerModifier }}
+      {{- $secret := (default (default "" $imageDefaults.imagePullSecret) .imagePullSecret) }}
+      {{- if not (eq "" $secret) }}
+      imagePullSecrets:
+        - name: {{ $secret | quote }}
+      {{- end }}
+      containers:
+      - name: api-server-modifier
+{{- if $securityContextEnabled }}
+        securityContext:
+{{ toYaml $containerSecurityContext | indent 12 }}
+{{- end }}
+        {{- $project := (default $imageDefaults.project .project) }}
+        {{- $repository := (ternary (required ".repository is required!" .repository)
+          (printf "%s/%s" $project (required ".repository is required!" .repository))
+          (not $project))
+        }}
+        {{- $tag := (default $imageDefaults.tag .tag) }}
+        image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
+        imagePullPolicy: {{ default (default "Always" $imageDefaults.pullPolicy) .pullPolicy }}
+        {{- end }}
+        args:
+        - --zap-devel={{ default "false" .Values.logConfig.devel }}
+        - --zap-log-level={{ include "logLevel" (list .Values.visionOne.apiServerModifier.logLevel .) }}
+        - --zap-encoder={{ default "json" .Values.logConfig.encoder }}
+        - --zap-stacktrace-level={{ default "error" .Values.logConfig.stacktraceLevel }}
+        - --zap-time-encoding={{ default "rfc3339" .Values.logConfig.timeEncoding }}
+        - --metrics-bind-address=127.0.0.1:{{ .Values.visionOne.apiServerModifier.metricsPort }}
+        - --health-probe-bind-address=127.0.0.1:{{ .Values.visionOne.apiServerModifier.healthProbePort }}
+        - --webhook-port={{ .Values.visionOne.apiServerModifier.webhookPort }}
+        - --webhook-cert-dir=/etc/webhook/certs
+        - --audit-webhook-config-secret={{ template "container.security.name" . }}-audit-webhook-config
+        - --audit-policy-configmap={{ template "container.security.name" . }}-audit-policy
+        - --namespace={{ .Release.Namespace }}
+        command:
+        - /app/api-server-modifier
+        env:
+        - name: APPLICATION_VERSION
+          value: {{ .Chart.AppVersion | quote }}
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        ports:
+        - name: webhook
+          containerPort: {{ .Values.visionOne.apiServerModifier.webhookPort }}
+          protocol: TCP
+        - name: metrics
+          containerPort: {{ .Values.visionOne.apiServerModifier.metricsPort }}
+          protocol: TCP
+        - name: health
+          containerPort: {{ .Values.visionOne.apiServerModifier.healthProbePort }}
+          protocol: TCP
+        volumeMounts:
+        - name: cert
+          mountPath: /etc/webhook/certs/
+          readOnly: true
+        resources:
+{{ toYaml (default .Values.resources.defaults .Values.resources.apiServerModifier) | indent 12 }}
+
+      volumes:
+      - name: cert
+        secret:
+          secretName: {{ template "container.security.name" . }}-api-server-modifier-tls
+          defaultMode: 420
+      terminationGracePeriodSeconds: 10
+{{- if or .Values.nodeSelector.defaults .Values.nodeSelector.apiServerModifier }}
+      nodeSelector:
+{{ toYaml (default .Values.nodeSelector.defaults .Values.nodeSelector.apiServerModifier) | indent 8 }}
+{{- end }}
+{{- if or .Values.tolerations.defaults .Values.tolerations.apiServerModifier }}
+      tolerations:
+{{ toYaml (default .Values.tolerations.defaults .Values.tolerations.apiServerModifier) | indent 8 }}
+{{- end }}
+{{- if or .Values.affinity.defaults .Values.affinity.apiServerModifier }}
+      affinity:
+{{ toYaml (default .Values.affinity.defaults .Values.affinity.apiServerModifier) | indent 8 }}
+{{- end }}
+{{- $classname := (default (default "" .Values.priorityClassName.default ) .Values.priorityClassName.apiServerModifier) }}
+{{- if not (eq "" $classname) }}
+      priorityClassName: "{{ $classname }}"
+{{- end }}
+      restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trendmicro-api-server-modifier
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "apiServerModifier.labels" . | nindent 4 }}
+    gardener.cloud/role: extension
+spec:
+  ports:
+  - name: webhook
+    port: 443
+    targetPort: {{ .Values.visionOne.apiServerModifier.webhookPort }}
+    protocol: TCP
+  selector:
+    {{- include "apiServerModifier.selectorLabels" . | nindent 4 }}
+{{- end }}

@@ -1,4 +1,4 @@
-{{- if and .Values.visionOne.runtimeSecurity.enabled (eq (include "customRules.enabled" .) "true") }}
+{{- if and .Values.visionOne.runtimeSecurity.enabled (eq (include "customRules.enabled" .) "true") (eq (include "container.security.skipStandardComponents" .) "false") }}
 ---
 apiVersion: v1
 kind: ConfigMap

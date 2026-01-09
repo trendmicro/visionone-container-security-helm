@@ -22,6 +22,16 @@ spec:
         {{- include "policyOperator.labels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ include "policyOperator.serviceAccountName" . }}
+{{- if eq (include "container.security.deployOnSeedCluster" .) "true" }}
+      # hostNetwork and dnsPolicy are required for the controller to access the seed cluster API
+      # in Gardener shoot namespaces. When deployed in a shoot namespace, pods use the shoot cluster's DNS
+      # (not the seed cluster's DNS), which prevents the controller from resolving "kubernetes.default.svc"
+      # and connecting to the seed cluster API server to watch and manage resources.
+      # hostNetwork: true allows the pod to use the host's network namespace and access seed cluster services.
+      # dnsPolicy: ClusterFirstWithHostNet ensures Kubernetes DNS resolution still works with hostNetwork enabled.
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+{{- end }}
 {{- $securityContextEnabled := .Values.securityContext.enabled }}
 {{- $securityContext := default .Values.securityContext.default .Values.securityContext.policyOperator }}
 {{- $podSecurityContext := default .Values.securityContext.default.pod $securityContext.pod }}
@@ -58,6 +68,13 @@ spec:
         - --zap-encoder={{ default "json" .Values.logConfig.encoder }}
         - --zap-stacktrace-level={{ default "error" .Values.logConfig.stacktraceLevel }}
         - --zap-time-encoding={{ default "rfc3339" .Values.logConfig.timeEncoding }}
+        {{- if eq (include "container.security.deployOnSeedCluster" .) "true" }}
+        - --metrics-bind-address=127.0.0.1:{{ .Values.visionOne.policyOperator.metricsPort }}
+        - --health-probe-bind-address=127.0.0.1:{{ .Values.visionOne.policyOperator.healthProbePort }}
+        {{- else }}
+        - --metrics-bind-address=:{{ .Values.visionOne.policyOperator.metricsPort }}
+        - --health-probe-bind-address=:{{ .Values.visionOne.policyOperator.healthProbePort }}
+        {{- end }}
         - --vision-one-endpoint={{ include "container.security.endpoint" . }}
         - --exclude-kubernetes-service-host-from-proxy={{ default "false" .Values.proxy.excludeKubernetesServiceHost }}
         - --reconciliation-period={{ .Values.visionOne.policyOperator.reconciliationPeriod }}
@@ -94,6 +111,9 @@ spec:
         - --custom-rules-input-name={{ template "container.security.name" . }}-runtime-customrules     
         - --oci-repository-provided={{ default "false" .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled }}
         - --oci-repository-url={{ join "," .Values.visionOne.runtimeSecurity.customRules.ociRepository.artifactUrls | quote }}
+        {{- if eq (include "container.security.deployOnSeedCluster" .) "true" }}
+        - --gardener-mode=true
+        {{- end }}
         - --enable-custom-ruleset={{ default "false" (eq (include "customRules.enabled" .) "true") }}
         {{- if gt (int .Values.replicas.policyOperator) 1 }}
         - --leader-elect

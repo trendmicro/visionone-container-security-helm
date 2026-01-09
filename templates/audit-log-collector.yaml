@@ -1,0 +1,239 @@
+{{- include "validateClusterInput" . -}}
+{{- if eq (include "container.security.deployOnSeedCluster" .) "true" }}
+{{ if .Values.serviceAccount.create }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "auditLogCollector.serviceAccountName" . }}
+  labels:
+    {{- include "auditLogCollector.labels" . | nindent 4 }}
+  {{- with .Values.serviceAccount.auditLogCollector.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trendmicro-audit-log-collector
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "auditLogCollector.labels" . | nindent 4 }}
+spec:
+  replicas: {{ default 1 .Values.replicas.auditLogCollector }}
+  selector:
+    matchLabels:
+      {{- include "auditLogCollector.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/audit-log-collector-config.yaml") . | sha256sum }}
+{{- with (default .Values.podAnnotations.defaults .Values.podAnnotations.auditLogCollector) }}
+{{- toYaml . | nindent 8 }}
+{{- end }}
+      labels:
+        {{- include "auditLogCollector.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "auditLogCollector.serviceAccountName" . }}
+{{- if eq (include "container.security.deployOnSeedCluster" .) "true" }}
+      # hostNetwork and dnsPolicy are required for the collector to access the seed cluster API
+      # in Gardener shoot namespaces. When deployed in a shoot namespace, pods use the shoot cluster's DNS
+      # (not the seed cluster's DNS), which prevents the collector from resolving "kubernetes.default.svc"
+      # and connecting to the seed cluster API server to watch the policy ConfigMap.
+      # hostNetwork: true allows the pod to use the host's network namespace and access seed cluster services.
+      # dnsPolicy: ClusterFirstWithHostNet ensures Kubernetes DNS resolution still works with hostNetwork enabled.
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+{{- end }}
+{{- $securityContextEnabled := .Values.securityContext.enabled }}
+{{- $securityContext := default .Values.securityContext.default .Values.securityContext.auditLogCollector }}
+{{- $podSecurityContext := default .Values.securityContext.default.pod $securityContext.pod }}
+{{- $falcoSecurityContext := default .Values.securityContext.default.container $securityContext.container.falco }}
+{{- $collectorSecurityContext := default .Values.securityContext.default.container $securityContext.container.auditLogCollector }}
+{{- if $securityContextEnabled }}
+      securityContext:
+{{ toYaml $podSecurityContext | indent 8 }}
+{{- end }}
+      {{- $imageDefaults := .Values.images.defaults }}
+      {{- $falcoImageConfig := .Values.images.falco }}
+      {{- $collectorImageConfig := .Values.images.auditLogCollector }}
+      {{- $secret := (default (default "" $imageDefaults.imagePullSecret) (default $falcoImageConfig.imagePullSecret $collectorImageConfig.imagePullSecret)) }}
+      {{- if not (eq "" $secret) }}
+      imagePullSecrets:
+        - name: {{ $secret | quote }}
+      {{- end }}
+      containers:
+      # Falco container with k8saudit plugin
+      - name: falco
+{{- if $securityContextEnabled }}
+        securityContext:
+{{ toYaml $falcoSecurityContext | indent 12 }}
+{{- end }}
+        {{- with $falcoImageConfig }}
+        {{- $project := (default $imageDefaults.project .project) }}
+        {{- $repository := (ternary (required ".repository is required!" .repository)
+          (printf "%s/%s" $project (required ".repository is required!" .repository))
+          (not $project))
+        }}
+        {{- $tag := (default $imageDefaults.tag .tag) }}
+        image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
+        imagePullPolicy: {{ default (default "Always" $imageDefaults.pullPolicy) .pullPolicy }}
+        {{- end }}
+        env:
+        - name: SKIP_DRIVER_LOADER
+          value: "true"
+        - name: HOST_ROOT
+          value: "/host"
+        command:
+        - /usr/bin/falco
+        - -c
+        - /etc/audit-log-collector/falco.yaml
+        - -o
+        - engine.kind=nodriver
+        ports:
+        - name: webhook
+          containerPort: {{ .Values.visionOne.auditLogCollector.webhookPort }}
+          protocol: TCP
+        volumeMounts:
+        - name: audit-log-collector-config
+          mountPath: /etc/audit-log-collector
+          readOnly: true
+        - name: grpc-socket
+          mountPath: /var/run/audit-log-collector
+        - name: proc-fs
+          mountPath: /host/proc
+          readOnly: true
+        - name: dev-fs
+          mountPath: /host/dev
+          readOnly: true
+        resources:
+{{ toYaml (default .Values.resources.defaults .Values.resources.falco) | indent 12 }}
+
+      # Audit Log Collector container
+      - name: audit-log-collector
+{{- if $securityContextEnabled }}
+        securityContext:
+{{ toYaml $collectorSecurityContext | indent 12 }}
+{{- end }}
+        {{- with $collectorImageConfig }}
+        {{- $project := (default $imageDefaults.project .project) }}
+        {{- $repository := (ternary (required ".repository is required!" .repository)
+          (printf "%s/%s" $project (required ".repository is required!" .repository))
+          (not $project))
+        }}
+        {{- $tag := (default $imageDefaults.tag .tag) }}
+        image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
+        imagePullPolicy: {{ default (default "Always" $imageDefaults.pullPolicy) .pullPolicy }}
+        {{- end }}
+        args:
+        - --zap-devel={{ default "false" .Values.logConfig.devel }}
+        - --zap-log-level={{ include "logLevel" (list .Values.visionOne.auditLogCollector.logLevel .) }}
+        - --zap-encoder={{ default "json" .Values.logConfig.encoder }}
+        - --zap-stacktrace-level={{ default "error" .Values.logConfig.stacktraceLevel }}
+        - --zap-time-encoding={{ default "rfc3339" .Values.logConfig.timeEncoding }}
+        - --vision-one-endpoint={{ include "container.security.endpoint" . }}
+        - --audit-log-provider={{ .Values.auditLogCollection.provider }}
+        - --grpc-socket-path=unix:///var/run/audit-log-collector/audit-log-collector.sock
+        - --namespace={{ .Release.Namespace }}
+        - --policyOperator-service-url={{ (include "policyOperator.svc.url" .) }}
+        command:
+        - /app/audit-log-collector
+        env:
+        - name: APPLICATION_VERSION
+          value: {{ .Chart.AppVersion | quote }}
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        {{- include "container.security.proxy.env" . | nindent 8 }}
+        {{- include "proxy.selfSignedCertificates.env" . | nindent 8}}
+        volumeMounts:
+        - name: grpc-socket
+          mountPath: /var/run/audit-log-collector
+        - name: auth-token
+          mountPath: /secrets
+        - name: policy-config
+          mountPath: /etc/config
+        {{- if .Values.serviceGateway.enabled }}
+        - name: service-gateway-config
+          mountPath: /etc/service-gateway/config
+          readOnly: true
+        - name: service-gateway-credentials
+          mountPath: /etc/service-gateway/credentials
+          readOnly: true
+        {{- end }}
+        {{- include "proxy.selfSignedCertificates.volumeMounts" . | nindent 8 }}
+        resources:
+{{ toYaml (default .Values.resources.defaults .Values.resources.auditLogCollector) | indent 12 }}
+
+      volumes:
+      - name: proc-fs
+        hostPath:
+          path: /proc
+      - name: dev-fs
+        hostPath:
+          path: /dev
+      - name: grpc-socket
+        emptyDir: {}
+      - name: audit-log-collector-config
+        configMap:
+          name: {{ template "container.security.name" . }}-audit-log-collector-config
+      - name: auth-token
+        secret:
+          secretName: {{ template "container.security.fullname" . }}-auth
+      - name: policy-config
+        projected:
+          sources:
+            - configMap:
+                name: {{ template "container.security.name" . }}-policy-config
+      {{- if .Values.serviceGateway.enabled }}
+      - name: service-gateway-config
+        configMap:
+          name: {{ template "container.security.name" . }}-service-gateway
+      - name: service-gateway-credentials
+        secret:
+          secretName: {{ template "container.security.name" . }}-service-gateway-credentials
+      {{- end }}
+      {{- include "proxy.selfSignedCertificates.volumes" . | nindent 6 }}
+      terminationGracePeriodSeconds: 10
+{{- if or .Values.nodeSelector.defaults .Values.nodeSelector.auditLogCollector }}
+      nodeSelector:
+{{ toYaml (default .Values.nodeSelector.defaults .Values.nodeSelector.auditLogCollector) | indent 8 }}
+{{- end }}
+{{- if or .Values.tolerations.defaults .Values.tolerations.auditLogCollector }}
+      tolerations:
+{{ toYaml (default .Values.tolerations.defaults .Values.tolerations.auditLogCollector) | indent 8 }}
+{{- end }}
+{{- if or .Values.affinity.defaults .Values.affinity.auditLogCollector }}
+      affinity:
+{{ toYaml (default .Values.affinity.defaults .Values.affinity.auditLogCollector) | indent 8 }}
+{{- end }}
+{{- $classname := (default (default "" .Values.priorityClassName.default ) .Values.priorityClassName.auditLogCollector) }}
+{{- if not (eq "" $classname) }}
+      priorityClassName: "{{ $classname }}"
+{{- end }}
+      restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trendmicro-audit-log-collector
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "auditLogCollector.labels" . | nindent 4 }}
+spec:
+  ports:
+  - name: webhook
+    port: {{ .Values.visionOne.auditLogCollector.webhookPort }}
+    targetPort: {{ .Values.visionOne.auditLogCollector.webhookPort }}
+    protocol: TCP
+  selector:
+    {{- include "auditLogCollector.selectorLabels" . | nindent 4 }}
+{{- end }}

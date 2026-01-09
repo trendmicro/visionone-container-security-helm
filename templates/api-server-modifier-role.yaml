@@ -1,0 +1,134 @@
+{{- if and .Values.auditLogCollection.enabled (eq .Values.auditLogCollection.provider "gardener") .Values.auditLogCollection.gardener.seedCluster }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "container.security.clusterResourceName" (dict "name" "api-server-modifier-cluster-role" "context" .) }}
+  labels:
+    {{- include "apiServerModifier.labels" . | nindent 4 }}
+    gardener.cloud/role: extension
+rules:
+- apiGroups:
+  - extensions.gardener.cloud
+  resources:
+  - extensions
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - patch
+- apiGroups:
+  - extensions.gardener.cloud
+  resources:
+  - extensions/status
+  verbs:
+  - update
+  - patch
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
+  - mutatingwebhookconfigurations
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: api-server-modifier-role
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "apiServerModifier.labels" . | nindent 4 }}
+    gardener.cloud/role: extension
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "container.security.clusterResourceName" (dict "name" "api-server-modifier-cluster-role-rolebinding" "context" .) }}
+  labels:
+    {{- include "apiServerModifier.labels" . | nindent 4 }}
+    gardener.cloud/role: extension
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "container.security.clusterResourceName" (dict "name" "api-server-modifier-cluster-role" "context" .) }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "apiServerModifier.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: api-server-modifier-role-rolebinding
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "apiServerModifier.labels" . | nindent 4 }}
+    gardener.cloud/role: extension
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: api-server-modifier-role
+subjects:
+- kind: ServiceAccount
+  name: {{ include "apiServerModifier.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}

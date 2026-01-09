@@ -1291,7 +1291,7 @@ Automatically adds any namespace with prefix to excluded namespace list for open
    {{- if eq (include "scout.shouldDeploy" .) "true" }}
 */}}
 {{- define "scout.shouldDeploy" -}}
-{{- if or (eq true .Values.visionOne.runtimeSecurity.enabled) (eq true .Values.visionOne.malwareScanning.enabled) (eq true .Values.visionOne.secretScanning.enabled) (eq true .Values.visionOne.fileIntegrityMonitoring.enabled) -}}
+{{- if and (or (eq true .Values.visionOne.runtimeSecurity.enabled) (eq true .Values.visionOne.malwareScanning.enabled) (eq true .Values.visionOne.secretScanning.enabled) (eq true .Values.visionOne.fileIntegrityMonitoring.enabled)) (eq (include "container.security.skipStandardComponents" .) "false") -}}
 true
 {{- else -}}
 false
@@ -1311,7 +1311,7 @@ false
    {{- if eq (include "metacollector.shouldDeploy" .) "true" }}
 */}}
 {{- define "metacollector.shouldDeploy" -}}
-{{- if or (eq true .Values.visionOne.runtimeSecurity.enabled) (eq true .Values.visionOne.malwareScanning.enabled) (eq true .Values.visionOne.secretScanning.enabled) (eq true .Values.visionOne.fileIntegrityMonitoring.enabled) -}}
+{{- if and (or (eq true .Values.visionOne.runtimeSecurity.enabled) (eq true .Values.visionOne.malwareScanning.enabled) (eq true .Values.visionOne.secretScanning.enabled) (eq true .Values.visionOne.fileIntegrityMonitoring.enabled)) (eq (include "container.security.skipStandardComponents" .) "false") -}}
 true
 {{- else -}}
 false
@@ -1389,6 +1389,178 @@ Return the SSL_CERT_FILE env for self-signed certificates
   value: /etc/self-signed-certs/certificate.crt
 {{- end }}
 {{- end }}
+
+{{/*
+Audit Log Collector Common labels
+*/}}
+{{- define "auditLogCollector.labels" -}}
+helm.sh/chart: {{ include "container.security.chart" . }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/part-of: {{ include "container.security.name" . }}
+{{ include "auditLogCollector.selectorLabels" . }}
+{{- range $k, $v := (default (dict) .Values.extraLabels) }}
+{{ $k }}: {{ quote $v }}
+{{- end }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+{{- end }}
+
+{{/*
+Audit Log Collector Selector labels
+*/}}
+{{- define "auditLogCollector.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "auditLogCollector.fullname" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: trendmicro-audit-log-collector
+{{- end }}
+
+{{/*
+API Server Modifier Common labels
+*/}}
+{{- define "apiServerModifier.labels" -}}
+helm.sh/chart: {{ include "container.security.chart" . }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/part-of: {{ include "container.security.name" . }}
+{{ include "apiServerModifier.selectorLabels" . }}
+{{- range $k, $v := (default (dict) .Values.extraLabels) }}
+{{ $k }}: {{ quote $v }}
+{{- end }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+{{- end }}
+
+{{/*
+API Server Modifier Selector labels
+*/}}
+{{- define "apiServerModifier.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "apiServerModifier.fullname" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: trendmicro-api-server-modifier
+{{- end }}
+
+{{/*
+Create a default fully qualified app name for Audit Log Collector.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+*/}}
+{{- define "auditLogCollector.fullname" -}}
+{{- if .Values.auditLogCollectorFullnameOverride -}}
+{{- .Values.auditLogCollectorFullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.auditLogCollectorFullnameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- printf "%s-%s" "audit-log-collector" .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else if contains .Release.Name $name -}}
+{{- printf "%s-%s" "audit-log-collector" $name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s-%s" "audit-log-collector" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified app name for API Server Modifier.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+*/}}
+{{- define "apiServerModifier.fullname" -}}
+{{- if .Values.apiServerModifierFullnameOverride -}}
+{{- .Values.apiServerModifierFullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.apiServerModifierFullnameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- printf "%s-%s" "api-server-modifier" .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else if contains .Release.Name $name -}}
+{{- printf "%s-%s" "api-server-modifier" $name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s-%s" "api-server-modifier" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Audit Log Collector service account
+*/}}
+{{- define "auditLogCollector.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create }}
+{{- default (include "auditLogCollector.fullname" .) .Values.serviceAccount.auditLogCollector.name }}
+{{- else }}
+{{- default "default" .Values.serviceAccount.auditLogCollector.name }}
+{{- end }}
+{{- end }}
+
+{{/*
+API Server Modifier service account
+*/}}
+{{- define "apiServerModifier.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create }}
+{{- default (include "apiServerModifier.fullname" .) .Values.serviceAccount.apiServerModifier.name }}
+{{- else }}
+{{- default "default" .Values.serviceAccount.apiServerModifier.name }}
+{{- end }}
+{{- end }}
+
+{{/*
+Check if we're in gardener seed cluster mode
+*/}}
+{{- define "container.security.gardener.seedCluster" -}}
+{{- if and .Values.auditLogCollection.enabled (eq .Values.auditLogCollection.provider "gardener") .Values.auditLogCollection.gardener.seedCluster -}}
+true
+{{- else -}}
+false
+{{- end -}}
+{{- end -}}
+
+{{/*
+Check if we should deploy seed cluster components (audit-log-collector, api-server-modifier, policy-operator)
+*/}}
+{{- define "container.security.deployOnSeedCluster" -}}
+{{- if and .Values.auditLogCollection.enabled (eq .Values.auditLogCollection.provider "gardener") .Values.auditLogCollection.gardener.seedCluster -}}
+true
+{{- else -}}
+false
+{{- end -}}
+{{- end -}}
+
+{{/*
+Check if we should NOT deploy standard V1CS components (when in seed cluster mode)
+*/}}
+{{- define "container.security.skipStandardComponents" -}}
+{{- if and .Values.auditLogCollection.enabled (eq .Values.auditLogCollection.provider "gardener") .Values.auditLogCollection.gardener.seedCluster -}}
+true
+{{- else -}}
+false
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return helm.sh/resource-policy: keep annotation only in seed cluster mode.
+This prevents CRDs from being deleted when uninstalling the chart in seed cluster mode,
+allowing multiple installations to share the same CRDs.
+In non-seed cluster mode, CRDs are removed on uninstall (normal behavior).
+Usage: {{ include "container.security.crdResourcePolicy" . | nindent 4 }}
+*/}}
+{{- define "container.security.crdResourcePolicy" -}}
+{{- if eq (include "container.security.gardener.seedCluster" .) "true" -}}
+helm.sh/resource-policy: keep
+{{- end -}}
+{{- end -}}
+
+{{/*
+Generate cluster resource name with namespace suffix for seed cluster mode
+In seed cluster mode, cluster-scoped resources (ClusterRole, ClusterRoleBinding) need
+unique names per namespace to allow multiple installations in different namespaces.
+Usage: {{ include "container.security.clusterResourceName" (dict "name" "my-cluster-role" "context" .) }}
+*/}}
+{{- define "container.security.clusterResourceName" -}}
+{{- $name := .name -}}
+{{- $ctx := .context -}}
+{{- if eq (include "container.security.gardener.seedCluster" $ctx) "true" -}}
+{{- printf "%s-%s" $name $ctx.Release.Namespace -}}
+{{- else -}}
+{{- $name -}}
+{{- end -}}
+{{- end -}}
 
 {{/*
 Check if custom rules are enabled (either via OCI repository or configmap)

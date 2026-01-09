@@ -1,4 +1,4 @@
-{{- if not .Values.spc.enabled }}
+{{- if and (not .Values.spc.enabled) (eq (include "container.security.skipStandardComponents" .) "false") }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
