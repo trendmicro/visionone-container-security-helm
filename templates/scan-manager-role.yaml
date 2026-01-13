@@ -101,6 +101,7 @@ subjects:
 - kind: ServiceAccount
   name: {{ include "scanManager.serviceAccountName" . }}
   namespace: {{ .Release.Namespace }}
+{{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -144,4 +145,3 @@ subjects:
 - kind: ServiceAccount
   name: scan-manager-cleanup-resources-service-account
   namespace: {{ .Release.Namespace }}
-{{- end }}
