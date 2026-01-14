@@ -15,7 +15,6 @@ spec:
     metadata:
       annotations:
         checksum/auth: {{ include "container.security.auth.secret" . | sha256sum }}
-        checksum/cert: {{ include (print $.Template.BasePath "/kube-rbac-proxy-cert.yaml") . | sha256sum }}
 {{- with (default .Values.podAnnotations.defaults .Values.podAnnotations.usage) }}
 {{- toYaml . | nindent 8 }}
 {{- end }}
@@ -39,7 +38,7 @@ spec:
         - name: {{ $secret | quote }}
       {{- end }}
       containers:
-      - name: controller-manager
+      - name: usage-controller
 {{- if $securityContextEnabled }}
         securityContext:
 {{ toYaml $containerSecurityContext | indent 12 }}
@@ -100,14 +99,10 @@ spec:
           {{- include "proxy.selfSignedCertificates.volumeMounts" . | nindent 10 }}
         resources:
 {{ toYaml (default .Values.resources.defaults .Values.resources.usage) | indent 12 }}
-      - {{ include "rbacProxy" (dict "securityContext" .Values.securityContext "images" .Values.images "resources" .Values.resources "customSecurityContext" .Values.securityContext.usage "tlsConfig" .Values.tlsConfig ) | nindent 8 | trim }}
       volumes:
         - name: auth-token
           secret:
             secretName: {{ template "container.security.fullname" . }}-auth
-        - name: rbac-proxy-certs
-          secret:
-            secretName: {{ template "kubeRbacProxy.fullname" . }}-tls-certificate
         {{- if .Values.serviceGateway.enabled }}
         - name: service-gateway-config
           configMap:

@@ -15,7 +15,6 @@ spec:
     metadata:
       annotations:
         checksum/auth: {{ include "container.security.auth.secret" . | sha256sum }}
-        checksum/cert: {{ include (print $.Template.BasePath "/kube-rbac-proxy-cert.yaml") . | sha256sum }}
 {{- with (default .Values.podAnnotations.defaults .Values.podAnnotations.oversight) }}
 {{- toYaml . | nindent 8 }}
 {{- end }}
@@ -39,7 +38,7 @@ spec:
         - name: {{ $secret | quote }}
       {{- end }}
       containers:
-      - name: controller-manager
+      - name: oversight-controller
 {{- if $securityContextEnabled }}
         securityContext:
 {{ toYaml $containerSecurityContext | indent 12 }}
@@ -128,7 +127,6 @@ spec:
           periodSeconds: 10
         resources:
 {{ toYaml (default .Values.resources.defaults .Values.resources.oversight) | indent 12 }}
-      - {{ include "rbacProxy" (dict "securityContext" .Values.securityContext "images" .Values.images "resources" .Values.resources "customSecurityContext" .Values.securityContext.oversight "tlsConfig" .Values.tlsConfig ) | nindent 8 | trim }}
       terminationGracePeriodSeconds: 10
 {{- if or .Values.nodeSelector.defaults .Values.nodeSelector.oversight }}
       nodeSelector:
@@ -156,9 +154,6 @@ spec:
         - name: auth-token
           secret:
             secretName: {{ template "container.security.fullname" . }}-auth
-        - name: rbac-proxy-certs
-          secret:
-            secretName: {{ template "kubeRbacProxy.fullname" . }}-tls-certificate
         - name: policy-config # Use projected volume to mount all policy config files in a single volume (ie. policy, rulesets)
           projected:
             sources:

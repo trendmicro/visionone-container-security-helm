@@ -278,30 +278,6 @@ visionOne:
     ## Default value: info
     logLevel: info
 
-  kubeRbacProxy:
-    certificate:
-      ## commonName is the common name to use in the default signed certificate.
-      ##
-      ## Default value:
-      commonName:
-
-      ## ipAlternativeNames is a list of IP addresses to include as alternate names.
-      ## in the default signed certificate.
-      ##
-      ## Default value: []
-      ipAlternativeNames: []
-
-      ## dnsAlternativeNames is a list of DNS names to include as alternate names
-      ## in the default signed certificate.
-      ##
-      ## Default value: []
-      dnsAlternativeNames: []
-
-      ## lifetime is the lifetime in days of the default signed certificate.
-      ##
-      ## Default value: 3650
-      lifetime: 3650
-
   ## malwareScanning is a section that controls the malware scanning feature.
   malwareScanning:
     enabled: false
@@ -1379,10 +1355,6 @@ images:
     repository: usage-controller
     digest: sha256:acac84507bd8dfc6c2e55a7f51405042883c0d045a6e0f4a8f7e58516676a515
 
-  rbacProxy:
-    repository: rbac-proxy
-    digest: sha256:50953873920832b71b7f1baa699bf5538f059f51b37ec14b6eb6aa84b2927148
-
   falco:
     repository: falco
     digest: sha256:a7359946b040dbd430917b7ad453f452fdaae6461555035968bb05ad82428625
@@ -1530,7 +1502,6 @@ useExistingSecrets:
   ## trendmicro-admission-controller-tls-certificate
   ## trendmicro-scan-manager-tls-certificate
   ## trendmicro-fargate-injector-tls-certificate
-  ## trendmicro-kube-rbac-proxy-tls-certificate
   ## trendmicro-k8s-metacollector-tls-certificate
   ## 
   ## Default value: false

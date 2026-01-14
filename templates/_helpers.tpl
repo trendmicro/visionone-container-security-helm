@@ -613,25 +613,6 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-*/}}
-{{- define "kubeRbacProxy.fullname" -}}
-{{- if .Values.kubeRbacProxyFullnameOverride -}}
-{{- .Values.kubeRbacProxyFullnameOverride | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- $name := default .Chart.Name .Values.kubeRbacProxyNameOverride -}}
-{{- if contains $name .Release.Name -}}
-{{- printf "%s-%s" "kube-rbac-proxy" .Release.Name | trunc 63 | trimSuffix "-" -}}
-{{- else if contains .Release.Name $name -}}
-{{- printf "%s-%s" "kube-rbac-proxy" $name | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-%s-%s" "kube-rbac-proxy" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Create a default fully qualified app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
 {{- define "malwareScanner.fullname" -}}
@@ -966,45 +947,6 @@ Runtime ruleloader service account
 {{- default "default" .Values.serviceAccount.runtimeRuleloader.name }}
 {{- end }}
 {{- end }}
-
-{{/*
-RBAC proxy container
-*/}}
-{{- define "rbacProxy" -}}
-name: rbac-proxy
-{{- if and (.securityContext) (eq true .securityContext.enabled) }}
-{{- $securityContext := default .securityContext.default .customSecurityContext }}
-{{- $podSecurityContext := default .securityContext.default.pod $securityContext.pod }}
-{{- $containerSecurityContext := default .securityContext.default.container $securityContext.container.rbacProxy }}
-securityContext: {{- toYaml $containerSecurityContext | nindent 4 }}
-{{- end }}{{/* if .securityContext.enabled */}}
-{{- $imageDefaults := .images.defaults }}
-{{- with .images.rbacProxy -}}
-{{- $project := (default $imageDefaults.project .project) }}
-{{- $repository := (ternary (required ".repository is required!" .repository)
-  (printf "%s/%s" $project (required ".repository is required!" .repository))
-  (not $project))
-}}
-{{- $tag := (default $imageDefaults.tag .tag) }}
-image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
-imagePullPolicy: {{ default (default "Always" $imageDefaults.pullPolicy) .pullPolicy }}
-{{- end }}{{/* with .images.rbacProxy */}}
-args:
-- --secure-listen-address=0.0.0.0:8443
-- --upstream=http://127.0.0.1:8080/
-- --tls-cert-file=/etc/rbac-proxy/certs/cert.pem
-- --tls-private-key-file=/etc/rbac-proxy/certs/key.pem
-- --tls-min-version={{ include "tlsConfig.minTLSVersion" .tlsConfig }}
-- --tls-cipher-suites={{ include "tlsConfig.cipherSuites" .tlsConfig }}
-ports:
-- containerPort: 8443
-  name: https
-volumeMounts:
-- name: rbac-proxy-certs
-  mountPath: /etc/rbac-proxy/certs
-  readOnly: true
-resources: {{ toYaml (default .resources.defaults .resources.rbacProxy) | nindent 2 }}
-{{- end -}}{{/* define */}}
 
 {{/*
 Return the target Kubernetes version
