@@ -28,7 +28,6 @@ spec:
 {{- with (default .Values.podAnnotations.defaults .Values.podAnnotations.scout) }}
 {{- toYaml . | nindent 8 }}
 {{- end }}{{/* with */}}
-        customrules/enabled: {{ and .Values.visionOne.runtimeSecurity.enabled (eq (include "customRules.enabled" .) "true") | quote }}
 
     spec:
       serviceAccountName: {{ include "scout.serviceAccountName" . }}
@@ -220,11 +219,9 @@ spec:
             - --secret-job-status-file-path={{ printf "%s%s%s" "../.." $jobStatusMntPath "/secret_scan_job_status.json" }}
             - --secret-scan-worker-count={{ .Values.secretScanner.scanWorkerCount }}
             {{- end}}{{/* if .Values.visionOne.secretScanning.enabled */}}
-            {{- if eq (include "customRules.enabled" .) "true" }}
             - --custom-rule-tags={{ .Values.visionOne.runtimeSecurity.customRules.rulesetTag }}
             - --custom-rules-dir=/var/scout/customrules.d
             - --forward-to-vision-one=true
-            {{- end}}{{/* if customRules.enabled */}}
             {{- if .Values.visionOne.fileIntegrityMonitoring.enabled }}
             - --file-integrity-monitoring=true
             - --fim-sweep-interval={{ default "1m" .Values.visionOne.fileIntegrityMonitoring.sweepInterval }}
@@ -300,10 +297,8 @@ spec:
             - mountPath: /etc/config/fim/
               name: fim-policy
 {{- end }}
-{{- if eq (include "customRules.enabled" .) "true" }}
             - mountPath: /var/scout/customrules.d
               name: customrules-volume
-{{- end }}
             {{- if .Values.serviceGateway.enabled }}
             - name: service-gateway-config
               mountPath: /etc/service-gateway/config
@@ -489,11 +484,9 @@ spec:
 {{- if not (.Capabilities.APIVersions.Has "oci.oraclecloud.com/v1beta1") }}
             sizeLimit: 50Mi
 {{- end }}
-{{- if eq (include "customRules.enabled" .) "true" }}
         - name: customrules-volume
           configMap:
             name: {{ template "container.security.name" . }}-runtime-customrules-config
-{{- end }}
         - name: scout-workdir
           emptyDir:
 {{- if not (.Capabilities.APIVersions.Has "oci.oraclecloud.com/v1beta1") }}

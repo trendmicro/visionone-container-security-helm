@@ -55,8 +55,7 @@ make cri sockets list
 
 {{- /* custom rules config */ -}}
 {{- with .Values.visionOne.runtimeSecurity.customRules }}
-{{- if or .ociRepository.enabled .configmap.name }}
-{{- /* 
+{{- /*
     rules_files:
     ...
     - /etc/scout/rules.d/customrules.d
@@ -82,7 +81,6 @@ make cri sockets list
 */ -}}
 {{- $_ := set $overrideConfig "ruleset_tags" (list .rulesetTag) }}
 
-{{- end }}{{/*if .enabled*/}}
 {{- end }}{{/*with customRules*/}}
 
 {{- /* 
