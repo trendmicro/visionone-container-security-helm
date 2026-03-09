@@ -7,7 +7,12 @@ metadata:
 data:
   httpProxy: {{ quote (default "" .Values.proxy.httpProxy) }}
   httpsProxy: {{ quote (default "" .Values.proxy.httpsProxy) }}
-  noProxy: {{ quote (printf ".cluster.local,%s" .Values.proxy.noProxy) }}
+  {{- $noProxyValue := default "" .Values.proxy.noProxy }}
+  {{- if $noProxyValue }}
+  noProxy: {{ quote (printf ".cluster.local,%s" $noProxyValue) }}
+  {{- else }}
+  noProxy: ".cluster.local"
+  {{- end }}
 
 ---
 {{ if not (and .Values.useExistingSecrets (eq true .Values.useExistingSecrets.outboundProxy)) }}
@@ -19,17 +24,26 @@ metadata:
     {{- include "container.security.labels" . | nindent 4 }}
 type: Opaque
 data:
+  {{- if or .Values.proxy.username .Values.proxy.password }}
   username: {{ default "" .Values.proxy.username | toString | b64enc | quote }}
   password: {{ default "" .Values.proxy.password | toString | b64enc | quote }}
-  {{if .Values.proxy.username}}
-  {{if .Values.proxy.httpsProxy | hasPrefix "socks5://"}}
+  {{- else }}
+  username: {{ "" | b64enc | quote }}
+  password: {{ "" | b64enc | quote }}
+  {{- end }}
+  {{- if .Values.proxy.httpsProxy }}
+  {{- if .Values.proxy.username }}
+  {{- if .Values.proxy.httpsProxy | hasPrefix "socks5://" }}
   allProxy: {{printf "socks5://%s:%s@%s" (.Values.proxy.username | urlquery) .Values.proxy.password (.Values.proxy.httpsProxy | trimPrefix "socks5://") | b64enc | quote}}
-  {{else if .Values.proxy.httpsProxy | hasPrefix "http://"}}
+  {{- else if .Values.proxy.httpsProxy | hasPrefix "http://" }}
   allProxy: {{printf "http://%s:%s@%s" .Values.proxy.username .Values.proxy.password (.Values.proxy.httpsProxy | trimPrefix "http://") | b64enc | quote}}
-  {{else}}
+  {{- else }}
   allProxy: {{printf "http://%s:%s@%s" .Values.proxy.username .Values.proxy.password .Values.proxy.httpsProxy | b64enc | quote}}
-  {{ end }}
-  {{else}}
-  allProxy: {{ default "" .Values.proxy.httpsProxy | toString | b64enc | quote }}
-  {{ end }}
+  {{- end }}
+  {{- else }}
+  allProxy: {{ .Values.proxy.httpsProxy | toString | b64enc | quote }}
+  {{- end }}
+  {{- else }}
+  allProxy: {{ "" | b64enc | quote }}
+  {{- end }}
 {{ end }}

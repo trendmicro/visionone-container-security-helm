@@ -136,6 +136,11 @@ spec:
             - --falco-internal-event
             - {{ join "," .Values.scout.scout.falcoInternalEvent }}
             {{- end}}{{/* if */}}
+            - --k8s-metacollector={{ include "k8sMetaCollector.svc.url" . }}
+            {{- if eq "tls" .Values.visionOne.k8sMetaCollector.grpcAuth.type }}
+            - --k8s-metacollector-cert=/etc/scout/metacollector-ca-cert.pem
+            - --k8s-metacollector-cert-secret={{ include "k8sMetaCollector.fullname" . }}-tls-certificate
+            {{- end}}
             - --pull-image-auth
             {{- $imageDefaults := .Values.images.defaults }}
             {{- with .Values.images.fargateInjector }}

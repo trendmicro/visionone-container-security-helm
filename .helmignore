@@ -10,6 +10,7 @@
 .hg/
 .hgignore
 .svn/
+.kuberlr/
 # Common backup files
 *.swp
 *.bak
@@ -23,3 +24,4 @@
 LICENSE.pdf
 TERMS.txt
 THIRDPARTY.txt
+tmp/
