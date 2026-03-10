@@ -656,6 +656,12 @@ Service name of k8s-metacollector
 {{- define "k8sMetaCollector.svc.url" -}}
 {{- printf "%s.%s.svc.cluster.local:45000" (include "k8sMetaCollector.fullname" .) .Release.Namespace -}}
 {{- end -}}
+{{/*
+Service name of k8s-metacollector without port, used to generate certificate name
+*/}}
+{{- define "k8sMetaCollector.svc.urlnoport" -}}
+{{- printf "%s.%s.svc.cluster.local" (include "k8sMetaCollector.fullname" .) .Release.Namespace -}}
+{{- end -}}
 
 {{/*
 Service name of malware scanner
