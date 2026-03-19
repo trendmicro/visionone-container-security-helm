@@ -31,9 +31,11 @@ spec:
 
     spec:
       serviceAccountName: {{ include "scout.serviceAccountName" . }}
-      hostNetwork: true
+      hostNetwork: {{ .Values.scout.hostNetwork }}
       shareProcessNamespace: true
+{{- if .Values.scout.hostNetwork }}
       dnsPolicy: ClusterFirstWithHostNet
+{{- end }}
 {{- $classname := (default (default "" .Values.priorityClassName.default ) .Values.priorityClassName.scout) }}
 {{- if not (eq "" $classname) }}
       priorityClassName: "{{ $classname }}"

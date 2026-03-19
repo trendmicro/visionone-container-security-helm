@@ -1214,6 +1214,11 @@ priorityClassName:
   default:
 
 scout:
+  ## hostNetwork, if set to true, the scout daemonset will use the host's network namespace.
+  ##
+  ## Default Value: false
+  hostNetwork: false
+
   ## If set to true, excludeSameNamespace will add the namespace in which this helm chart is deployed as an excluded namespace.
   ##
   ## Default Value: true
