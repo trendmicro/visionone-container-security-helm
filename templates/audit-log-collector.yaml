@@ -1,5 +1,5 @@
 {{- include "validateClusterInput" . -}}
-{{- if eq (include "container.security.deployOnSeedCluster" .) "true" }}
+{{- if eq (include "container.security.deployAuditLogComponents" .) "true" }}
 {{ if .Values.serviceAccount.create }}
 apiVersion: v1
 kind: ServiceAccount
@@ -7,25 +7,39 @@ metadata:
   name: {{ include "auditLogCollector.serviceAccountName" . }}
   labels:
     {{- include "auditLogCollector.labels" . | nindent 4 }}
-  {{- with .Values.serviceAccount.auditLogCollector.annotations }}
+  {{- if or .Values.serviceAccount.auditLogCollector.annotations (and (eq .Values.auditLogCollection.provider "gke") .Values.auditLogCollection.gke.serviceAccount) }}
   annotations:
+    {{- with .Values.serviceAccount.auditLogCollector.annotations }}
     {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- if and (eq .Values.auditLogCollection.provider "gke") .Values.auditLogCollection.gke.serviceAccount }}
+    iam.gke.io/gcp-service-account: {{ .Values.auditLogCollection.gke.serviceAccount }}@{{ .Values.auditLogCollection.gke.gcpProjectId }}.iam.gserviceaccount.com
+    {{- end }}
   {{- end }}
 {{- end }}
 
 ---
 apiVersion: apps/v1
+{{- if eq (include "container.security.deployForSelfManaged" .) "true" }}
+kind: DaemonSet
+{{- else }}
 kind: Deployment
+{{- end }}
 metadata:
   name: trendmicro-audit-log-collector
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "auditLogCollector.labels" . | nindent 4 }}
 spec:
+{{- if ne (include "container.security.deployForSelfManaged" .) "true" }}
   replicas: {{ default 1 .Values.replicas.auditLogCollector }}
-{{- if eq (include "container.security.deployOnSeedCluster" .) "true" }}
+{{- if eq (include "container.security.deployAuditLogComponents" .) "true" }}
   strategy:
     type: Recreate
+{{- end }}
+{{- else }}
+  updateStrategy:
+    type: RollingUpdate
 {{- end }}
   selector:
     matchLabels:
@@ -41,15 +55,38 @@ spec:
         {{- include "auditLogCollector.labels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ include "auditLogCollector.serviceAccountName" . }}
-{{- if eq (include "container.security.deployOnSeedCluster" .) "true" }}
-      # hostNetwork and dnsPolicy are required for the collector to access the seed cluster API
-      # in Gardener shoot namespaces. When deployed in a shoot namespace, pods use the shoot cluster's DNS
-      # (not the seed cluster's DNS), which prevents the collector from resolving "kubernetes.default.svc"
-      # and connecting to the seed cluster API server to watch the policy ConfigMap.
-      # hostNetwork: true allows the pod to use the host's network namespace and access seed cluster services.
+{{- if or (eq (include "container.security.deployOnSeedCluster" .) "true") (eq (include "container.security.deployForSelfManaged" .) "true") }}
+      # hostNetwork and dnsPolicy are required for the collector to be reachable by kube-apiserver.
+      # For Gardener seed cluster: pods in shoot namespace use shoot cluster's DNS, need hostNetwork to access seed cluster API.
+      # For selfManaged: kube-apiserver static pod uses host network and cannot resolve Kubernetes DNS names.
+      # hostNetwork: true allows the pod to use the host's network namespace.
       # dnsPolicy: ClusterFirstWithHostNet ensures Kubernetes DNS resolution still works with hostNetwork enabled.
       dnsPolicy: ClusterFirstWithHostNet
       hostNetwork: true
+{{- else }}
+      # Standard pod network for other modes
+      dnsPolicy: ClusterFirst
+{{- end }}
+{{- if eq (include "container.security.deployForSelfManaged" .) "true" }}
+      # For selfManaged mode: run on control plane nodes where kube-apiserver runs
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/controlplane
+                operator: Exists
+      # Tolerate control plane taints
+      tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
+      - key: "node-role.kubernetes.io/master"
+        operator: "Exists"
+        effect: "NoSchedule"
 {{- end }}
 {{- $securityContextEnabled := .Values.securityContext.enabled }}
 {{- $securityContext := default .Values.securityContext.default .Values.securityContext.auditLogCollector }}
@@ -89,7 +126,7 @@ spec:
         - name: SKIP_DRIVER_LOADER
           value: "true"
         - name: HOST_ROOT
-          value: "/host"
+          value: "/"
         command:
         - /usr/bin/falco
         - -c
@@ -106,12 +143,6 @@ spec:
           readOnly: true
         - name: grpc-socket
           mountPath: /var/run/audit-log-collector
-        - name: proc-fs
-          mountPath: /host/proc
-          readOnly: true
-        - name: dev-fs
-          mountPath: /host/dev
-          readOnly: true
         resources:
 {{ toYaml (default .Values.resources.defaults .Values.resources.falco) | indent 12 }}
 
@@ -142,6 +173,15 @@ spec:
         - --grpc-socket-path=unix:///var/run/audit-log-collector/audit-log-collector.sock
         - --namespace={{ .Release.Namespace }}
         - --policyOperator-service-url={{ (include "policyOperator.svc.url" .) }}
+        {{- if .Values.visionOne.auditLogCollector.ringBufferSize }}
+        - --ring-buffer-size={{ .Values.visionOne.auditLogCollector.ringBufferSize }}
+        {{- end }}
+        {{- if .Values.visionOne.auditLogCollector.uploadBatchSize }}
+        - --upload-batch-size={{ .Values.visionOne.auditLogCollector.uploadBatchSize }}
+        {{- end }}
+        {{- if .Values.visionOne.auditLogCollector.uploadInterval }}
+        - --upload-interval={{ .Values.visionOne.auditLogCollector.uploadInterval }}
+        {{- end }}
         command:
         - /app/audit-log-collector
         env:
@@ -177,12 +217,6 @@ spec:
 {{ toYaml (default .Values.resources.defaults .Values.resources.auditLogCollector) | indent 12 }}
 
       volumes:
-      - name: proc-fs
-        hostPath:
-          path: /proc
-      - name: dev-fs
-        hostPath:
-          path: /dev
       - name: grpc-socket
         emptyDir: {}
       - name: audit-log-collector-config
@@ -206,11 +240,11 @@ spec:
       {{- end }}
       {{- include "proxy.selfSignedCertificates.volumes" . | nindent 6 }}
       terminationGracePeriodSeconds: 10
-{{- if or .Values.nodeSelector.defaults .Values.nodeSelector.auditLogCollector }}
+{{- if and (ne (include "container.security.deployForSelfManaged" .) "true") (or .Values.nodeSelector.defaults .Values.nodeSelector.auditLogCollector) }}
       nodeSelector:
 {{ toYaml (default .Values.nodeSelector.defaults .Values.nodeSelector.auditLogCollector) | indent 8 }}
 {{- end }}
-{{- if or .Values.tolerations.defaults .Values.tolerations.auditLogCollector }}
+{{- if and (ne (include "container.security.deployForSelfManaged" .) "true") (or .Values.tolerations.defaults .Values.tolerations.auditLogCollector) }}
       tolerations:
 {{ toYaml (default .Values.tolerations.defaults .Values.tolerations.auditLogCollector) | indent 8 }}
 {{- end }}

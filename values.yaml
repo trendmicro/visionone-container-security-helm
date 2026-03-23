@@ -338,6 +338,24 @@ visionOne:
     ## Default value: 8030
     webhookPort: 8030
 
+    ## ringBufferSize is the size of the event ring buffer
+    ## Only set this if you need to override the default value
+    ##
+    ## Default value: 10000
+    # ringBufferSize: 10000
+
+    ## uploadBatchSize is the number of events to upload in a batch
+    ## Only set this if you need to override the default value
+    ##
+    ## Default value: 10
+    # uploadBatchSize: 10
+
+    ## uploadInterval is the interval between batch uploads
+    ## Only set this if you need to override the default value
+    ##
+    ## Default value: 5s
+    # uploadInterval: 5s
+
   apiServerModifier:
     ## logLevel sets the log verbosity level. Supported values are debug, info, and error
     ##
@@ -478,7 +496,7 @@ auditLogCollection:
   enabled: false
 
   ## provider specifies the audit log provider type
-  ## Supported values: selfManaged, aks, gke, gardener
+  ## Supported values: selfManaged, eks, aks, gke, gardener
   ##
   ## Default value: ""
   provider: ""
@@ -501,6 +519,76 @@ auditLogCollection:
       ##
       ## Default value: true
       install: true
+
+  selfManaged:
+    ## apiServerManifestPath is the path to the kube-apiserver static pod manifest
+    ## Only used when provider is selfManaged
+    ##
+    ## Default value: /etc/kubernetes/manifests/kube-apiserver.yaml
+    apiServerManifestPath: "/etc/kubernetes/manifests/kube-apiserver.yaml"
+
+    ## auditConfigPath is the directory where audit configuration files will be written
+    ## Only used when provider is selfManaged
+    ##
+    ## Default value: /etc/kubernetes/audit
+    auditConfigPath: "/etc/kubernetes/audit"
+
+  eks:
+    ## AWS region where the EKS cluster is located
+    ## Required when provider is eks
+    ##
+    ## Default value: ""
+    region: ""
+
+    ## EKS cluster name
+    ## Required when provider is eks
+    ##
+    ## Default value: ""
+    clusterName: ""
+
+  aks:
+    ## Azure Event Hub namespace connection string
+    ## Required when provider is aks
+    ##
+    ## Default value: ""
+    eventHubConnectionString: ""
+
+    ## Azure Event Hub name
+    ## Required when provider is aks
+    ##
+    ## Default value: ""
+    eventHubName: ""
+
+    ## Azure Blob Storage connection string
+    ## Required when provider is aks
+    ##
+    ## Default value: ""
+    blobStorageConnectionString: ""
+
+    ## Azure Blob Storage container name
+    ## Required when provider is aks
+    ##
+    ## Default value: ""
+    blobStorageContainerName: ""
+
+  gke:
+    ## GCP project ID
+    ## Required when provider is gke
+    ##
+    ## Default value: ""
+    gcpProjectId: ""
+
+    ## Pub/Sub subscription name for audit logs
+    ## Required when provider is gke
+    ##
+    ## Default value: ""
+    pubSubSubscription: ""
+
+    ## GCP service account name for Workload Identity
+    ## Required when provider is gke
+    ##
+    ## Default value: ""
+    serviceAccount: ""
 
 spc:
   ## enable the container security mode for Vision One Sovereign Private Cloud
@@ -786,10 +874,10 @@ securityContext:
     pod:
       runAsNonRoot: false
       seccompProfile:
-        type: Unconfined
+        type: RuntimeDefault
     container:
       falco:
-        privileged: true
+        privileged: false
         readOnlyRootFilesystem: true
         runAsNonRoot: false
         runAsUser: 0

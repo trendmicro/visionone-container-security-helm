@@ -1,4 +1,4 @@
-{{- if and .Values.auditLogCollection.enabled (eq .Values.auditLogCollection.provider "gardener") .Values.auditLogCollection.gardener.seedCluster }}
+{{- if eq (include "container.security.deployAuditLogComponents" .) "true" }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

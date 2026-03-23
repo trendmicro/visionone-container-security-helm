@@ -1,4 +1,8 @@
-{{- if and .Values.auditLogCollection.enabled (eq .Values.auditLogCollection.provider "gardener") .Values.auditLogCollection.gardener.seedCluster }}
+{{- if or (eq (include "container.security.deployOnSeedCluster" .) "true") (eq (include "container.security.deployForSelfManaged" .) "true") }}
+{{- $isGardener := eq (include "container.security.deployOnSeedCluster" .) "true" }}
+{{- $isSelfManaged := eq (include "container.security.deployForSelfManaged" .) "true" }}
+
+{{- if $isGardener }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -74,14 +78,34 @@ rules:
   - patch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRoleBinding
 metadata:
-  name: api-server-modifier-role
-  namespace: {{ .Release.Namespace }}
+  name: {{ include "container.security.clusterResourceName" (dict "name" "api-server-modifier-cluster-role-rolebinding" "context" .) }}
   labels:
     {{- include "apiServerModifier.labels" . | nindent 4 }}
     gardener.cloud/role: extension
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "container.security.clusterResourceName" (dict "name" "api-server-modifier-cluster-role" "context" .) }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "apiServerModifier.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: api-server-modifier{{- if $isSelfManaged }}-selfmanaged{{- end }}-role
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "apiServerModifier.labels" . | nindent 4 }}
+{{- if $isGardener }}
+    gardener.cloud/role: extension
+{{- end }}
 rules:
+# Read audit-policy-configmap and audit-webhook-config-secret
 - apiGroups:
   - ""
   resources:
@@ -98,37 +122,45 @@ rules:
   - get
   - list
   - watch
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: {{ include "container.security.clusterResourceName" (dict "name" "api-server-modifier-cluster-role-rolebinding" "context" .) }}
-  labels:
-    {{- include "apiServerModifier.labels" . | nindent 4 }}
-    gardener.cloud/role: extension
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: {{ include "container.security.clusterResourceName" (dict "name" "api-server-modifier-cluster-role" "context" .) }}
-subjects:
-- kind: ServiceAccount
-  name: {{ include "apiServerModifier.serviceAccountName" . }}
-  namespace: {{ .Release.Namespace }}
+{{- if $isSelfManaged }}
+# Leader election (selfManaged mode)
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+  - patch
+# Events for status reporting (selfManaged mode)
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+{{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: api-server-modifier-role-rolebinding
+  name: api-server-modifier{{- if $isSelfManaged }}-selfmanaged{{- end }}-role-rolebinding
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "apiServerModifier.labels" . | nindent 4 }}
+{{- if $isGardener }}
     gardener.cloud/role: extension
+{{- end }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: api-server-modifier-role
+  name: api-server-modifier{{- if $isSelfManaged }}-selfmanaged{{- end }}-role
 subjects:
 - kind: ServiceAccount
-  name: {{ include "apiServerModifier.serviceAccountName" . }}
+  name: {{ include "apiServerModifier.serviceAccountName" . }}{{- if $isSelfManaged }}-selfmanaged{{- end }}
   namespace: {{ .Release.Namespace }}
 {{- end }}

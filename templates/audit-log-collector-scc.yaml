@@ -1,0 +1,50 @@
+{{- include "validateClusterInput" . -}}
+{{- if eq (include "container.security.deployAuditLogComponents" .) "true" }}
+{{- if eq (include "container.security.deployForSelfManaged" .) "true" }}
+{{- if and .Values.securityContextConstraints.create (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  annotations:
+    kubernetes.io/description: |
+      This provides the required permissions for the audit-log-collector
+      running in selfManaged mode on OpenShift.
+  name: {{ template "container.security.name" . }}-audit-log-collector
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "container.security.labels" . | nindent 4 }}
+allowHostDirVolumePlugin: true
+allowHostIPC: false
+allowHostNetwork: true
+allowHostPID: false
+allowHostPorts: true
+allowPrivilegeEscalation: true
+allowPrivilegedContainer: true
+allowedCapabilities: []
+allowedUnsafeSysctls: []
+defaultAddCapabilities: []
+fsGroup:
+  type: RunAsAny
+groups: []
+priority: 0
+readOnlyRootFilesystem: false
+requiredDropCapabilities: []
+runAsUser:
+  type: RunAsAny
+seLinuxContext:
+  type: RunAsAny
+seccompProfiles:
+- '*'
+supplementalGroups:
+  type: RunAsAny
+users:
+- system:serviceaccount:{{ .Release.Namespace }}:{{ include "auditLogCollector.serviceAccountName" . }}
+volumes:
+- hostPath
+- emptyDir
+- secret
+- configMap
+- projected
+{{- end }}
+{{- end }}
+{{- end }}

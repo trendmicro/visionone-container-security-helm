@@ -118,6 +118,11 @@ spec:
         {{- if eq (include "container.security.deployOnSeedCluster" .) "true" }}
         - --gardener-mode=true
         {{- end }}
+        - --cluster-cr-name={{ include "container.security.clusterCRName" . }}
+        - --audit-log-collection-enabled={{ default "false" .Values.auditLogCollection.enabled }}
+        - --audit-log-collection-provider={{ .Values.auditLogCollection.provider }}
+        - --api-server-modifier-name=trendmicro-api-server-modifier
+        - --audit-log-collector-name=trendmicro-audit-log-collector
         - --enable-custom-ruleset={{ default "false" (eq (include "customRules.enabled" .) "true") }}
         {{- if gt (int .Values.replicas.policyOperator) 1 }}
         - --leader-elect

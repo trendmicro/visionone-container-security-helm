@@ -1,4 +1,7 @@
-{{- if and .Values.auditLogCollection.enabled (eq .Values.auditLogCollection.provider "gardener") .Values.auditLogCollection.gardener.seedCluster }}
+{{- if eq (include "container.security.deployAuditLogComponents" .) "true" }}
+{{- include "container.security.validateEksConfig" . -}}
+{{- include "container.security.validateAksConfig" . -}}
+{{- include "container.security.validateGkeConfig" . -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -28,6 +31,54 @@ data:
       threadiness: 0
       bind_address: "unix:///var/run/audit-log-collector/audit-log-collector.sock"
 
+    {{- if eq .Values.auditLogCollection.provider "eks" }}
+    plugins:
+      - name: k8saudit-eks
+        library_path: libk8saudit-eks.so
+        init_config:
+          region: "{{ .Values.auditLogCollection.eks.region }}"
+          profile: "default"
+          shift: 10
+          polling_interval: 10
+          use_async: false
+          buffer_size: 500
+        open_params: "{{ .Values.auditLogCollection.eks.clusterName }}"
+      - name: json
+        library_path: libjson.so
+        init_config: ""
+
+    load_plugins: [k8saudit-eks, json]
+    {{- else if eq .Values.auditLogCollection.provider "aks" }}
+    plugins:
+      - name: k8saudit-aks
+        library_path: libk8saudit-aks.so
+        init_config:
+          event_hub_namespace_connection_string: "{{ .Values.auditLogCollection.aks.eventHubConnectionString }}"
+          event_hub_name: "{{ .Values.auditLogCollection.aks.eventHubName }}"
+          blob_storage_connection_string: "{{ .Values.auditLogCollection.aks.blobStorageConnectionString }}"
+          blob_storage_container_name: "{{ .Values.auditLogCollection.aks.blobStorageContainerName }}"
+          rate_limit_events_per_second: 100
+          rate_limit_burst: 200
+        open_params: ""
+      - name: json
+        library_path: libjson.so
+        init_config: ""
+
+    load_plugins: [k8saudit-aks, json]
+    {{- else if eq .Values.auditLogCollection.provider "gke" }}
+    plugins:
+      - name: k8saudit-gke
+        library_path: libk8saudit-gke.so
+        init_config:
+          project_id: "{{ .Values.auditLogCollection.gke.gcpProjectId }}"
+          max_event_size: 8000000
+        open_params: "{{ .Values.auditLogCollection.gke.pubSubSubscription }}"
+      - name: json
+        library_path: libjson.so
+        init_config: ""
+
+    load_plugins: [k8saudit-gke, json]
+    {{- else }}
     plugins:
       - name: k8saudit
         library_path: libk8saudit.so
@@ -38,6 +89,7 @@ data:
         init_config: ""
 
     load_plugins: [k8saudit, json]
+    {{- end }}
 
     # Ensure Falco waits for plugin events
     watch_config_files: false

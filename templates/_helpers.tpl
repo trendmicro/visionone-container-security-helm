@@ -1511,11 +1511,116 @@ Usage: {{ include "container.security.clusterResourceName" (dict "name" "my-clus
 {{- end -}}
 
 {{/*
+Generate Cluster CR name - namespace-suffixed in seed cluster mode for multi-install support
+*/}}
+{{- define "container.security.clusterCRName" -}}
+{{- if eq (include "container.security.gardener.seedCluster" .) "true" -}}
+trendmicro-cluster-{{ .Release.Namespace }}
+{{- else -}}
+trendmicro-cluster
+{{- end -}}
+{{- end -}}
+
+{{/*
 Check if custom rules are enabled (either via OCI repository or configmap)
 Returns "true" if custom rules should be enabled, empty string otherwise
 */}}
 {{- define "customRules.enabled" -}}
 {{- if or .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled .Values.visionOne.runtimeSecurity.customRules.configmap.name -}}
 true
+{{- end -}}
+{{- end -}}
+
+{{/*
+Check if we should deploy for selfManaged provider
+Returns "true" if selfManaged provider is enabled, empty string otherwise
+*/}}
+{{- define "container.security.deployForSelfManaged" -}}
+{{- if and .Values.auditLogCollection.enabled (eq .Values.auditLogCollection.provider "selfManaged") -}}
+true
+{{- end -}}
+{{- end -}}
+
+{{/*
+Check if we should deploy audit log collection components (for any supported provider)
+Returns "true" if audit log components should be deployed, empty string otherwise
+*/}}
+{{- define "container.security.deployAuditLogComponents" -}}
+{{- if or (eq (include "container.security.deployOnSeedCluster" .) "true") (eq (include "container.security.deployForSelfManaged" .) "true") (eq (include "container.security.deployForCloudProvider" .) "true") -}}
+true
+{{- end -}}
+{{- end -}}
+
+{{/*
+Validate auditLogCollection.provider is a supported value
+Fails with descriptive error for invalid values
+*/}}
+{{- define "container.security.validateProvider" -}}
+{{- if .Values.auditLogCollection.enabled -}}
+{{- $validProviders := list "gardener" "selfManaged" "eks" "aks" "gke" -}}
+{{- if not (has .Values.auditLogCollection.provider $validProviders) -}}
+{{- fail (printf "Invalid auditLogCollection.provider: %s. Must be one of: %s" .Values.auditLogCollection.provider (join ", " $validProviders)) -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Check if we should deploy for cloud providers (eks, aks, gke)
+Returns "true" if a cloud provider is enabled, empty string otherwise
+*/}}
+{{- define "container.security.deployForCloudProvider" -}}
+{{- if and .Values.auditLogCollection.enabled (has .Values.auditLogCollection.provider (list "eks" "aks" "gke")) -}}
+true
+{{- end -}}
+{{- end -}}
+
+{{/*
+Validate EKS provider configuration
+Fails if required fields are not set
+*/}}
+{{- define "container.security.validateEksConfig" -}}
+{{- if and .Values.auditLogCollection.enabled (eq .Values.auditLogCollection.provider "eks") -}}
+{{- if not .Values.auditLogCollection.eks.region -}}
+{{- fail "auditLogCollection.eks.region is required when provider is 'eks'" -}}
+{{- end -}}
+{{- if not .Values.auditLogCollection.eks.clusterName -}}
+{{- fail "auditLogCollection.eks.clusterName is required when provider is 'eks'" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Validate AKS provider configuration
+Fails if required fields are not set
+*/}}
+{{- define "container.security.validateAksConfig" -}}
+{{- if and .Values.auditLogCollection.enabled (eq .Values.auditLogCollection.provider "aks") -}}
+{{- if not .Values.auditLogCollection.aks.eventHubConnectionString -}}
+{{- fail "auditLogCollection.aks.eventHubConnectionString is required when provider is 'aks'" -}}
+{{- end -}}
+{{- if not .Values.auditLogCollection.aks.eventHubName -}}
+{{- fail "auditLogCollection.aks.eventHubName is required when provider is 'aks'" -}}
+{{- end -}}
+{{- if not .Values.auditLogCollection.aks.blobStorageConnectionString -}}
+{{- fail "auditLogCollection.aks.blobStorageConnectionString is required when provider is 'aks'" -}}
+{{- end -}}
+{{- if not .Values.auditLogCollection.aks.blobStorageContainerName -}}
+{{- fail "auditLogCollection.aks.blobStorageContainerName is required when provider is 'aks'" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Validate GKE provider configuration
+Fails if required fields are not set
+*/}}
+{{- define "container.security.validateGkeConfig" -}}
+{{- if and .Values.auditLogCollection.enabled (eq .Values.auditLogCollection.provider "gke") -}}
+{{- if not .Values.auditLogCollection.gke.gcpProjectId -}}
+{{- fail "auditLogCollection.gke.gcpProjectId is required when provider is 'gke'" -}}
+{{- end -}}
+{{- if not .Values.auditLogCollection.gke.pubSubSubscription -}}
+{{- fail "auditLogCollection.gke.pubSubSubscription is required when provider is 'gke'" -}}
+{{- end -}}
 {{- end -}}
 {{- end -}}
