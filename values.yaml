@@ -56,6 +56,24 @@ visionOne:
     - default
     - dedicated-admin
 
+  scanJobFIPSMode:
+    ## Enable to use the FIPS-compliant scan job image instead of the standard scan job image.
+    ##
+    ## Default value: false
+    enabled: false
+    ## The digest of the FIPS-compliant scan job image.
+    ## Required when scanJobFIPSMode.enabled is true.
+    digest: ""
+
+  pdigFIPSMode:
+    ## Enable to use the FIPS-compliant pdig image instead of the standard pdig image.
+    ##
+    ## Default value: false
+    enabled: false
+    ## The digest of the FIPS-compliant pdig image.
+    ## Required when pdigFIPSMode.enabled is true.
+    digest: ""
+
   admissionController:
     enabled: true
 

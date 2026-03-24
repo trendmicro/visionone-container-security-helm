@@ -129,7 +129,12 @@ spec:
           (not $scanJobProject))
         }}
         {{- $scanJobTag := (default $scanJobImageDefaults.tag .tag) }}
-        {{- $scanJobImage := include "image.source" (dict "repository" $scanJobRepository "registry" .registry "tag" $scanJobTag "imageDefaults" $scanJobImageDefaults "digest" .digest)}}
+        {{- $scanJobDigest := .digest }}
+        {{- if $.Values.visionOne.scanJobFIPSMode.enabled }}
+        {{- $scanJobTag = printf "%s-fips" $scanJobTag }}
+        {{- $scanJobDigest = $.Values.visionOne.scanJobFIPSMode.digest }}
+        {{- end }}
+        {{- $scanJobImage := include "image.source" (dict "repository" $scanJobRepository "registry" .registry "tag" $scanJobTag "imageDefaults" $scanJobImageDefaults "digest" $scanJobDigest)}}
         - name: SCAN_JOB_IMAGE
           value: {{ $scanJobImage }}
         {{- end}} {{/* - with .Values.images.scanJob */}}

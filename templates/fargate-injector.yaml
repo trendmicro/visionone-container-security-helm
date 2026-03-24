@@ -130,7 +130,12 @@ spec:
               (not $project))
             }}
             {{- $tag := (default $imageDefaults.tag .tag) }}
-            - {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
+            {{- $pdigDigest := .digest }}
+            {{- if $.Values.visionOne.pdigFIPSMode.enabled }}
+            {{- $tag = printf "%s-fips" $tag }}
+            {{- $pdigDigest = $.Values.visionOne.pdigFIPSMode.digest }}
+            {{- end }}
+            - {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" $pdigDigest) }}
             {{- end }}
             {{- if ne (len .Values.scout.scout.falcoInternalEvent) 0 }}
             - --falco-internal-event
