@@ -81,7 +81,9 @@ webhooks:
         apiVersions:
           - '*'
         operations:
-          - '*'
+          - CREATE
+          - UPDATE
+          - CONNECT
         resources:
           - "pods"
           - "pods/exec"
