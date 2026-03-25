@@ -40,14 +40,18 @@ if [ -z "${PODS}" ]; then
   exit 1
 fi
 
-# Get Helm version since 'helm list' on Helm 3 does not display all namespaces unless specified. However, this flag does not exist in Helm 2
-case X`helm version --template="{{.Version}}"` in
-  Xv3.*)
-    HELM_COMMAND="$HELM list --all-namespaces";;
-  *)
-    echo "Trend Micro Vision One Container Security only supports Helm 3 or newer version, exiting..."
-    exit 1
-esac
+# Get Helm version since 'helm list' on Helm 3+ does not display all namespaces unless specified. However, this flag does not exist in Helm 2
+HELM_VERSION=$($HELM version --template="{{.Version}}" 2>/dev/null | sed 's/^v\([0-9]*\).*/\1/')
+if ! [[ "$HELM_VERSION" =~ ^[0-9]+$ ]]; then
+  echo "Unable to determine Helm version, exiting..."
+  exit 1
+fi
+if [ "$HELM_VERSION" -ge 3 ]; then
+  HELM_COMMAND="$HELM list --all-namespaces"
+else
+  echo "Trend Micro Vision One Container Security only supports Helm 3 or newer version, exiting..."
+  exit 1
+fi
 
 
 # prepare the output folder
