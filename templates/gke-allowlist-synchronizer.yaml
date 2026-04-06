@@ -13,5 +13,5 @@ metadata:
     {{- include "container.security.labels" . | nindent 4 }}
 spec:
   allowlistPaths:
-  - "Trend-Vision-One/trendmicro-scout/v3.3.5/trend-vision-one-scout-v3.3.5.yaml"
+  - "Trend-Vision-One/trendmicro-scout/v3.3.3/trend-vision-one-scout-v3.3.3.yaml"
 {{- end }}
