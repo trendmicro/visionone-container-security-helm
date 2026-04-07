@@ -24,6 +24,7 @@ rules:
   - nodes
   - services
   - ingresses
+  - configmaps
   verbs:
   - get
   - list
