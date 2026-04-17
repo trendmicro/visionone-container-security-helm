@@ -272,6 +272,23 @@ helm uninstall trendmicro -n trendmicro-system
 ```
 After running the script, proceed with the Helm uninstall as usual.
 
+### Enabling scout hostNetwork on OpenShift
+
+On OpenShift clusters with SELinux enforcing, the scout component requires `hostNetwork: true` to function properly. Without host networking, the pod runs under a strict SELinux label (e.g., `container_t`), which prevents scout from reading `/proc/<pid>/exe` of the falco process within the same pod. This causes scout to fail with the error:
+
+```
+"error":"failed to apply the policy and rule, falco service is not found"
+```
+
+Starting from chart version 3.3.6, `hostNetwork` is configurable and defaults to `false`. If you are deploying on OpenShift, add the following to your `overrides.yaml` file:
+
+```yaml
+scout:
+  hostNetwork: true
+```
+
+**Note**: This issue only affects OpenShift environments with SELinux in enforcing mode. Other platforms (EKS, GKE, AKS, vanilla Kubernetes) are not affected and can use the default `hostNetwork: false`.
+
 ### Enable runtime security on AWS bottlerocket
 
 You can run runtime security on AWS bottlerocket nodes by adding these configurations in your `overrides.yaml` file:
