@@ -150,6 +150,7 @@ spec:
             {{- $secret := (default (default "" $imageDefaults.imagePullSecret) .imagePullSecret) }}
             - {{ $secret | quote }}
             {{- end }}
+            - --policy-operator-service-url={{ include "policyOperator.svc.url" . }}
           livenessProbe:
             httpGet:
               scheme: HTTPS

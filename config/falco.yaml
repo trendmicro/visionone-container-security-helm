@@ -1,3 +1,52 @@
+###############################
+# Falco config files settings #
+###############################
+
+# [Stable] `config_files`
+#
+# -- Allow to load additional configs files, beside the main one.
+#
+# Their loading is assumed to be made *after* main config file has been processed,
+# exactly in the order they are specified.
+# Therefore, loaded config files *can* override values from main config file.
+# Also, nested include is not allowed, ie: included config files won't be able to include other config files.
+#
+# Like for 'rules_files', specifying a folder will load all the configs files present in it in a lexicographical order.
+#
+# 3 merge-strategies are available:
+# `append` (default):
+#   * existing sequence keys will be appended
+#   * existing scalar keys will be overridden
+#   * non-existing keys will be added
+# `override`:
+#   * existing keys will be overridden
+#   * non-existing keys will be added
+# `add-only`:
+#   * existing keys will be ignored
+#   * non-existing keys will be added
+#
+# Each item on the list can be either a yaml map or a simple string.
+# The simple string will be interpreted as the config file path, and the `append` merge-strategy will be enforced.
+# When the item is a yaml map instead, it will be of the form: `   path: foo\n   strategy: X`.
+# When `strategy` is omitted, once again `append` is used.
+#
+# When a merge-strategy is enabled for a folder entry, all the included config files will use that merge-strategy.
+config_files:
+  - /etc/falco/config.d
+  # Example of config file specified as yaml map with strategy made explicit.
+  # - path: $HOME/falco_local_configs/
+  #   strategy: add-only
+
+# [Stable] `watch_config_files`
+#
+# -- Falco monitors configuration and rules files for changes and automatically
+# reloads itself to apply the updated configuration when any modifications are
+# detected. This feature is particularly useful when you want to make real-time
+# changes to the configuration or rules of Falco without interrupting its
+# operation or losing its state. For more information about Falco's state
+# engine, please refer to the `base_syscalls` section.
+watch_config_files: true
+
 #####################
 # Falco rules files #
 #####################
@@ -40,20 +89,6 @@ rules_files:
   - /etc/scout/rules.d/tm_falco_rules.yaml
   - /etc/scout/rules.d/tm_override_rules.yaml
   - /etc/scout/rules.d/tm_malware_rules.yaml
-
-######################
-# Falco config files #
-######################
-
-# [Stable] `watch_config_files`
-#
-# Falco monitors configuration and rule files for changes and automatically
-# reloads itself to apply the updated configuration when any modifications are
-# detected. This feature is particularly useful when you want to make real-time
-# changes to the configuration or rules of Falco without interrupting its
-# operation or losing its state. For more information about Falco's state
-# engine, please refer to the `base_syscalls` section.
-watch_config_files: true
 
 ##########################
 # Falco outputs settings #
@@ -187,7 +222,7 @@ log_level: info
 # recommended for production use.
 libs_logger:
   enabled: true
-  severity: error
+  severity: warning
 
 #################################################################################
 # Falco logging / alerting / metrics related to software functioning (advanced) #
@@ -478,7 +513,7 @@ engine:
   kind: modern_ebpf
   ebpf:
     # path to the elf file to load.
-    probe: ${HOME}/.falco/falco-bpf.o
+    probe: /root/.falco/falco-bpf.o
     buf_size_preset: 4
     drop_failed_exit: false
   modern_ebpf:
@@ -486,44 +521,76 @@ engine:
     buf_size_preset: 4
     drop_failed_exit: false
 
-###########################
-# Falco Container Engines #
-###########################
+#################
+# Falco plugins #
+#################
 
-# This option allows you to explicitly enable or disable API lookups against container
-# runtime sockets for each supported container runtime.
-# Access to these sockets enables Falco to retrieve container and Kubernetes fields,
-# helping identify workload owners in modern containerized environments.
-# Refer to the fields docs:
+# Plugins allow Falco to extend its functionality and leverage data sources such as
+# Kubernetes audit logs or enable integration with other services in your ecosystem.
+# This enables Falco to perform fast on-host detections beyond syscalls.
+# Furthermore, plugins allow enriching existing data sources with additional metadata,
+# and add other advanced capabilities to Falco.
 #
-# - [Kubernetes fields](https://falco.org/docs/reference/rules/supported-fields/#field-class-k8s)
-# - [Container fields](https://falco.org/docs/reference/rules/supported-fields/#container)
+# The plugin system will continue to evolve with more specialized functionality in future
+# releases.
 #
-# Additionally, Falco can use container events as a data source for alerting (evt.type = container).
+# Please refer to the plugins repo at https://github.com/falcosecurity/plugins for detailed
+# documentation on the available plugins. This repository provides comprehensive
+# information about each plugin and how to utilize them with Falco.
 #
-# For most container engines, you can solely enable or disable them, and Falco will search the
-# default (hard-coded) container runtime socket paths, such as `/var/run/docker.sock` for Docker.
+# Please note that if your intention is to enrich Falco syscall logs with fields
+# such as `k8s.ns.name`, `k8s.pod.name`, and `k8s.pod.*`, you do not need to use
+# the `k8saudit` plugin. This information is automatically extracted from
+# the container runtime socket by the 'container' plugin.
+# The `k8saudit` plugin is specifically designed to integrate with Kubernetes audit logs
+# and is not required for basic enrichment of syscall logs with Kubernetes-related fields.
 #
-# However, for Kubernetes settings, you can customize the CRI socket paths:
+# --- [Usage]
 #
-# - `container_engines.cri.sockets`: Pass a list of container runtime sockets.
-# - `container_engines.cri.disable_async`: Since API lookups may not always be quick or
-# perfect, resulting in empty fields for container metadata, you can use this option option
-# to disable asynchronous fetching. Note that missing fields may still occasionally occur.
+# Disabled by default, indicated by an empty `load_plugins` list. Each plugin meant
+# to be enabled needs to be listed as explicit list item.
 #
-# The equivalent (stable) CLI args are `--cri` or `--disable-cri-async`.
-container_engines:
-  docker:
-    enabled: true
-  cri:
-    enabled: true
-    sockets: ["/run/containerd/containerd.sock", "/run/crio/crio.sock", "/run/k3s/containerd/containerd.sock"]
-    disable_async: false
-  podman:
-    enabled: true
-  lxc:
-    enabled: true
-  libvirt_lxc:
-    enabled: true
-  bpm:
-    enabled: true
+# For example, if you want to use the `k8saudit` plugin,
+# ensure it is configured appropriately and then change this to:
+# load_plugins: [k8saudit, json]
+
+# [Stable] `load_plugins`
+#
+# -- List of plugins to load.
+load_plugins: [container, k8smeta]
+
+# [Stable] `plugins`
+#
+# -- Customize subsettings for each enabled plugin. These settings will only be
+# applied when the corresponding plugin is enabled using the `load_plugins`
+# option.
+plugins:
+  - name: k8smeta
+    # path to the plugin .so file
+    library_path: libk8smeta.so
+  - name: container
+    # For a summary of config option, see https://github.com/falcosecurity/plugins/tree/main/plugins/container#configuration
+    library_path: libcontainer.so
+    init_config:
+      label_max_len: 100 # (optional, default: 100; container labels larger than this won't be reported)
+      with_size: false # (optional, default: false; whether to enable container size inspection, which is inherently slow)
+      hooks: ['create', 'start'] # (optional, default: 'create'. Some fields might not be available in create hook, but we are guaranteed that it gets triggered before first process gets started)
+      engines:
+        docker:
+          enabled: true
+          sockets: ['/var/run/docker.sock']
+        podman:
+          enabled: true
+          sockets: ['/run/podman/podman.sock', '/run/user/1000/podman/podman.sock']
+        containerd:
+          enabled: true
+          sockets: ['/run/containerd/containerd.sock', '/run/k3s/containerd/containerd.sock']
+        cri:
+          enabled: true
+          sockets: ['/run/crio/crio.sock']
+        lxc:
+          enabled: false
+        libvirt_lxc:
+          enabled: false
+        bpm:
+          enabled: false 

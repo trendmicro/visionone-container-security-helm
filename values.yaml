@@ -1256,7 +1256,7 @@ scout:
     dockershim:
       ## Determines if the dockershim socket is mounted in the falco container.
       ## Required for bottlerocket
-      enabled: true
+      enabled: false
 
       ## socket, determines which socket to mount for enabling dockershim based runtimes.
       ## Default value: (determined by platform)
