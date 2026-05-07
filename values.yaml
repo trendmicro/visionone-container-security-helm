@@ -678,14 +678,6 @@ serviceAccount:
       seccompProfiles:
       - '*'
 
-  usage:
-    ## The name of the service account to use.
-    ## If not set and create is true, a name is generated using the fullname of usage template
-    name: ''
-
-    ## Annotations to add to the service account
-    annotations: {}
-
   scout:
     ## The name of the service account to use.
     ## If not set and create is true, a name is generated using the fullname of scout template
@@ -1027,13 +1019,6 @@ tlsConfig:
 resources:
   defaults: {}
   oversight:
-    requests:
-      cpu: 100m
-      memory: 20Mi
-    limits:
-      cpu: 800m
-      memory: 1Gi
-  usage:
     requests:
       cpu: 100m
       memory: 20Mi
@@ -1461,10 +1446,6 @@ images:
   oversight:
     repository: oversight-controller
     digest: sha256:d6262c44cba9dafcab6ff0e373a857e2969ea03803e83f02646f7cd8f026cf8d
-
-  usage:
-    repository: usage-controller
-    digest: sha256:0f0097e346bef687e26796bdf700600c0f2723da775f6f20ee71204fc8e1c0c7
 
   falco:
     repository: falco

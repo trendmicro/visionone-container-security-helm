@@ -63,22 +63,6 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 
 {{/*
-Usage Controller Common labels
-*/}}
-{{- define "usage.labels" -}}
-helm.sh/chart: {{ include "container.security.chart" . }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
-app.kubernetes.io/part-of: {{ include "container.security.name" . }}
-{{ include "usage.selectorLabels" . }}
-{{- range $k, $v := (default (dict) .Values.extraLabels) }}
-{{ $k }}: {{ quote $v }}
-{{- end }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
-{{- end }}
-
-{{/*
 Scan Manager Common labels
 */}}
 {{- define "scanManager.labels" -}}
@@ -258,15 +242,6 @@ app.kubernetes.io/component: trendmicro-oversight
 {{- end }}
 
 {{/*
-Usage Controller Selector labels
-*/}}
-{{- define "usage.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "usage.fullname" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-app.kubernetes.io/component: trendmicro-usage
-{{- end }}
-
-{{/*
 Scan Manager Selector labels
 */}}
 {{- define "scanManager.selectorLabels" -}}
@@ -427,26 +402,6 @@ If release name contains chart name it will be used as a full name.
 {{- printf "%s-%s" "oversight" $name | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
 {{- printf "%s-%s-%s" "oversight" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Create a default fully qualified app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-If release name contains chart name it will be used as a full name.
-*/}}
-{{- define "usage.fullname" -}}
-{{- if .Values.usageFullnameOverride -}}
-{{- .Values.usageFullnameOverride | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- $name := default .Chart.Name .Values.usageFullnameOverride -}}
-{{- if contains $name .Release.Name -}}
-{{- printf "%s-%s" "usage" .Release.Name | trunc 63 | trimSuffix "-" -}}
-{{- else if contains .Release.Name $name -}}
-{{- printf "%s-%s" "usage" $name | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-%s-%s" "usage" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 {{- end -}}
 {{- end -}}
@@ -830,17 +785,6 @@ Oversight service account
 {{- default (include "oversight.fullname" .) .Values.serviceAccount.oversight.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.oversight.name }}
-{{- end }}
-{{- end }}
-
-{{/*
-Usage Controller service account
-*/}}
-{{- define "usage.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "usage.fullname" .) .Values.serviceAccount.usage.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.usage.name }}
 {{- end }}
 {{- end }}
 

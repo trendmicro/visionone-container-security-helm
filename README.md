@@ -520,11 +520,6 @@ Most issues can be investigated using the application logs. The logs can be acce
   kubectl logs deployment/trendmicro-oversight-controller --namespace ${namespace}
 ```
 
-* Access the logs for Usage controller using the following command:
-```sh
-  kubectl logs deployment/trendmicro-usage-controller --namespace ${namespace}
-```
-
 ### Collect support logs
 To help debug issues reported in support cases, a log collection script is provided for customer use.
 
