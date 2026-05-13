@@ -649,17 +649,26 @@ Service url of secret scanner
 
 {{/*
 Create an image source.
+
+Inputs (dict):
+  repository, registry, tag, imageDefaults, digest    — standard image fields
+  fipsMode    (optional, bool)   — when true and fipsdigest is set, fipsdigest replaces digest
+  fipsdigest  (optional, string) — FIPS-compliant digest for this image
 */}}
 {{- define "image.source" -}}
+{{- $digest := .digest -}}
+{{- if and .fipsMode .fipsdigest -}}
+{{- $digest = .fipsdigest -}}
+{{- end -}}
 {{- if and (not .registry) (not .imageDefaults.registry) -}}
-{{- if .digest -}}
-{{- printf "%s@%s" .repository .digest | quote -}}
+{{- if $digest -}}
+{{- printf "%s@%s" .repository $digest | quote -}}
 {{- else -}}
 {{- printf "%s:%s" .repository .tag | quote -}}
 {{- end -}}
 {{- else -}}
-{{- if .digest -}}
-{{- printf "%s/%s@%s" (default .imageDefaults.registry .registry) .repository .digest | quote -}}
+{{- if $digest -}}
+{{- printf "%s/%s@%s" (default .imageDefaults.registry .registry) .repository $digest | quote -}}
 {{- else -}}
 {{- printf "%s/%s:%s" (default .imageDefaults.registry .registry) .repository .tag | quote -}}
 {{- end -}}

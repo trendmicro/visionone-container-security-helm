@@ -77,7 +77,7 @@ spec:
             (not $project))
           }}
           {{- $tag := (default $imageDefaults.tag .tag) }}
-          image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest) }}
+          image: {{ include "image.source" (dict "repository" $repository "registry" .registry "tag" $tag "imageDefaults" $imageDefaults "digest" .digest "fipsdigest" .fipsdigest "fipsMode" $.Values.visionOne.fipsMode.enabled) }}
           imagePullPolicy: {{ default (default "Always" $imageDefaults.pullPolicy) .pullPolicy }}
           {{- end }}
           command:

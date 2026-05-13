@@ -289,6 +289,20 @@ scout:
 
 **Note**: This issue only affects OpenShift environments with SELinux in enforcing mode. Other platforms (EKS, GKE, AKS, vanilla Kubernetes) are not affected and can use the default `hostNetwork: false`.
 
+### Enable FIPS mode for container security
+
+If you are running Container Security in an environment that requires [FIPS 140](https://csrc.nist.gov/projects/cryptographic-module-validation-program) compliance (for example, U.S. federal workloads or Red Hat OpenShift clusters installed in FIPS mode), you can enable FIPS mode to have Container Security pull FIPS-compliant variants of its container images.
+
+To enable FIPS mode, add the following to your `overrides.yaml` file:
+
+```yaml
+visionOne:
+  fipsMode:
+    enabled: true
+```
+
+**Note**: Only enable FIPS mode if your cluster nodes and the container runtime are themselves configured for FIPS compliance. Enabling FIPS mode on a non-FIPS cluster will result in runtime errors due to incompatibilties in fips crypto.
+
 ### Enable runtime security on AWS bottlerocket
 
 You can run runtime security on AWS bottlerocket nodes by adding these configurations in your `overrides.yaml` file:

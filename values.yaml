@@ -56,23 +56,12 @@ visionOne:
     - default
     - dedicated-admin
 
-  scanJobFIPSMode:
-    ## Enable to use the FIPS-compliant scan job image instead of the standard scan job image.
+  fipsMode:
+    ## Enable to use the FIPS-compliant images and run container secuirty in FIPS compliant environment.
+    ## Ensure this is enabled if you are running in an environment that requires FIPS compliance and your container images are FIPS compliant.
     ##
     ## Default value: false
     enabled: false
-    ## The digest of the FIPS-compliant scan job image.
-    ## Required when scanJobFIPSMode.enabled is true.
-    digest: sha256:35eeb511c0d20cf77d2daae454de9c9121358bf66d82773a5f43d9c871e0a43f
-
-  pdigFIPSMode:
-    ## Enable to use the FIPS-compliant pdig image instead of the standard pdig image.
-    ##
-    ## Default value: false
-    enabled: false
-    ## The digest of the FIPS-compliant pdig image.
-    ## Required when pdigFIPSMode.enabled is true.
-    digest: sha256:2b94bb0a7fc793cfaa5b04e19fe8f38cb1996bc66524686e7ff73dd20a83e6bc
 
   admissionController:
     enabled: true
@@ -1450,62 +1439,77 @@ images:
   admissionController:
     repository: admission-controller
     digest: sha256:8bead4aaf77ec471f78ebba90ff00d609fe70b74a75f01f3680e984cb48ae348
+    fipsdigest:
 
   oversight:
     repository: oversight-controller
     digest: sha256:f0a2937c236e9e9e5bedc6c859f67212b235f3aaa916e2d885f6b6d4eb7ebf4f
+    fipsdigest:
 
   falco:
     repository: falco
     digest: sha256:6ca644a6af3ecf347ad56cadae423b3a7f46c747ff4e1605f4a514ba183b8a3f
+    fipsdigest:
 
   scout:
     repository: scout
     digest: sha256:58dc1348f823a3ca64776dde906d8c3fe296eb1ee33135cc84ca08786d323d47
+    fipsdigest:
 
   scanManager:
     repository: scan-manager
     digest: sha256:72b7df56406828411084a2f5eb2e7891e504f0e867f0ff710484215c62b79674
+    fipsdigest:
 
   scanJob:
     repository: scan-job
     digest: sha256:15cb72c09c613111c4c2b06481196f4ec7717f75473976c0ac17cbab16d74273
+    fipsdigest:
 
   complianceScanJob:
     repository: compliance-scan-job
     digest: sha256:9ad91614a557bbd703d2b5706f1224372401fec560062e8cee66d6e0e3829286
+    fipsdigest:
 
   workloadOperator:
     repository: workload-operator
     digest: sha256:579a8669340a6e3cbaa7a6bfae77b3aa373810554baccf910793dc08c304317c
+    fipsdigest:
 
   fargateInjector:
     repository: fargate-tool
     digest: sha256:281762df391ec2f11879c587ad1886467e128f9a409ba3cd5cf9e98e7ebc0bc8
+    fipsdigest:
 
   pdig:
     repository: pdig
     digest: sha256:0c55e7091ed080cca08cebe41ca296783fc61911ad5c89209364f02bf0d69dd4
+    fipsdigest:
 
   k8sMetaCollector:
     repository: k8s-metacollector
     digest: sha256:77b3a63a6af43a5664a6f7559369a94ebac24bdc9f7e0d05ba9f7f1181aa228b
+    fipsdigest:
 
   policyOperator:
     repository: policy-operator
     digest: sha256:614ba72eca265497655708e9b5534cc6513de11a320d6bc1627110e5abdebe51
+    fipsdigest:
 
   malwareScanner:
     repository: malware-scanner
     digest: sha256:11266bd43fcc314c253e8864397cf45c61ff2aa62ad9a7f87579e8a1dc32981f
+    fipsdigest:
 
   auditLogCollector:
     repository: audit-log-collector
     digest: sha256:001e6942668dd945c45c72c060618f0e5da01ec32340c5f1341409e7633c1091
+    fipsdigest:
 
   apiServerModifier:
     repository: api-server-modifier
     digest: sha256:2e6eab795b6d7b3cd7bf9d58863d175857d8d4af36b73296938fa582851bdcd2
+    fipsdigest:
 
 ##
 ## Service Gateway Configuration
