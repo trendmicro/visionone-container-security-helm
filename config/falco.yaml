@@ -53,7 +53,7 @@ rules_files:
 # changes to the configuration or rules of Falco without interrupting its
 # operation or losing its state. For more information about Falco's state
 # engine, please refer to the `base_syscalls` section.
-watch_config_files: false
+watch_config_files: true
 
 ##########################
 # Falco outputs settings #
