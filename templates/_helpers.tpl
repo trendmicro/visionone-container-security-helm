@@ -1152,6 +1152,7 @@ Automatically adds any namespace with prefix to excluded namespace list for open
 */}}
 {{- define "namespaceExclusions" -}}
 {{- $excludedNamespaces := .Values.visionOne.exclusion.namespaces | default list -}}
+{{- $excludedNamespaces = append $excludedNamespaces .Release.Namespace -}}
 {{- $osNsPrefixes := .Values.visionOne.exclusion.osNsPrefixes | default list -}}
 
 {{- if .Capabilities.APIVersions.Has "security.openshift.io/v1" -}}
@@ -1167,7 +1168,7 @@ Automatically adds any namespace with prefix to excluded namespace list for open
     {{- end -}}
   {{- end -}}
 {{- end -}}
-{{- join "," $excludedNamespaces -}}
+{{- join "," ($excludedNamespaces | uniq) -}}
 {{- end -}}
 
 {{/*
