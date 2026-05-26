@@ -38,7 +38,7 @@ data:
         metadata:
           labels:
             {{- include "scanner.labels" . | nindent 12 }}
-            ignoreRuntimeScan: true
+            trendmicro-vision-one-container-security/ignore-runtime-scan: "true"
             sidecar.istio.io/inject: "false"
           annotations:
             {{- with (default .Values.podAnnotations.defaults .Values.podAnnotations.scanner) }}

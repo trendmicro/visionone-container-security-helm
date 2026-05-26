@@ -47,13 +47,17 @@ By default, Container Security Continuous Compliance will create a Kubernetes ne
   spec:
     podSelector:
       matchLabels:
-         trendmicro-vision-one-container-security/isolate=true
+        trendmicro-vision-one-container-security/isolate: "true"
     policyTypes:
     - Ingress
     - Egress
 ```
 
 **Warning**: The network policy with matchLabels `trendmicro-vision-one-container-security/isolate: true` must exist in each application namespaces in order to perform proper isolation mitigation.
+
+#### Automatic Revert of Isolation
+
+Isolation applied by continuous compliance is automatically reverted when the policy violation no longer applies. This change in evaluation result could be caused by the policy changing or being disabled. Isolation applied through other mechanisms such as XDR response actions is not automatically reverted.
 
 ### Registering Cluster with Trend Micro Container Security
 
