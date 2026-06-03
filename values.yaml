@@ -1459,7 +1459,7 @@ images:
   scanJob:
     repository: scan-job
     digest: sha256:136db15ee213e8fb703b23186e7622c51bd492cbb69a963f380cf16f4d015061
-    fipsdigest:sha256:0e86135a6d5d1f54de7bb8eeb59a90ef96402bb24a215bb8ea5c224099e67b8a
+    fipsdigest: sha256:0e86135a6d5d1f54de7bb8eeb59a90ef96402bb24a215bb8ea5c224099e67b8a
 
   complianceScanJob:
     repository: compliance-scan-job
@@ -1476,7 +1476,7 @@ images:
   pdig:
     repository: pdig
     digest: sha256:2add960e7ca3bde130fb1f0b432772ef3ae00279bd4c49eaff3fcfc37a797f2a
-    fipsdigest:sha256:1bbf898b5ae8b44c28da59d85ec1d1cfed6f6172d3ee83fbc03dfc91d26837a9
+    fipsdigest: sha256:1bbf898b5ae8b44c28da59d85ec1d1cfed6f6172d3ee83fbc03dfc91d26837a9
 
   k8sMetaCollector:
     repository: k8s-metacollector
