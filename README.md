@@ -276,23 +276,6 @@ helm uninstall trendmicro -n trendmicro-system
 ```
 After running the script, proceed with the Helm uninstall as usual.
 
-### Enabling scout hostNetwork on OpenShift
-
-On OpenShift clusters with SELinux enforcing, the scout component requires `hostNetwork: true` to function properly. Without host networking, the pod runs under a strict SELinux label (e.g., `container_t`), which prevents scout from reading `/proc/<pid>/exe` of the falco process within the same pod. This causes scout to fail with the error:
-
-```
-"error":"failed to apply the policy and rule, falco service is not found"
-```
-
-Starting from chart version 3.3.6, `hostNetwork` is configurable and defaults to `false`. If you are deploying on OpenShift, add the following to your `overrides.yaml` file:
-
-```yaml
-scout:
-  hostNetwork: true
-```
-
-**Note**: This issue only affects OpenShift environments with SELinux in enforcing mode. Other platforms (EKS, GKE, AKS, vanilla Kubernetes) are not affected and can use the default `hostNetwork: false`.
-
 ### Enable FIPS mode for container security
 
 If you are running Container Security in an environment that requires [FIPS 140](https://csrc.nist.gov/projects/cryptographic-module-validation-program) compliance (for example, U.S. federal workloads or Red Hat OpenShift clusters installed in FIPS mode), you can enable FIPS mode to have Container Security pull FIPS-compliant variants of its container images.
@@ -317,6 +300,21 @@ securityContext:
       allowPrivilegeEscalation: true
       privileged: true
 ```
+
+### Enable runtime security on SELinux-enforcing clusters
+
+On nodes that run SELinux in enforcing mode, the container runtime socket (for example CRI-O's `crio.sock`, labeled `container_var_run_t`) is not reachable from the default `container_t` SELinux domain. The Scout container dials this socket for performing malware and secret scans, so it must run in the `spc_t` (super-privileged container) SELinux domain.
+
+This is applied automatically on **Red Hat OpenShift** (detected via the `security.openshift.io/v1` API group). For non-OpenShift clusters that also run SELinux in enforcing mode (for example kubeadm, RKE2, or k3s on RHEL/Fedora/CentOS nodes), enable it explicitly by adding the following to your `overrides.yaml` file:
+
+```yaml
+securityContext:
+  scout:
+    scout:
+      seLinuxCompatible: true
+```
+
+**Note**: The `spc_t` type must be available on the target nodes (provided by the `container-selinux` policy, which is installed by default on RHEL/Fedora). On OpenShift this is permitted by the Scout SecurityContextConstraint, which allows `seLinuxContext: RunAsAny`.
 
 ### Configure Runtime Container Interface
 

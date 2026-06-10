@@ -838,6 +838,13 @@ securityContext:
     pod:
       runAsNonRoot: true
     scout:
+      ## seLinuxCompatible, if set to true, runs the scout container in the spc_t (super-privileged
+      ## container) SELinux domain so it can reach the container runtime socket on SELinux-enforcing
+      ## nodes. This is applied automatically on OpenShift; enable it for non-OpenShift clusters that
+      ## also run SELinux in enforcing mode.
+      ##
+      ## Default value: false
+      seLinuxCompatible: false
       allowPrivilegeEscalation: true
       capabilities:
         drop:
