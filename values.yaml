@@ -1206,14 +1206,6 @@ scout:
   ## Default Value: true
   excludeSameNamespace: true
 
-  ## seLinuxCompatible, if set to true, runs the scout container in the spc_t (super-privileged
-  ## container) SELinux domain so it can reach the container runtime socket on SELinux-enforcing
-  ## nodes. This is applied automatically on OpenShift; enable it for non-OpenShift clusters that
-  ## also run SELinux in enforcing mode.
-  ##
-  ## Default Value: false
-  seLinuxCompatible: false
-
   falco:
     ## apiUrl, provide the URL Falco should use to connect to the Kubernetes API.
     ##
@@ -1349,6 +1341,14 @@ scout:
     ##
     ## Default value: info
     logLevel: info
+
+    ## seLinuxCompatible, if set to true, runs the scout container in the spc_t (super-privileged
+    ## container) SELinux domain so it can reach the container runtime socket on SELinux-enforcing
+    ## nodes. This is applied automatically on OpenShift; enable it for non-OpenShift clusters that
+    ## also run SELinux in enforcing mode.
+    ##
+    ## Default Value: false
+    seLinuxCompatible: false
 
   downloader:
     ## extraArgs, if set will apply additional arguments to scout container
