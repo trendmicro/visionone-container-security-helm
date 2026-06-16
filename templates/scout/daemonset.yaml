@@ -269,14 +269,14 @@ spec:
             appArmorProfile:
               type: Unconfined
 {{- end }}{{/* if */}}
-{{- if or (.Capabilities.APIVersions.Has "security.openshift.io/v1") .Values.securityContext.scout.scout.seLinuxCompatible }}
+{{- if or (.Capabilities.APIVersions.Has "security.openshift.io/v1") .Values.scout.seLinuxCompatible }}
             # On SELinux-enforcing nodes the container runtime sockets (e.g. CRI-O's
             # crio.sock, labeled container_var_run_t) are not reachable from the
             # default container_t SELinux domain. Scout dials the CRI socket directly
             # to locate its own pod, so it must run in the spc_t (super-privileged
             # container) domain. This is applied automatically on OpenShift (the
             # security.openshift.io/v1 API group) and can be forced on other
-            # SELinux-enforcing clusters via securityContext.scout.scout.seLinuxCompatible.
+            # SELinux-enforcing clusters via scout.seLinuxCompatible.
             # The scout SCC allows seLinuxContext RunAsAny.
             seLinuxOptions:
               type: spc_t
