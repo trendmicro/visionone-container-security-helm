@@ -1157,27 +1157,39 @@ Usage:
 {{- end -}}
 
 {{/*
-Automatically adds any namespace with prefix to excluded namespace list for openshift
+webhookExcludedNamespaces: STATIC, deterministic excluded-namespace list for the admission ValidatingWebhookConfiguration's namespaceSelector.
 */}}
-{{- define "namespaceExclusions" -}}
-{{- $excludedNamespaces := .Values.visionOne.exclusion.namespaces | default list -}}
-{{- $excludedNamespaces = append $excludedNamespaces .Release.Namespace -}}
-{{- $osNsPrefixes := .Values.visionOne.exclusion.osNsPrefixes | default list -}}
-
+{{- define "webhookExcludedNamespaces" -}}
+{{- $excludedNamespaces := concat (.Values.visionOne.exclusion.namespaces | default list) (list .Release.Namespace) -}}
 {{- if .Capabilities.APIVersions.Has "security.openshift.io/v1" -}}
-  {{- $namespaceList := lookup "v1" "Namespace" "" "" -}}
-  {{- if $namespaceList -}}
-    {{- range $index, $namespace := $namespaceList.items -}}
-      {{- range $prefix := $osNsPrefixes -}}
-        {{- if hasPrefix $prefix $namespace.metadata.name -}}
-          {{- $excludedNamespaces = append $excludedNamespaces $namespace.metadata.name -}}
-          {{- break -}}
-        {{- end -}}
-      {{- end -}}
-    {{- end -}}
+  {{- $raw := .Files.Get "config/openshift-system-namespaces.yaml" -}}
+  {{- if not $raw -}}
+    {{- fail "config/openshift-system-namespaces.yaml is missing or empty; it is required to render the admission webhook namespaceSelector on OpenShift" -}}
   {{- end -}}
+  {{- $sys := $raw | fromYaml -}}
+  {{- if not $sys.systemNamespaces -}}
+    {{- fail "config/openshift-system-namespaces.yaml must define a non-empty 'systemNamespaces' list" -}}
+  {{- end -}}
+  {{- $excludedNamespaces = concat $excludedNamespaces $sys.systemNamespaces -}}
 {{- end -}}
-{{- join "," ($excludedNamespaces | uniq) -}}
+{{- join "," ($excludedNamespaces | uniq | sortAlpha) -}}
+{{- end -}}
+
+{{/*
+componentExcludedNamespaces: the EXACT-match namespace list passed to in-cluster components via --excluded-namespaces.
+*/}}
+{{- define "componentExcludedNamespaces" -}}
+{{- $ns := concat (.Values.visionOne.exclusion.namespaces | default list) (list .Release.Namespace) -}}
+{{- join "," ($ns | uniq | sortAlpha) -}}
+{{- end -}}
+
+{{/*
+namespaceExclusionPrefixes: namespace name PREFIXES passed to in-cluster components via --excluded-namespace-prefixes.
+*/}}
+{{- define "namespaceExclusionPrefixes" -}}
+{{- if .Capabilities.APIVersions.Has "security.openshift.io/v1" -}}
+{{- join "," (.Values.visionOne.exclusion.osNsPrefixes | default list) -}}
+{{- end -}}
 {{- end -}}
 
 {{/*

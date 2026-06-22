@@ -179,12 +179,14 @@ spec:
             - --grpc-socket-path=unix:///var/run/scout/scout.sock
             - --vision-one-endpoint={{ include "container.security.endpoint" . }}
             - --exclude-kubernetes-service-host-from-proxy={{ default "false" .Values.proxy.excludeKubernetesServiceHost }}
-            {{- $excludeNS := (include "namespaceExclusions" .) | splitList "," }}
-            {{- $excludeNS := default (list) $excludeNS }}
+            {{- $excludeNS := .Values.visionOne.exclusion.namespaces | default list }}
             {{- if .Values.scout.excludeSameNamespace }}
-                {{- $excludeNS = append $excludeNS .Release.Namespace }}
+                {{- $excludeNS = concat $excludeNS (list .Release.Namespace) }}
             {{- end}}{{/* if */}}
-            - --excluded-namespaces={{ $excludeNS | join "," }}
+            - --excluded-namespaces={{ $excludeNS | uniq | sortAlpha | join "," }}
+            {{- if .Capabilities.APIVersions.Has "security.openshift.io/v1" }}
+            - --excluded-namespace-prefixes={{ include "namespaceExclusionPrefixes" . }}
+            {{- end }}
             - --falco-event-max-diff=90s
             {{- if ne (len .Values.scout.scout.falcoInternalEvent) 0 }}
             - --falco-internal-event

@@ -96,8 +96,11 @@ spec:
             - --zap-stacktrace-level={{ default "error" .Values.logConfig.stacktraceLevel }}
             - --zap-time-encoding={{ default "rfc3339" .Values.logConfig.timeEncoding }}
             - --excluded-namespaces
-            {{- $excludeNS := include "namespaceExclusions" . }}
+            {{- $excludeNS := include "componentExcludedNamespaces" . }}
             - {{ $excludeNS | quote }}
+            {{- if .Capabilities.APIVersions.Has "security.openshift.io/v1" }}
+            - --excluded-namespace-prefixes={{ include "namespaceExclusionPrefixes" . }}
+            {{- end }}
             - --release-service={{ .Release.Service }}
             - --release-name={{ .Release.Name }}
             - --container-security-name={{ include "container.security.name" . }}

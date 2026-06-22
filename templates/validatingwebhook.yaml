@@ -51,7 +51,7 @@ webhooks:
   - name: {{ default $cn .Values.visionOne.admissionController.certificate.commonName }}
     namespaceSelector:
       matchExpressions:
-      {{- $excludedNamespaces := (include "namespaceExclusions" .) | splitList "," }}
+      {{- $excludedNamespaces := (include "webhookExcludedNamespaces" .) | splitList "," }}
       {{- if $excludedNamespaces }}
       - key: kubernetes.io/metadata.name
         operator: NotIn
