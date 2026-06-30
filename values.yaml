@@ -1431,7 +1431,7 @@ images:
 
     ## Default tag for images to pull. This can be overridden for each image
     ## by specifying the tag attribute at the image level.
-    tag: 3.4.1
+    tag: 3.4.2
 
     ## Default pull policy for images. This can be overridden for each image
     ## by specifying the pullPolicy attribute at the image level.
@@ -1446,53 +1446,53 @@ images:
     # imagePullSecret:
   admissionController:
     repository: admission-controller
-    digest: sha256:cfb033b24ba1f1a83fdec39f75a3c043cecaa51d2e6c8e590d6ccf9c07415e79
+    digest: sha256:97b021ae0ac6c407a725510db530dbb1263d0d0a6a506adb3a49331967c4d0de
 
   oversight:
     repository: oversight-controller
-    digest: sha256:33f19acbb9fcc04ef169af3c5fe51a025f12d4fc7dc8be033cc31758ea244099
+    digest: sha256:79f73ce74b8beadd2cf5b0529aefc1a48cc4c220f682d0cdc86b655c3acda4d4
 
   falco:
     repository: falco
-    digest: sha256:ec88b19fbfd25f12e897876ae922b09d6a2b90e0234bc2a52130e37eaf27e766
+    digest: sha256:a9880990d17502fd13011d37742d565da1c471dccf3ba6641d910aefe9b4d72a
 
   scout:
     repository: scout
-    digest: sha256:ec3edacade3f409f7562db17eb720530d58d5a2872de2bb489cb4c5a21c358cb
+    digest: sha256:f66c1589e4333702c05c1cee275143df7b97d904ab68376a3947c5397de74503
 
   scanManager:
     repository: scan-manager
-    digest: sha256:a2641e9e7e8794af9dea0656f18dfc2141a2b209845ae4738c03a84ba2177af4
+    digest: sha256:e57a1afd66e7ab9bd8d2335d14b6cdb37a71e37f064c07fabcc01fcf37bcd415
 
   scanJob:
     repository: scan-job
-    digest: sha256:b051ce58c9240a93d83b6e874a355346d1ae590fbefbb9d849119c785bc24d6c
-    fipsdigest: sha256:a70f504f72efe1129e4d8c9a484c19b1553f5b4e94b5ebe76b1dbc1722aff470
+    digest: sha256:903b13411611cf11940f32c0a2175ee307a11446125decbffddb91c6bc0042f0
+    fipsdigest: sha256:c21d511dace70383edb4c8b8b4d863327cc01e7881e5bf84fea419c353b04245
 
   complianceScanJob:
     repository: compliance-scan-job
-    digest: sha256:21bb21c97a15d6dcea90ce8c5cd264c961b4cb00b6f8f039a38a6dc9f7a77282
+    digest: sha256:733eaeca8a2b7ffc93b3bf918313c4f9caf49bb9a4d4a7231dde55bb925bbce6
 
   workloadOperator:
     repository: workload-operator
-    digest: sha256:e486730f455d4f815047a7147c7d62b7513eb84c4e4b9799bf5d3f36db313e11
+    digest: sha256:718e8f67cab3fa949056629067d8e55b6731cb33517ee6603ac6d6a2577851ad
 
   fargateInjector:
     repository: fargate-tool
-    digest: sha256:b192c1eb9c60b74f75ec2760c799ec8603c3bbeacab600b8eaa2f6af89eccb8c
+    digest: sha256:74a662aeb1149e47a2568cffc23245d493f8cc568beb6455e42980964cb25f3b
 
   pdig:
     repository: pdig
-    digest: sha256:4263ac86cd996598948a2cf4be5a7c9c36a6c268e9c3641b3f8937ce7e3ff3f5
-    fipsdigest: sha256:2ed4987f9611a3e84a8bcbcdf12838a62eb9c6ea579e496d1aff2aab1a13e257
+    digest: sha256:3a9ccac7a3242f3ac9d8fcbeaddf2a7050b91616fbbdbb10995e3b80fa55f8bf
+    fipsdigest: sha256:6bbf1490bd86f5f178bfaed08a742267d542d3f8363f31455c27a9c5ede6d524
 
   k8sMetaCollector:
     repository: k8s-metacollector
-    digest: sha256:bc3b505bbaceae3ca6d9cb3a959aa6e96ab251fa0bb6348c1e5ef2080f054e31
+    digest: sha256:26bf0b4eae85214e5f4f44a064a8f53e57fb24be35e941777ecbeee5382b094c
 
   policyOperator:
     repository: policy-operator
-    digest: sha256:5ea699ad508729ccc09d1a59515ef3117da8e1d1856229a0ee4bc15ab2e531d6
+    digest: sha256:79a1613442b1a6a2b480043cadccce2be9abae3477c3bf5c11a351134bba799d
 
   malwareScanner:
     repository: malware-scanner
@@ -1500,11 +1500,11 @@ images:
 
   auditLogCollector:
     repository: audit-log-collector
-    digest: sha256:32da51ab4cd32e451398e9b7a003055e792558bd65f43ec9d7d878ed37117bd1
+    digest: sha256:1c3d60aeab60c908f33807ce286b325d8c872360511c4e739c611d3678fba27d
 
   apiServerModifier:
     repository: api-server-modifier
-    digest: sha256:7bddba77a9901e50e215c2f5d2145faa5d25a81f892568485bd059d5d9b982fb
+    digest: sha256:10642cbc781e20910febbb30433624a5ce328d5c586258fb724d3e37d90ca654
 
 ##
 ## Service Gateway Configuration
