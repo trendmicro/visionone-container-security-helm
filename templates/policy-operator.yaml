@@ -87,6 +87,7 @@ spec:
         - --cluster-name-prefix={{ .Values.visionOne.clusterNamePrefix }}
         - --cluster-policy-id={{ .Values.visionOne.policyId }}
         - --cluster-group-id={{ .Values.visionOne.groupId }}
+        - --cluster-resource-id={{ .Values.visionOne.resourceId }}
         - --namespace={{ .Release.Namespace }}
         - --auth-name={{ template "container.security.fullname" . }}-auth
         - --auto-register={{ default "false" .Values.visionOne.clusterRegistrationKey }}

@@ -31,6 +31,12 @@ visionOne:
   ##
   ## This is required for automated cluster registration
   groupId:
+  ## Cloud resource ID (ARN / resource path) of the cluster, now configurable via automated
+  ## cluster registration. Applied only during automated registration; if unset, the
+  ## registration request is unchanged from current behavior.
+  ##
+  ## Default value: (none)
+  resourceId:
   ## Cluster registration key to be used with Trend Vision One Container Security
   ##
   ## Default value: (none)

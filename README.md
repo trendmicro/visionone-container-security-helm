@@ -118,7 +118,7 @@ To use automated cluster registration:
 
 3. Put the Vision One API Key into a secret called `trendmicro-container-security-registration-key` with the key `registration.key` in the same namespace where the Container Security components are installed.
 
-4. Install the Container Security Helm chart using the values `visionOne.clusterRegistrationKey: true` and `visionOne.groupId=<your cluster group ID>`. You can optionally define the cluster name by setting either `visionOne.clusterName` or `visionOne.clusterNamePrefix`, if these are not specified the name will be a random string. An existing policy can also be assigned to the cluster by setting `visionOne.policyId=<your policy ID>`.
+4. Install the Container Security Helm chart using the values `visionOne.clusterRegistrationKey: true` and `visionOne.groupId=<your cluster group ID>`. You can optionally define the cluster name by setting either `visionOne.clusterName` or `visionOne.clusterNamePrefix`, if these are not specified the name will be a random string. An existing policy can also be assigned to the cluster by setting `visionOne.policyId=<your policy ID>`. You can also map the cluster to its cloud resource by setting `visionOne.resourceId=<your cluster's ARN or resource path>`.
 
 ### Override configuration defaults
 
