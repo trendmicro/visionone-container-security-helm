@@ -76,7 +76,7 @@ spec:
         - --excluded-namespaces
         {{- $excludeNS := (include "componentExcludedNamespaces" .) }}
         - {{ $excludeNS | quote }}
-        {{- if .Capabilities.APIVersions.Has "security.openshift.io/v1" }}
+        {{- if (include "container.security.isOpenshift" .) }}
         - --excluded-namespace-prefixes={{ include "namespaceExclusionPrefixes" . }}
         {{- end }}
         - --workload-controller-instance-name={{ .Release.Name }}

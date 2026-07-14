@@ -619,6 +619,15 @@ spc:
   ## Default value: (none)
   encryptionKey:
 
+openshift:
+  ## Set to true to enable OpenShift-specific rendering (SCCs, seLinuxOptions, namespace exclusions)
+  ## when deploying via tools that use helm template (e.g. ArgoCD).
+  ## When false (default), the chart auto-detects OpenShift via .Capabilities.APIVersions,
+  ## which works for helm install/upgrade but not for helm template.
+  ##
+  ## Default value: false
+  enabled: false
+
 securityContextConstraints:
   # enable the Security Context Constraints creation in Openshift
   create: true

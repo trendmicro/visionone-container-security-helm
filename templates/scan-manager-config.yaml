@@ -56,7 +56,7 @@ data:
           securityContext:
 {{ toYaml $podSecurityContext | indent 12 }}
 {{- end }}
-{{- if and .Values.securityContextConstraints.create (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
+{{- if and .Values.securityContextConstraints.create (include "container.security.isOpenshift" .) }}
           serviceAccountName: {{ include "scanJob.serviceAccountName" . }}
 {{- end }}
 {{- if and (not .Values.nodeSelector.inheritNodeSelectorScanner) (or .Values.nodeSelector.defaults .Values.nodeSelector.scanner) }}

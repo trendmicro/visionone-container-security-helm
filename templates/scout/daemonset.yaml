@@ -183,7 +183,7 @@ spec:
                 {{- $excludeNS = concat $excludeNS (list .Release.Namespace) }}
             {{- end}}{{/* if */}}
             - --excluded-namespaces={{ $excludeNS | uniq | sortAlpha | join "," }}
-            {{- if .Capabilities.APIVersions.Has "security.openshift.io/v1" }}
+            {{- if (include "container.security.isOpenshift" .) }}
             - --excluded-namespace-prefixes={{ include "namespaceExclusionPrefixes" . }}
             {{- end }}
             - --falco-event-max-diff=90s
@@ -270,7 +270,7 @@ spec:
             appArmorProfile:
               type: Unconfined
 {{- end }}{{/* if */}}
-{{- if or (.Capabilities.APIVersions.Has "security.openshift.io/v1") .Values.scout.scout.seLinuxCompatible }}
+{{- if or (include "container.security.isOpenshift" .) .Values.scout.scout.seLinuxCompatible }}
             # On SELinux-enforcing nodes the container runtime sockets (e.g. CRI-O's
             # crio.sock, labeled container_var_run_t) are not reachable from the
             # default container_t SELinux domain. Scout dials the CRI socket directly

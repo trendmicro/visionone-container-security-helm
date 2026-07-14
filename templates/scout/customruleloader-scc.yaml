@@ -1,5 +1,5 @@
 {{- if and .Values.visionOne.runtimeSecurity.enabled (eq (include "customRules.enabled" .) "true") (eq (include "container.security.skipStandardComponents" .) "false") }}
-{{- if and .Values.securityContextConstraints.create (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
+{{- if and .Values.securityContextConstraints.create (include "container.security.isOpenshift" .) }}
 apiVersion: security.openshift.io/v1
 kind: SecurityContextConstraints
 metadata:

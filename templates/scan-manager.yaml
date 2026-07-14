@@ -72,7 +72,7 @@ spec:
         - --excluded-namespaces
         {{- $excludeNS := (include "componentExcludedNamespaces" .) }}
         - {{ $excludeNS | quote }}
-        {{- if .Capabilities.APIVersions.Has "security.openshift.io/v1" }}
+        {{- if (include "container.security.isOpenshift" .) }}
         - --excluded-namespace-prefixes={{ include "namespaceExclusionPrefixes" . }}
         {{- end }}
         - --release-service={{ .Release.Service }}
@@ -108,7 +108,7 @@ spec:
         - --secret-scan-job-active-deadline={{ printf "%ds" (int .Values.visionOne.scanManager.secretScanActiveDeadlineSeconds) }}
         {{- end }}
         - --policyOperator-service-url={{ (include "policyOperator.svc.url" .) }}
-        {{- if and (.Capabilities.APIVersions.Has "security.openshift.io/v1") (or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled)) }}
+        {{- if and (include "container.security.isOpenshift" .) (or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled)) }}
         - --openshift-service-account-name={{ include "scanJob.serviceAccountName" . }}
         {{- $labels := include "scanner.labels" $ }}
         - --openshift-service-account-labels={{ $labels | replace "\n" "," | replace " " "" }}
@@ -380,10 +380,10 @@ spec:
           - --excluded-namespaces
           {{- $excludeNS := (include "componentExcludedNamespaces" .) }}
           - {{ $excludeNS | quote }}
-          {{- if .Capabilities.APIVersions.Has "security.openshift.io/v1" }}
+          {{- if (include "container.security.isOpenshift" .) }}
           - --excluded-namespace-prefixes={{ include "namespaceExclusionPrefixes" . }}
           {{- end }}
-          {{- if and (.Capabilities.APIVersions.Has "security.openshift.io/v1") (or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled)) }}
+          {{- if and (include "container.security.isOpenshift" .) (or (eq true .Values.visionOne.vulnerabilityScanning.enabled) (eq true .Values.visionOne.malwareScanning.enabled)) }}
           {{- $labels := include "scanner.labels" $ }}
           - --openshift-service-account-labels={{ $labels | replace "\n" "," | replace " " "" }}
           {{- end }}

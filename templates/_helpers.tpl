@@ -1122,11 +1122,19 @@ Usage:
 {{- end -}}
 
 {{/*
+container.security.isOpenshift: returns "true" when either the explicit values override is set
+or live API discovery detects the security.openshift.io/v1 API group.
+*/}}
+{{- define "container.security.isOpenshift" -}}
+{{- if or (and .Values.openshift .Values.openshift.enabled) (.Capabilities.APIVersions.Has "security.openshift.io/v1") -}}true{{- end -}}
+{{- end -}}
+
+{{/*
 webhookExcludedNamespaces: STATIC, deterministic excluded-namespace list for the admission ValidatingWebhookConfiguration's namespaceSelector.
 */}}
 {{- define "webhookExcludedNamespaces" -}}
 {{- $excludedNamespaces := concat (.Values.visionOne.exclusion.namespaces | default list) (list .Release.Namespace) -}}
-{{- if .Capabilities.APIVersions.Has "security.openshift.io/v1" -}}
+{{- if (include "container.security.isOpenshift" .) -}}
   {{- $raw := .Files.Get "config/openshift-system-namespaces.yaml" -}}
   {{- if not $raw -}}
     {{- fail "config/openshift-system-namespaces.yaml is missing or empty; it is required to render the admission webhook namespaceSelector on OpenShift" -}}
@@ -1152,7 +1160,7 @@ componentExcludedNamespaces: the EXACT-match namespace list passed to in-cluster
 namespaceExclusionPrefixes: namespace name PREFIXES passed to in-cluster components via --excluded-namespace-prefixes.
 */}}
 {{- define "namespaceExclusionPrefixes" -}}
-{{- if .Capabilities.APIVersions.Has "security.openshift.io/v1" -}}
+{{- if (include "container.security.isOpenshift" .) -}}
 {{- join "," (.Values.visionOne.exclusion.osNsPrefixes | default list) -}}
 {{- end -}}
 {{- end -}}
