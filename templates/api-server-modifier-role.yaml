@@ -1,6 +1,6 @@
-{{- if or (eq (include "container.security.deployOnSeedCluster" .) "true") (eq (include "container.security.deployForSelfManaged" .) "true") }}
 {{- $isGardener := eq (include "container.security.deployOnSeedCluster" .) "true" }}
-{{- $isSelfManaged := eq (include "container.security.deployForSelfManaged" .) "true" }}
+{{- $isSelfManaged := and (eq (include "container.security.deployForSelfManaged" .) "true") (not (.Capabilities.APIVersions.Has "security.openshift.io/v1")) }}
+{{- if or $isGardener $isSelfManaged }}
 
 {{- if $isGardener }}
 apiVersion: rbac.authorization.k8s.io/v1
