@@ -1,7 +1,7 @@
 {{- include "validateClusterInput" . -}}
 {{- include "container.security.validateProvider" . -}}
 {{- $isGardener := eq (include "container.security.deployOnSeedCluster" .) "true" }}
-{{- $isSelfManaged := and (eq (include "container.security.deployForSelfManaged" .) "true") (not (.Capabilities.APIVersions.Has "security.openshift.io/v1")) }}
+{{- $isSelfManaged := and (eq (include "container.security.deployForSelfManaged" .) "true") (ne (include "container.security.isOpenshift" .) "true") }}
 {{- if or $isGardener $isSelfManaged }}
 
 {{ if .Values.serviceAccount.create }}
