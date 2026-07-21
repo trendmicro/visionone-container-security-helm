@@ -1,6 +1,10 @@
 {{- include "validateClusterInput" . -}}
 {{- include "container.security.validateProvider" . -}}
 {{- $isGardener := eq (include "container.security.deployOnSeedCluster" .) "true" }}
+# selfManaged here means "mutate the static kube-apiserver manifest at /etc/kubernetes/manifests".
+# OpenShift's kube-apiserver is managed by the cluster-kube-apiserver-operator, not a static pod
+# manifest, so this DaemonSet has no valid function there and crash-loops if created.
+# Exclude OpenShift even though auditLogCollection.provider=selfManaged (V1CS-15081, PCT-110151).
 {{- $isSelfManaged := and (eq (include "container.security.deployForSelfManaged" .) "true") (ne (include "container.security.isOpenshift" .) "true") }}
 {{- if or $isGardener $isSelfManaged }}
 
