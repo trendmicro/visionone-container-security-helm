@@ -274,4 +274,34 @@ spec:
     protocol: TCP
   selector:
     {{- include "auditLogCollector.selectorLabels" . | nindent 4 }}
+
+{{- $networkpolicyEnabled := and (hasKey .Values.networkPolicy "auditLogCollector") (hasKey .Values.networkPolicy.auditLogCollector "enabled") | ternary .Values.networkPolicy.auditLogCollector.enabled .Values.networkPolicy.enabled }}
+{{ if $networkpolicyEnabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: audit-log-collector-networkpolicy
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "auditLogCollector.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "auditLogCollector.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+  ingress:
+    # kube-apiserver delivers audit events to the webhook endpoint. In Gardener and
+    # selfManaged modes the caller (kube-apiserver / api-server-modifier) runs with
+    # hostNetwork, so its traffic cannot be scoped by podSelector; restricting to the
+    # release namespace is the strongest guarantee a NetworkPolicy can express here.
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: {{ .Release.Namespace }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.visionOne.auditLogCollector.webhookPort }}
+{{- end }}
 {{- end }}

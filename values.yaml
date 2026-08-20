@@ -800,6 +800,8 @@ networkPolicy:
   ## malwareScanner network policy, default false
   malwareScanner:
     enabled: false
+  ## auditLogCollector network policy, inherits the global `enabled` value above unless overridden
+  auditLogCollector: {}
 
 ## securityContext specifies the security contexts that we'll apply to the pods.
 ##
