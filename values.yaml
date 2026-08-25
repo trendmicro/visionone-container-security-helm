@@ -1446,7 +1446,7 @@ images:
 
     ## Default tag for images to pull. This can be overridden for each image
     ## by specifying the tag attribute at the image level.
-    tag: 3.5.1
+    tag: 3.5.2
 
     ## Default pull policy for images. This can be overridden for each image
     ## by specifying the pullPolicy attribute at the image level.
@@ -1461,65 +1461,65 @@ images:
     # imagePullSecret:
   admissionController:
     repository: admission-controller
-    digest: sha256:3177d3c78f758b5f6f1e5bd8ef632474cd55cf4c20e6134af29d7d43004a8e5a
+    digest: sha256:eb3e0e715ff21b60321f04760cd3661e497578d7bcb2ebc14daf02667633ff25
 
   oversight:
     repository: oversight-controller
-    digest: sha256:9002d3576f6d7d500cdf9cd19f434bb2377507e82f8abd6d4c3651bacde3b967
+    digest: sha256:714fbf5de68408bdaf41e95b9059bede1aed73a0acc14d978728a682ec20ba8b
 
   falco:
     repository: falco
-    digest: sha256:d3110210ceddd9ccc5ff59d808d9c7e1a1dbf8e872adbe2976d6d1959a4f617d
+    digest: sha256:7ccfcfbd82458d8dcafe05b746a2104fe2cbd8ebff1bbe6132eab26dfa527582
 
   scout:
     repository: scout
-    digest: sha256:bdc04f2d67236c26ddca873aab92a3d6a0250d8f9b5ebde331234b9a0e5b0d3d
+    digest: sha256:34949177c72d6c312222edbaa9e82d313ab395df2cc3bfa3e9e4f12f7b718575
 
   scanManager:
     repository: scan-manager
-    digest: sha256:d5acd5ad04781aa04e28c2634ad77099403ad9564695893873b816204f4f0b36
+    digest: sha256:b36836029ffc9b94921dd7ce2e36474c20a039ae18b01627f7158b48b453b6a5
 
   scanJob:
     repository: scan-job
-    digest: sha256:0ddfcc9f17bb6f48f51b06795818f2503336bcfefa2ca9b005ecaae2f3830de8
-    fipsdigest: sha256:1963c7ebff886f1f4df6778366d773b006d33f2ff3839efd28f8f92bf5227470
+    digest: sha256:c0dd1bfb4a23b5a73f8ed6f37cf66d5a561b9a34285414e4e517cef12738022b
+    fipsdigest: sha256:049f8a7ef2c4e7098bf97e1f584be36576a9ae67d63d037fc4aa58433ea7f86f
 
   complianceScanJob:
     repository: compliance-scan-job
-    digest: sha256:de1f02d1b74c1b91edb848dce4ef4a8e032c09b4c31f32e722610384c373d4d6
+    digest: sha256:23c4425137c112110996b307a971e7cefd6e212f5d7e84ea4599bd7e940518a6
 
   workloadOperator:
     repository: workload-operator
-    digest: sha256:0e143b945286323f13f0db76fe799d237a29146cebd9253ae0bc9d5af1809fec
+    digest: sha256:e988914a5cd82314b3863c72ad77606631c2441cdd0322a7607e1fb5ab1646bb
 
   fargateInjector:
     repository: fargate-tool
-    digest: sha256:8164492f46d1f4bb21aa44badc4b98d0d9746f50947989b9e1c15355e26776d1
+    digest: sha256:01d821d7264c9b2f084e5ab41d4f0eb82592013fec6d0d17240e82be8d4740d7
 
   pdig:
     repository: pdig
-    digest: sha256:4287b715e52dbf0f570f437209496f047005253f66d265d86341e0cbf1a668e0
-    fipsdigest: sha256:f2f400760c6cc52e2891ef3d1a7e276a19cd440d2aeeeb6fdcd660d82b9c632c
+    digest: sha256:dd0d1ff312dad33be46fc508f0bd5a39ae5f7632e8c8df5ff8ae2eb59fb446f3
+    fipsdigest: sha256:d3ecaebd30e0c940ce8296c3de1cb9c8a1f1e1a001167be6786515b495f1dbc9
 
   k8sMetaCollector:
     repository: k8s-metacollector
-    digest: sha256:578a9b635a1a1011d2d3c7089056d1beb4fe096ed9d83f2d618748057009eb5f
+    digest: sha256:1a39272e6228f8233b2eb9197f77f7034e4c0ee4552e754bc53805c5549f7f72
 
   policyOperator:
     repository: policy-operator
-    digest: sha256:d90d3f92e7f6bf209bfbbd74d20662efb2b4026e1b74530c3a158ebe10637426
+    digest: sha256:e096d58d4d01d856e7e8513727b30bf79f4ace2ec1a81dfd21bbeac9978e9d75
 
   malwareScanner:
     repository: malware-scanner
-    digest: sha256:658938184a1b952b38b0fa1e3c3b1b4654f890cb2a03d5f0dd1bc43fbba0269f
+    digest: sha256:2b2ae29bb8645ea68ec039b0aad1c59058d9d4e83de226709b2ad11662eebfb1
 
   auditLogCollector:
     repository: audit-log-collector
-    digest: sha256:a5e30cadf516c3a055b34c0a27693ea5cdc9d03acd6d42ae5025bc00cc04cf14
+    digest: sha256:6193fcbf03db99d7ca2688e37a579da8fa961028f200e35a23cadf6188497803
 
   apiServerModifier:
     repository: api-server-modifier
-    digest: sha256:545cd2690a5e770877b66c21b2fde87307e2b7e39af6af0edc87bc53d470e29a
+    digest: sha256:2bdb9189c13f9adb61dd377efd4bba4d4fae4a7c4484d8b7b2d2774da1c085c2
 
 ##
 ## Service Gateway Configuration
