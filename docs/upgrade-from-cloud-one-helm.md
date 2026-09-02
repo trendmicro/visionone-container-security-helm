@@ -44,6 +44,19 @@ visionOne:
 - `endpoint` has been updated to a new URL
 
 Run the following command to upgrade:
+
+The chart is published to Public ECR as an OCI artifact. No `helm repo add` step is required.
+
+```bash
+helm upgrade \
+    trendmicro \
+    --namespace trendmicro-system \
+    --values overrides.yaml \
+    oci://public.ecr.aws/trendmicro/container-security/trendmicro-container-security
+```
+
+If you cannot reach Public ECR, you can upgrade from the GitHub source archive:
+
 ```bash
 helm upgrade \
     trendmicro \
@@ -83,6 +96,19 @@ visionOne:
 - `endpoint` has been updated to a new URL
 
 Run the following command to upgrade:
+
+The chart is published to Public ECR as an OCI artifact. No `helm repo add` step is required.
+
+```bash
+helm upgrade \
+    trendmicro \
+    --namespace trendmicro-system \
+    --values overrides.yaml \
+    oci://public.ecr.aws/trendmicro/container-security/trendmicro-container-security
+```
+
+If you cannot reach Public ECR, you can upgrade from the GitHub source archive:
+
 ```bash
 helm upgrade \
     trendmicro \

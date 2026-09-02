@@ -134,17 +134,48 @@ You can override the defaults in this file by creating an `overrides.yaml` file 
 
 2. Use `helm` to install Container Security components with your cluster-specific settings. We recommend that you run Container Security in its own namespace.
 
-To install Container Security chart into an existing Kubernetes namespace, use the `--namespace` flag with the `helm install` command:
+#### Install from Public ECR (recommended)
+
+The chart is published to Public ECR as an OCI artifact. No `helm repo add` step is required.
+
+To install into an existing Kubernetes namespace:
 
 ```sh
   helm install \
     --values overrides.yaml \
     --namespace ${namespace} \
     trendmicro \
-    https://github.com/trendmicro/visionone-container-security-helm/archive/main.tar.gz
+    oci://public.ecr.aws/trendmicro/container-security/trendmicro-container-security
 ```
 
 In the example below, we create a new namespace by using `helm`'s `--create-namespace` option:
+
+```sh
+  helm install \
+    --values overrides.yaml \
+    --namespace trendmicro-system \
+    --create-namespace \
+    trendmicro \
+    oci://public.ecr.aws/trendmicro/container-security/trendmicro-container-security
+```
+
+If the `--version` option is not specified, Helm installs the latest version of the chart. You can also make this explicit by passing `--version "*"`, which selects the latest available version:
+
+```sh
+  helm install \
+    --values overrides.yaml \
+    --namespace ${namespace} \
+    --create-namespace \
+    --version "*" \
+    trendmicro \
+    oci://public.ecr.aws/trendmicro/container-security/trendmicro-container-security
+```
+
+To install a specific version, see [Install a specific version of the Container Security helm chart](#install-a-specific-version-of-the-container-security-helm-chart).
+
+#### Alternative: Install from GitHub
+
+If you cannot reach Public ECR, you can install from the GitHub source archive:
 
 ```sh
   helm install \
@@ -165,14 +196,16 @@ For more information about `helm install`, see the [Helm installation documentat
 
 ### Upgrade a Trend Micro Vision One Container Security deployment
 
-To upgrade an existing installation in the default Kubernetes namespace to the latest version:
+To upgrade an existing installation to the latest version:
+
+#### Upgrade from Public ECR (recommended)
 
 ```sh
   helm upgrade \
     --values overrides.yaml \
     --namespace ${namespace} \
     trendmicro \
-    https://github.com/trendmicro/visionone-container-security-helm/archive/main.tar.gz
+    oci://public.ecr.aws/trendmicro/container-security/trendmicro-container-security
 ```
 
 **Note**: Helm will override or reset values in `overrides.yaml`. If you want to use the values you had previously, use the [--reuse-values](https://helm.sh/docs/helm/helm_upgrade/) option during a Helm upgrade:
@@ -181,6 +214,16 @@ To upgrade an existing installation in the default Kubernetes namespace to the l
   helm upgrade \
     --namespace ${namespace} \
     --reuse-values \
+    trendmicro \
+    oci://public.ecr.aws/trendmicro/container-security/trendmicro-container-security
+```
+
+#### Alternative: Upgrade from GitHub
+
+```sh
+  helm upgrade \
+    --values overrides.yaml \
+    --namespace ${namespace} \
     trendmicro \
     https://github.com/trendmicro/visionone-container-security-helm/archive/main.tar.gz
 ```
@@ -215,7 +258,19 @@ By default, Container Security Continuous Compliance will create a Kubernetes ne
 
 ### Install a specific version of the Container Security helm chart
 
-If you want to install a specific version you can use the archive link for the tagged release. For example, to install Trend Micro Vision One Container Security helm chart version 3.5.2, run the following command:
+To install a specific version, append the `--version` flag when using Public ECR. For example, to install version 3.5.2:
+
+```sh
+  helm install \
+    --values overrides.yaml \
+    --namespace ${namespace} \
+    --create-namespace \
+    --version 3.5.2 \
+    trendmicro \
+    oci://public.ecr.aws/trendmicro/container-security/trendmicro-container-security
+```
+
+Alternatively, using the GitHub archive for a tagged release:
 
 ```sh
   helm install \
