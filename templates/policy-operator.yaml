@@ -172,6 +172,8 @@ spec:
           readOnly: true
         {{- end }}
         {{- include "proxy.selfSignedCertificates.volumeMounts" . | nindent 8 }}
+        resources:
+{{ toYaml (default .Values.resources.defaults .Values.resources.policyOperator) | indent 10 }}
       volumes:
         - name: workdir
           emptyDir:

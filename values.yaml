@@ -1032,6 +1032,14 @@ tlsConfig:
 
 resources:
   defaults: {}
+
+  admissionController:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: '2'
+      memory: 1Gi
   oversight:
     requests:
       cpu: 100m
@@ -1191,6 +1199,7 @@ affinity:
 
 ## replicas if set, allows for additional replica counts to be set for specified pods.
 ## NOTE: replicas does not apply to scout
+## admissionController can be scaled horizontally, see the README for details.
 ##
 ## Default Value: {}
 replicas: {}

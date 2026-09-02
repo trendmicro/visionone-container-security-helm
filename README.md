@@ -291,6 +291,19 @@ For example, you can choose to enable the runtime security component by includin
       enabled: true
 ```
 
+### Scaling the admission controller
+
+`admission-controller` is stateless (no client-go caches, no leader election), and every
+replica sits behind the same Kubernetes Service, so traffic load-balances across replicas
+automatically. On clusters with high admission request volume, you can increase
+throughput by adding replicas instead of increasing `resources.admissionController`:
+```yaml
+replicas:
+  admissionController: 3
+```
+This raises admission capacity without a larger per-pod footprint, and adds redundancy
+if a pod is unavailable during an upgrade or eviction.
+
 ### Managing Container Security policies with Policy as Code
 
 To learn more about managing Container Security policies with custom resources and policy operator, see the [Policy as Code documentation](./docs/policy-as-code.md).
