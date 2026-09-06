@@ -585,6 +585,12 @@ tolerations:
     effect: NoSchedule
 ```
 
+### Configure pod priority for the Container Security components
+
+By default, all V1CS component pods run at Pod Priority 0 — the same as ordinary application workloads. Under node resource pressure, the Kubernetes kubelet preferentially evicts the lowest-priority pods first, so V1CS components can be evicted exactly when they are needed most. The chart can optionally create a single chart-owned `PriorityClass` (`trendmicro-v1cs-security`, value `1,000,000`) shared by all V1CS components, and assign it via `priorityClassName.create` / `priorityClassName.default` (or per-component keys) in `overrides.yaml`.
+
+See [Configure pod priority](docs/pod-priority.md) for the full configuration reference, trade-offs, and migration notes.
+
 
 ### Configuring logging for the Container Security components
 

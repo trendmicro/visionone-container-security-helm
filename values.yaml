@@ -1218,10 +1218,51 @@ podAnnotations:
   defaults: {}
 
 priorityClassName:
-  ## podAnnotations if set, applies priority class to all pods unless overridden by a non default configuration.
+  ## If true, creates a chart-owned PriorityClass: trendmicro-v1cs-security
+  ## (value: 10000000, preemptionPolicy: PreemptLowerPriority), shared by all V1CS
+  ## components so none is left unprotected relative to another. `value` and
+  ## `preemptionPolicy` are fixed by the chart. For different settings (e.g.
+  ## preemptionPolicy: Never) or if the cluster restricts creating cluster-scoped
+  ## objects, set create: false and supply your own PriorityClass before installing.
+  ## Requires create/patch permission on priorityclasses.scheduling.k8s.io.
+  ##
+  ## This flag only controls resource creation; pod references are controlled by
+  ## `default`/the per-component keys below regardless of this setting — ensure
+  ## any class they name exists before installing.
+  ##
+  ## Warning: flipping this from true to false deletes the trendmicro-v1cs-security
+  ## object on the next upgrade. Repoint `default` or per-component keys at a class
+  ## that will still exist before disabling or uninstalling.
+  ##
+  ## Default Value: false
+  create: false
+
+  ## If set, applies this priority class to all V1CS component pod templates
+  ## (Deployments, the Scout DaemonSet, the ruleloader) unless overridden per
+  ## component below. Ephemeral Job templates (scanner, compliance-scan, GKE
+  ## allowlist) ignore this and keep the cluster's default priority. Leave unset
+  ## to disable priority assignment for components that don't set their own
+  ## per-component key below.
   ##
   ## Default Value: (none)
   default:
+
+  ## Per-component overrides of `default` above. All V1CS components normally use
+  ## the same class, so setting `default` to it is simpler than repeating it.
+  ##
+  ## Example:
+  ## scout: trendmicro-v1cs-security
+  ## runtimeRuleloader: trendmicro-v1cs-security
+  ## admissionController: trendmicro-v1cs-security
+  ## apiServerModifier: trendmicro-v1cs-security
+  ## policyOperator: trendmicro-v1cs-security
+  ## oversight: trendmicro-v1cs-security
+  ## scanManager: trendmicro-v1cs-security
+  ## workloadOperator: trendmicro-v1cs-security
+  ## auditLogCollector: trendmicro-v1cs-security
+  ## k8sMetaCollector: trendmicro-v1cs-security
+  ## fargateInjector: trendmicro-v1cs-security
+  ## malwareScanner: trendmicro-v1cs-security
 
 scout:
   ## hostNetwork, if set to true, the scout daemonset will use the host's network namespace.

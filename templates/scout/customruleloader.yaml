@@ -150,6 +150,10 @@ spec:
         - name: falcoconfig
           mountPath: /etc/falco
           readOnly: true
+{{- $classname := (default (default "" .Values.priorityClassName.default ) .Values.priorityClassName.runtimeRuleloader) }}
+{{- if not (eq "" $classname) }}
+      priorityClassName: "{{ $classname }}"
+{{- end }}
       volumes:
 {{- if .Values.visionOne.runtimeSecurity.customRules.ociRepository.enabled }}
       - name: rulesfiles

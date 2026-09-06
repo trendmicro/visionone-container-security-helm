@@ -1,0 +1,12 @@
+{{- if .Values.priorityClassName.create }}
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: trendmicro-v1cs-security
+  labels:
+    {{- include "container.security.labels" . | nindent 4 }}
+value: 10000000
+preemptionPolicy: PreemptLowerPriority
+globalDefault: false
+description: "Priority class for Trend Micro V1CS security components."
+{{- end }}
