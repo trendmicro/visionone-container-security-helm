@@ -339,9 +339,6 @@ data:
               - name: etc-cni-netd
                 mountPath: /etc/cni/net.d/
                 readOnly: true
-              - name: opt-cni-bin
-                mountPath: /opt/cni/bin/
-                readOnly: true
               - name: etc-passwd
                 mountPath: /etc/passwd
                 readOnly: true
@@ -408,10 +405,6 @@ data:
             - name: etc-cni-netd
               hostPath:
                 path: "/etc/cni/net.d/"
-                type: DirectoryOrCreate
-            - name: opt-cni-bin
-              hostPath:
-                path: "/opt/cni/bin/"
                 type: DirectoryOrCreate
             - name: etc-passwd
               hostPath:
