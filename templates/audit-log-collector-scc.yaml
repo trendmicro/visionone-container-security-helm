@@ -21,7 +21,6 @@ allowHostPorts: true
 allowPrivilegeEscalation: true
 allowPrivilegedContainer: true
 allowedCapabilities: []
-allowedUnsafeSysctls: []
 defaultAddCapabilities: []
 fsGroup:
   type: RunAsAny
@@ -40,11 +39,11 @@ supplementalGroups:
 users:
 - system:serviceaccount:{{ .Release.Namespace }}:{{ include "auditLogCollector.serviceAccountName" . }}
 volumes:
-- hostPath
-- emptyDir
-- secret
 - configMap
+- emptyDir
+- hostPath
 - projected
+- secret
 {{- end }}
 {{- end }}
 {{- end }}

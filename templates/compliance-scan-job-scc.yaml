@@ -18,7 +18,6 @@ allowPrivilegeEscalation: true
 allowPrivilegedContainer: true
 allowedCapabilities:
 {{- toYaml .Values.securityContext.scanner.target.capabilities.add | nindent 2}}
-allowedUnsafeSysctls: []
 defaultAddCapabilities: []
 fsGroup:
   type: RunAsAny

@@ -17,7 +17,6 @@ allowHostPID: false
 allowHostPorts: false
 allowPrivilegeEscalation: false
 allowPrivilegedContainer: false
-allowedUnsafeSysctls: []
 defaultAddCapabilities: []
 fsGroup:
   type: RunAsAny
@@ -36,8 +35,8 @@ supplementalGroups:
 users:
 - system:serviceaccount:{{ .Release.Namespace }}:{{ include "runtimeRuleloader.serviceAccountName" . }}
 volumes:
+- configMap
 - emptyDir
 - secret
-- configMap
 {{- end }}
 {{- end }}

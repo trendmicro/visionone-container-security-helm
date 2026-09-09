@@ -18,7 +18,6 @@ allowHostPorts: false
 allowPrivilegeEscalation: true
 allowPrivilegedContainer: true
 allowedCapabilities: [SYS_PTRACE, SYS_ADMIN, SYS_RESOURCE, DAC_READ_SEARCH]
-allowedUnsafeSysctls: []
 defaultAddCapabilities: []
 fsGroup:
   type: RunAsAny
@@ -37,10 +36,10 @@ supplementalGroups:
 users:
 - system:serviceaccount:{{ .Release.Namespace }}:{{ include "scout.serviceAccountName" . }}
 volumes:
-- hostPath
-- emptyDir
-- secret
 - configMap
+- emptyDir
+- hostPath
 - projected
+- secret
 {{- end }}
 {{- end }}

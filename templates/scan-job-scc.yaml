@@ -18,7 +18,6 @@ allowPrivilegeEscalation: {{ .Values.scanner.imageAnnotations.enabled }}
 allowPrivilegedContainer: {{ .Values.scanner.imageAnnotations.enabled }}
 allowedCapabilities:
 {{- toYaml .Values.securityContext.scanner.target.capabilities.add | nindent 2}}
-allowedUnsafeSysctls: []
 defaultAddCapabilities: []
 fsGroup:
   type: MustRunAs
@@ -34,9 +33,9 @@ supplementalGroups:
   type: RunAsAny
 users: []
 volumes:
-- hostPath
 - configMap
 - downwardAPI
 - emptyDir
+- hostPath
 - secret
 {{- end }}
