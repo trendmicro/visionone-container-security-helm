@@ -63,6 +63,8 @@ Isolation applied by continuous compliance is automatically reverted when the po
 
 To use the Trend Micro Vision One Container Security components with your Kubernetes cluster, you must first register your cluster. There are two methods to register a cluster with Trend Micro Container Security:
 
+**Warning**: Container Security components — including Scout, the runtime security agent — are not scheduled onto tainted nodes (for example, GPU node pools, spot/preemptible instances, or control-plane nodes) by default. To run them on tainted nodes, configure matching tolerations in your `overrides.yaml` file. See [Configure node selectors and tolerations for the Container Security components](#configure-node-selectors-and-tolerations-for-the-container-security-components).
+
 1. [**Manual Registration**](#getting-a-container-security-bootstrap-token): Create a cluster in the Trend Micro Container Security console and obtain a bootstrap token or use the Public API to create a cluster and obtain a bootstrap token.
 2. [**Automated Registration**](#using-automated-cluster-registration): Use the Vision One API key to automatically register all clusters with Trend Micro Container Security.
 
@@ -131,6 +133,8 @@ You can override the defaults in this file by creating an `overrides.yaml` file 
 ### Installing the Container Security Helm chart
 
 1. Create a file called overrides.yaml that will contain your cluster-specific settings. You can find these values in the Container Security console or Container Security API when creating a cluster. The [Values.yaml](values.yaml) file can be used as a reference when creating your overrides file.
+
+**Note**: If your cluster has any tainted nodes (GPU pools, spot/preemptible instances, control-plane nodes), review the node taints and add the required tolerations in your `overrides.yaml` file before installing, otherwise no Container Security component will run on those nodes. See [Configure node selectors and tolerations for the Container Security components](#configure-node-selectors-and-tolerations-for-the-container-security-components).
 
 2. Use `helm` to install Container Security components with your cluster-specific settings. We recommend that you run Container Security in its own namespace.
 
@@ -438,6 +442,46 @@ tolerations:
   admissionController: # Tolerations applied to specific component
   - key: kubernetes.io/os
     operator: Exists
+    effect: NoSchedule
+```
+
+**Note**: Each component also accepts its own `tolerations.<component>` key, such as `tolerations.scout`, `tolerations.admissionController`, or `tolerations.scanner`. If a component-specific key is not set, the component falls back to `tolerations.defaults`. Only `tolerations.defaults` is declared in `values.yaml`; the component-specific keys are not. Use the component-specific key to target only the component you want to place on the node — for example, `tolerations.scout` places only the runtime security agent (Scout) — or `tolerations.defaults` if you want all components to be able to schedule on that node.
+
+Common tainted-node scenarios. The examples below use `tolerations.scout`, so only the runtime security agent (Scout) is placed on the tainted node; switch the key to `tolerations.defaults` if you want all components to be able to schedule there. Adjust the toleration values to match the taints actually present on your nodes (verify with `kubectl describe node <node>`).
+
+Control-plane / master nodes. To allow Scout to run on the control-plane nodes, tolerate the control-plane taint:
+```yaml
+tolerations:
+  scout:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+```
+
+GPU node pools. To allow Scout to run on nodes that are tainted as a GPU pool, tolerate the GPU taint:
+```yaml
+tolerations:
+  scout:
+  - key: nvidia.com/gpu
+    operator: Exists
+    effect: NoSchedule
+```
+
+Spot / preemptible instances. GKE and EKS do not taint spot/preemptible nodes by default — this toleration is only needed if a taint has been added to your spot nodes. The exact taint key for spot/preemptible capacity is cloud-provider-specific. Use the taint key your provider actually applies:
+- Google Kubernetes Engine (GKE): `cloud.google.com/gke-spot`
+- Amazon EKS: `eks.amazonaws.com/capacityType` with value `SPOT`
+
+```yaml
+tolerations:
+  scout:
+  # GKE example
+  - key: cloud.google.com/gke-spot
+    operator: Exists
+    effect: NoSchedule
+  # EKS example (uses a value match)
+  - key: eks.amazonaws.com/capacityType
+    operator: Equal
+    value: SPOT
     effect: NoSchedule
 ```
 
