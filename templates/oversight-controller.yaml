@@ -101,6 +101,9 @@ spec:
         - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
         - --policyOperator-service-url={{ (include "policyOperator.svc.url" .) }}
         - --service-gateway-enabled={{ default "false" .Values.serviceGateway.enabled }}
+        {{- if .Values.visionOne.vulnerabilityScanning.enabled }}
+        - --enable-vulnerability-scanning
+        {{- end }}
         command:
         - /manager
         env:
@@ -116,6 +119,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: VULNERABILITY_SCANNING_ENABLED
+          value: {{ .Values.visionOne.vulnerabilityScanning.enabled | quote }}
         livenessProbe:
           httpGet:
             path: /healthz

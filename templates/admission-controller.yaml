@@ -115,6 +115,11 @@ spec:
               mountPath: /etc/service-gateway/credentials
               readOnly: true
             {{- end }}
+            {{- if not .Values.visionOne.vulnerabilityScanning.enabled }}
+            - name: excluded-nodes
+              mountPath: /etc/excluded-nodes
+              readOnly: true
+            {{- end }}
             {{- include "proxy.selfSignedCertificates.volumeMounts" . | nindent 12 }}
           args:
             - --zap-devel={{ default "false" .Values.logConfig.devel }}
@@ -142,6 +147,9 @@ spec:
             - --spc-mode={{ default "false" .Values.spc.enabled }}
             - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
             - --service-gateway-enabled={{ default "false" .Values.serviceGateway.enabled }}
+            {{- if .Values.visionOne.vulnerabilityScanning.enabled }}
+            - --enable-vulnerability-scanning
+            {{- end }}
             - 2>&1
           env:
             {{- include "proxy.selfSignedCertificates.env" . | nindent 12}}
@@ -154,6 +162,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+            - name: VULNERABILITY_SCANNING_ENABLED
+              value: {{ .Values.visionOne.vulnerabilityScanning.enabled | quote }}
           resources:
 {{ toYaml (default .Values.resources.defaults .Values.resources.admissionController) | indent 12 }}
       volumes:
@@ -184,6 +194,12 @@ spec:
         - name: service-gateway-credentials
           secret:
             secretName: {{ template "container.security.name" . }}-service-gateway-credentials
+        {{- end }}
+        {{- if not .Values.visionOne.vulnerabilityScanning.enabled }}
+        - name: excluded-nodes
+          secret:
+            secretName: {{ template "container.security.name" . }}-excluded-nodes
+            optional: true
         {{- end }}
         {{- include "proxy.selfSignedCertificates.volumes" . | nindent 8 }}
 {{- if or .Values.nodeSelector.defaults .Values.nodeSelector.admissionController }}

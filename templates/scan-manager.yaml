@@ -121,6 +121,8 @@ spec:
         env:
         {{- include "proxy.selfSignedCertificates.env" . | nindent 8}}
         {{- include "container.security.proxy.env" . | nindent 8 }}
+        - name: VULNERABILITY_SCANNING_ENABLED
+          value: {{ .Values.visionOne.vulnerabilityScanning.enabled | quote }}
         {{- $scanJobImageDefaults := .Values.images.defaults }}
         {{- with .Values.images.scanJob }}
         {{- $scanJobProject := (default $scanJobImageDefaults.project .project) }}
@@ -155,6 +157,11 @@ spec:
             mountPath: /etc/service-gateway/credentials
             readOnly: true
           {{- end }}
+          {{- if not .Values.visionOne.vulnerabilityScanning.enabled }}
+          - name: excluded-nodes
+            mountPath: /etc/excluded-nodes
+            readOnly: true
+          {{- end }}
           {{- include "proxy.selfSignedCertificates.volumeMounts" . | nindent 10 }}
         resources:
 {{ toYaml (default .Values.resources.defaults .Values.resources.scanManager) | indent 12 }}
@@ -186,6 +193,12 @@ spec:
         - name: service-gateway-credentials
           secret:
             secretName: {{ template "container.security.name" . }}-service-gateway-credentials
+        {{- end }}
+        {{- if not .Values.visionOne.vulnerabilityScanning.enabled }}
+        - name: excluded-nodes
+          secret:
+            secretName: {{ template "container.security.name" . }}-excluded-nodes
+            optional: true
         {{- end }}
         {{- include "proxy.selfSignedCertificates.volumes" . | nindent 8 }}
       terminationGracePeriodSeconds: 10
