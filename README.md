@@ -262,14 +262,14 @@ By default, Container Security Continuous Compliance will create a Kubernetes ne
 
 ### Install a specific version of the Container Security helm chart
 
-To install a specific version, append the `--version` flag when using Public ECR. For example, to install version 3.5.3:
+To install a specific version, append the `--version` flag when using Public ECR. For example, to install version 3.5.4:
 
 ```sh
   helm install \
     --values overrides.yaml \
     --namespace ${namespace} \
     --create-namespace \
-    --version 3.5.3 \
+    --version 3.5.4 \
     trendmicro \
     oci://public.ecr.aws/trendmicro/container-security/trendmicro-container-security
 ```
@@ -282,7 +282,7 @@ Alternatively, using the GitHub archive for a tagged release:
     --namespace ${namespace} \
     --create-namespace \
     trendmicro \
-    https://github.com/trendmicro/visionone-container-security-helm/archive/3.5.3.tar.gz
+    https://github.com/trendmicro/visionone-container-security-helm/archive/3.5.4.tar.gz
 ```
 
 ### Enabling or disabling a specific component
