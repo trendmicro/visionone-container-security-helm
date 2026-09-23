@@ -2,8 +2,21 @@ apiVersion: v1
 entries:
   trendmicro-container-security:
   - apiVersion: v1
+    appVersion: 3.5.4
+    created: "2026-09-23T03:00:14.303754646Z"
+    description: Trend Micro Vision One Container Security
+    digest: 970823cb1ef91735532ae197f01120cb492c700cc005d1b3efe5b7ffa92d0d82
+    home: https://github.com/trendmicro/visionone-container-security-helm
+    kubeVersion: '>=1.21.0-0'
+    maintainers:
+    - name: Trend Micro
+    name: trendmicro-container-security
+    urls:
+    - https://trendmicro.github.io/visionone-container-security-helm/packages/trendmicro-container-security-3.5.4.tgz
+    version: 3.5.4
+  - apiVersion: v1
     appVersion: 3.5.3
-    created: "2026-09-07T23:40:42.167274-04:00"
+    created: "2026-09-23T03:00:14.298968126Z"
     description: Trend Micro Vision One Container Security
     digest: 73f4fd1ce8a20c65fad6c45159194f96b22fe1b40d4a0a9dffaf56ebf27b3429
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -16,7 +29,7 @@ entries:
     version: 3.5.3
   - apiVersion: v1
     appVersion: 3.5.2
-    created: "2026-09-07T23:40:42.163937-04:00"
+    created: "2026-09-23T03:00:14.292163638Z"
     description: Trend Micro Vision One Container Security
     digest: c11de753221755ee14515e5d70c54108d17a7825457e4621e5e2c7c31837e661
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -29,7 +42,7 @@ entries:
     version: 3.5.2
   - apiVersion: v1
     appVersion: 3.5.1
-    created: "2026-09-07T23:40:42.161338-04:00"
+    created: "2026-09-23T03:00:14.286416504Z"
     description: Trend Micro Vision One Container Security
     digest: 63f1cbf23fb1acb82986bc36f685d49b0251ffef78cae4d5f450ca4bbf0f844b
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -42,7 +55,7 @@ entries:
     version: 3.5.1
   - apiVersion: v1
     appVersion: 3.5.0
-    created: "2026-09-07T23:40:42.158415-04:00"
+    created: "2026-09-23T03:00:14.281465083Z"
     description: Trend Micro Vision One Container Security
     digest: 108d5cc0e84ae983fd4a12ea1a0aaab7ffe81ee08af1a7967867fb5549ebbff3
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -55,7 +68,7 @@ entries:
     version: 3.5.0
   - apiVersion: v1
     appVersion: 3.4.2
-    created: "2026-09-07T23:40:42.155666-04:00"
+    created: "2026-09-23T03:00:14.275204691Z"
     description: Trend Micro Vision One Container Security
     digest: 462ac9d266c3d5633621289332f9b4d3eb95d978e857c72bdb1e06bbb5ed77c1
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -68,7 +81,7 @@ entries:
     version: 3.4.2
   - apiVersion: v1
     appVersion: 3.4.1
-    created: "2026-09-07T23:40:42.152125-04:00"
+    created: "2026-09-23T03:00:14.27089614Z"
     description: Trend Micro Vision One Container Security
     digest: 69bb1b21646b24e4441c705215a6fd2f025831c71bcb894fdb738846552a12f6
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -81,7 +94,7 @@ entries:
     version: 3.4.1
   - apiVersion: v1
     appVersion: 3.4.0
-    created: "2026-09-07T23:40:42.149286-04:00"
+    created: "2026-09-23T03:00:14.264576236Z"
     description: Trend Micro Vision One Container Security
     digest: cc0d54ac8b568bb05bd066a91fbe2f2506f23c9e543067d26ee8970d19450143
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -94,7 +107,7 @@ entries:
     version: 3.4.0
   - apiVersion: v1
     appVersion: 3.3.9
-    created: "2026-09-07T23:40:42.146156-04:00"
+    created: "2026-09-23T03:00:14.260205808Z"
     description: Trend Micro Vision One Container Security
     digest: baa489ddf051ed7f1fd7fa8e441d0f9eba8183bacdd91a0b782d4588a966daa5
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -107,7 +120,7 @@ entries:
     version: 3.3.9
   - apiVersion: v1
     appVersion: 3.3.8
-    created: "2026-09-07T23:40:42.143577-04:00"
+    created: "2026-09-23T03:00:14.253402292Z"
     description: Trend Micro Vision One Container Security
     digest: 03a1a8fa6ff9b7f3763322e7cf22daa957cc4ac7b3ed669c8b3328adc47e14a2
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -120,7 +133,7 @@ entries:
     version: 3.3.8
   - apiVersion: v1
     appVersion: 3.3.7
-    created: "2026-09-07T23:40:42.140567-04:00"
+    created: "2026-09-23T03:00:14.248293656Z"
     description: Trend Micro Vision One Container Security
     digest: 442f843833ffb91b5dd21b30fa29f23d9e2db9fb9a27fd0dfa56376f63941d24
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -133,7 +146,7 @@ entries:
     version: 3.3.7
   - apiVersion: v1
     appVersion: 3.3.6
-    created: "2026-09-07T23:40:42.137866-04:00"
+    created: "2026-09-23T03:00:14.24276503Z"
     description: Trend Micro Vision One Container Security
     digest: 8a033c97f27a6f4cf6ac882ad8e33a6516f2a2d3d0bb393206006b381e709c98
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -146,7 +159,7 @@ entries:
     version: 3.3.6
   - apiVersion: v1
     appVersion: 3.3.5
-    created: "2026-09-07T23:40:42.135351-04:00"
+    created: "2026-09-23T03:00:14.236786519Z"
     description: Trend Micro Vision One Container Security
     digest: 5be49f4d9daf636a87cec993dddf1ceb816d4d6f1a7bdf7f2aa4e80e5f424516
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -159,7 +172,7 @@ entries:
     version: 3.3.5
   - apiVersion: v1
     appVersion: 3.3.4
-    created: "2026-09-07T23:40:42.132586-04:00"
+    created: "2026-09-23T03:00:14.232500269Z"
     description: Trend Micro Vision One Container Security
     digest: 906c9cf2e4f33c380ed387473e9589ca235d9f656da950df89cc01d9588cb8c4
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -172,7 +185,7 @@ entries:
     version: 3.3.4
   - apiVersion: v1
     appVersion: 3.3.3
-    created: "2026-09-07T23:40:42.13029-04:00"
+    created: "2026-09-23T03:00:14.226509978Z"
     description: Trend Micro Vision One Container Security
     digest: 00fcd782046a7f6fd8fad90c9e6430a3b14780fb358c6f3518b846849091e760
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -185,7 +198,7 @@ entries:
     version: 3.3.3
   - apiVersion: v1
     appVersion: 3.3.2
-    created: "2026-09-07T23:40:42.127739-04:00"
+    created: "2026-09-23T03:00:14.222377757Z"
     description: Trend Micro Vision One Container Security
     digest: 8f823f2bfbbd221b7a591b3a094fd27972ca9929db0996abaf115300a6715c9c
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -198,7 +211,7 @@ entries:
     version: 3.3.2
   - apiVersion: v1
     appVersion: 3.3.1
-    created: "2026-09-07T23:40:42.125126-04:00"
+    created: "2026-09-23T03:00:14.216247638Z"
     description: Trend Micro Vision One Container Security
     digest: 1674c42de39d35fd9d3b0a9a7c4ea434a766c4b56184d7595c8d582d068cb40f
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -211,7 +224,7 @@ entries:
     version: 3.3.1
   - apiVersion: v1
     appVersion: 3.3.0
-    created: "2026-09-07T23:40:42.122417-04:00"
+    created: "2026-09-23T03:00:14.21209521Z"
     description: Trend Micro Vision One Container Security
     digest: ecc7b691e54430da28d14c1d818d48002de48ae819bcf5cced3a01787b944b96
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -224,7 +237,7 @@ entries:
     version: 3.3.0
   - apiVersion: v1
     appVersion: 3.2.4
-    created: "2026-09-07T23:40:42.120152-04:00"
+    created: "2026-09-23T03:00:14.206361999Z"
     description: Trend Micro Vision One Container Security
     digest: 2c45abcc762ac95db567a1884c00a8c62618c8e6753c246592bed54853e09e9b
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -237,7 +250,7 @@ entries:
     version: 3.2.4
   - apiVersion: v1
     appVersion: 3.2.3
-    created: "2026-09-07T23:40:42.11758-04:00"
+    created: "2026-09-23T03:00:14.202489758Z"
     description: Trend Micro Vision One Container Security
     digest: 602f62b8fa51b42424cb18c8c10735128c38891a3b5dfaa58374b92f5e84d59b
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -250,7 +263,7 @@ entries:
     version: 3.2.3
   - apiVersion: v1
     appVersion: 3.2.2
-    created: "2026-09-07T23:40:42.115424-04:00"
+    created: "2026-09-23T03:00:14.19654891Z"
     description: Trend Micro Vision One Container Security
     digest: cf011c099328b6a868a0a2d5809ec79b63ffda667834fd390ce851a247253313
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -263,7 +276,7 @@ entries:
     version: 3.2.2
   - apiVersion: v1
     appVersion: 3.2.1
-    created: "2026-09-07T23:40:42.112636-04:00"
+    created: "2026-09-23T03:00:14.192822944Z"
     description: Trend Micro Vision One Container Security
     digest: 83d2e4e0413590a3aa16375dead99f0ffc0f88e2ee4f2c22eaaa76365c354180
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -276,7 +289,7 @@ entries:
     version: 3.2.1
   - apiVersion: v1
     appVersion: 3.2.0
-    created: "2026-09-07T23:40:42.110404-04:00"
+    created: "2026-09-23T03:00:14.187176446Z"
     description: Trend Micro Vision One Container Security
     digest: c2f320e9eb842374aff854355c9d2ce8482290ed9a86b22a85d7c64188c8b35b
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -289,7 +302,7 @@ entries:
     version: 3.2.0
   - apiVersion: v1
     appVersion: 3.1.8
-    created: "2026-09-07T23:40:42.107764-04:00"
+    created: "2026-09-23T03:00:14.183463725Z"
     description: Trend Micro Vision One Container Security
     digest: 8e5a9b6d1f9cb70fde644f2b1d9f4ff1ab11c74d914a1b949c199b4e85fe8596
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -302,7 +315,7 @@ entries:
     version: 3.1.8
   - apiVersion: v1
     appVersion: 3.1.7
-    created: "2026-09-07T23:40:42.105008-04:00"
+    created: "2026-09-23T03:00:14.177889921Z"
     description: Trend Micro Vision One Container Security
     digest: da2a8429f28c718fd628a920f0a02b498d7674dcfc924642286f3ccfbdcbb590
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -315,7 +328,7 @@ entries:
     version: 3.1.7
   - apiVersion: v1
     appVersion: 3.1.6
-    created: "2026-09-07T23:40:42.102848-04:00"
+    created: "2026-09-23T03:00:14.174112248Z"
     description: Trend Micro Vision One Container Security
     digest: 751b6013a25ec347c7ba9b2f021389b02fa6da4441ccc19239b095ef5edc38f2
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -328,7 +341,7 @@ entries:
     version: 3.1.6
   - apiVersion: v1
     appVersion: 3.1.5
-    created: "2026-09-07T23:40:42.100402-04:00"
+    created: "2026-09-23T03:00:14.168419246Z"
     description: Trend Micro Vision One Container Security
     digest: 28b79348f383c14368f7d4a5eb4e385e7851d205d11e6d646eb84c4a233c949b
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -341,7 +354,7 @@ entries:
     version: 3.1.5
   - apiVersion: v1
     appVersion: 3.1.4
-    created: "2026-09-07T23:40:42.098319-04:00"
+    created: "2026-09-23T03:00:14.164720511Z"
     description: Trend Micro Vision One Container Security
     digest: e7281c1cc68a608d1ee09014bbafa177ee4f9a5badbb2e9f09482ef93e203d70
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -354,7 +367,7 @@ entries:
     version: 3.1.4
   - apiVersion: v1
     appVersion: 3.1.3
-    created: "2026-09-07T23:40:42.09582-04:00"
+    created: "2026-09-23T03:00:14.159208175Z"
     description: Trend Micro Vision One Container Security
     digest: e58f7141dd236d27e12d435edf918bb8df3179b0a8fbc442e3dd2a750d73c416
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -367,7 +380,7 @@ entries:
     version: 3.1.3
   - apiVersion: v1
     appVersion: 3.1.2
-    created: "2026-09-07T23:40:42.093274-04:00"
+    created: "2026-09-23T03:00:14.155611583Z"
     description: Trend Micro Vision One Container Security
     digest: bfedd8f202e1b947c7d9f42083430cd0a6b621228488bf80df901232911fdcaf
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -380,7 +393,7 @@ entries:
     version: 3.1.2
   - apiVersion: v1
     appVersion: 3.1.1
-    created: "2026-09-07T23:40:42.08981-04:00"
+    created: "2026-09-23T03:00:14.150206179Z"
     description: Trend Micro Vision One Container Security
     digest: eadd45b1dffb7328c44db8de75237897be49ba9d7ace173066da166ad96ff0a7
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -393,7 +406,7 @@ entries:
     version: 3.1.1
   - apiVersion: v1
     appVersion: 3.1.0
-    created: "2026-09-07T23:40:42.087005-04:00"
+    created: "2026-09-23T03:00:14.146459113Z"
     description: Trend Micro Vision One Container Security
     digest: 82c248200fb99df8bac74e006900e88d86aa7ea9de0fed69da6d97f9604386ca
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -406,7 +419,7 @@ entries:
     version: 3.1.0
   - apiVersion: v1
     appVersion: 3.0.4
-    created: "2026-09-07T23:40:42.083347-04:00"
+    created: "2026-09-23T03:00:14.142722006Z"
     description: Trend Micro Vision One Container Security
     digest: b6a46ddf4387bb1cde81e2ec534b73ad2166fc21d7a93460d20729fd21bba654
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -419,7 +432,7 @@ entries:
     version: 3.0.4
   - apiVersion: v1
     appVersion: 3.0.3
-    created: "2026-09-07T23:40:42.076822-04:00"
+    created: "2026-09-23T03:00:14.130110468Z"
     description: Trend Micro Vision One Container Security
     digest: 9d6e888c9fbcaad9a341ee3e23e3217beffe04526ccf135726badcc338832497
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -432,7 +445,7 @@ entries:
     version: 3.0.3
   - apiVersion: v1
     appVersion: 3.0.2
-    created: "2026-09-07T23:40:42.070031-04:00"
+    created: "2026-09-23T03:00:14.116004607Z"
     description: Trend Micro Vision One Container Security
     digest: defd71ade2cb7a27a6524605fcdfc25fcd4e21a4cc40961c2867e205c39a777c
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -445,7 +458,7 @@ entries:
     version: 3.0.2
   - apiVersion: v1
     appVersion: 3.0.1
-    created: "2026-09-07T23:40:42.061852-04:00"
+    created: "2026-09-23T03:00:14.104162266Z"
     description: Trend Micro Vision One Container Security
     digest: 801309f029a59c53d3546092b3104c8a76586e8716ed093f27e8249b7b50e0e6
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -458,7 +471,7 @@ entries:
     version: 3.0.1
   - apiVersion: v1
     appVersion: 3.0.0
-    created: "2026-09-07T23:40:42.054188-04:00"
+    created: "2026-09-23T03:00:14.092919929Z"
     description: Trend Micro Vision One Container Security
     digest: 09d45ca537f80f8d9785c75ec79e05c68a0295cb7ced4b0414843add4d04a87c
     home: https://github.com/trendmicro/visionone-container-security-helm
@@ -469,4 +482,4 @@ entries:
     urls:
     - https://trendmicro.github.io/visionone-container-security-helm/packages/trendmicro-container-security-3.0.0.tgz
     version: 3.0.0
-generated: "2026-09-07T23:40:42.046453-04:00"
+generated: "2026-09-23T03:00:14.080798283Z"
