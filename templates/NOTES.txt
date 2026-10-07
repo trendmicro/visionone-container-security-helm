@@ -1,0 +1,17 @@
+{{- if eq (include "container.security.chartIsUnsupported" .) "true" }}
+**********************************************************************
+*  WARNING: UNSUPPORTED CHART VERSION
+**********************************************************************
+  Chart version {{ .Chart.Version }} was released on {{ include "container.security.chartReleaseDate" . }}
+  and is older than the 6 month support window.
+
+  This version is no longer supported and will not receive fixes or
+  security updates.
+
+  Upgrade to the latest release:
+    https://github.com/trendmicro/visionone-container-security-helm/releases
+
+  Supported versions policy:
+    https://docs.trendmicro.com/en-us/documentation/article/trend-vision-one-supported-helm-versions
+**********************************************************************
+{{- end -}}

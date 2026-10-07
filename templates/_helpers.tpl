@@ -1563,3 +1563,39 @@ Fails if required fields are not set
 {{- end -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Release date of this chart version, as set by the release process.
+Empty when the annotation is absent, which makes the support check a no-op.
+*/}}
+{{- define "container.security.chartReleaseDate" -}}
+{{- index .Chart.Annotations "trendmicro.com/chart-release-date" | default "" -}}
+{{- end -}}
+
+{{/*
+Whether this chart version is past its support window (6 months). Returns "true" or
+"false". An absent or malformed release date is treated as supported, so the warning
+can never fire on a version whose release date is unknown.
+*/}}
+{{- define "container.security.chartIsUnsupported" -}}
+{{- $released := include "container.security.chartReleaseDate" . -}}
+{{- /* Go time layout for YYYY-MM-DD; "2006-01-02" is Go's reference date, not a real date. */ -}}
+{{- $layout := "2006-01-02" -}}
+{{- $isValid := false -}}
+{{- if $released -}}
+{{- /* Round-trip parse/format: toDate yields the zero time on a parse error, which won't match. */ -}}
+{{- if eq ($released | toDate $layout | date $layout) $released -}}
+{{- $isValid = true -}}
+{{- end -}}
+{{- end -}}
+{{- if $isValid -}}
+{{- $expiry := ($released | toDate $layout).AddDate 0 6 0 -}}
+{{- if (now).After $expiry -}}
+true
+{{- else -}}
+false
+{{- end -}}
+{{- else -}}
+false
+{{- end -}}
+{{- end -}}
