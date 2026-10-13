@@ -140,7 +140,7 @@ You can override the defaults in this file by creating an `overrides.yaml` file 
 
 #### Install from Public ECR (recommended)
 
-The chart is published to Public ECR as an OCI artifact. No `helm repo add` step is required.
+The chart is published to Public ECR as an OCI artifact. This method does not require a `helm repo add` step.
 
 To install into an existing Kubernetes namespace:
 
@@ -177,9 +177,32 @@ If the `--version` option is not specified, Helm installs the latest version of 
 
 To install a specific version, see [Install a specific version of the Container Security helm chart](#install-a-specific-version-of-the-container-security-helm-chart).
 
+#### Install from the Helm chart repository
+
+The chart is also published as a classic Helm chart repository (with an `index.yaml`). Use this method if you prefer `helm repo add`, or if your tooling expects a Helm repository URL (for example, Terraform `helm_release`, Argo CD, or Flux `HelmRepository`).
+
+Add the repository and list the available chart versions:
+
+```sh
+  helm repo add trendmicro https://trendmicro.github.io/visionone-container-security-helm
+  helm repo update trendmicro
+  helm search repo trendmicro/trendmicro-container-security --versions
+```
+
+Install the chart:
+
+```sh
+  helm install \
+    --values overrides.yaml \
+    --namespace trendmicro-system \
+    --create-namespace \
+    trendmicro \
+    trendmicro/trendmicro-container-security
+```
+
 #### Alternative: Install from GitHub
 
-If you cannot reach Public ECR, you can install from the GitHub source archive:
+If you cannot reach Public ECR or GitHub Pages, you can install from the GitHub source archive:
 
 ```sh
   helm install \
@@ -220,6 +243,30 @@ To upgrade an existing installation to the latest version:
     --reuse-values \
     trendmicro \
     oci://public.ecr.aws/trendmicro/container-security/trendmicro-container-security
+```
+
+#### Upgrade from the Helm chart repository
+
+If you have added the Helm chart repository (see [Install from the Helm chart repository](#install-from-the-helm-chart-repository)), refresh the repository index first so Helm picks up the latest chart version:
+
+```sh
+  helm repo update trendmicro
+  helm upgrade \
+    --values overrides.yaml \
+    --namespace ${namespace} \
+    trendmicro \
+    trendmicro/trendmicro-container-security
+```
+
+To keep your previously used values, use `--reuse-values`:
+
+```sh
+  helm repo update trendmicro
+  helm upgrade \
+    --namespace ${namespace} \
+    --reuse-values \
+    trendmicro \
+    trendmicro/trendmicro-container-security
 ```
 
 #### Alternative: Upgrade from GitHub
@@ -272,6 +319,19 @@ To install a specific version, append the `--version` flag when using Public ECR
     --version 3.5.4 \
     trendmicro \
     oci://public.ecr.aws/trendmicro/container-security/trendmicro-container-security
+```
+
+If you have added the Helm chart repository (see [Install from the Helm chart repository](#install-from-the-helm-chart-repository)), refresh the index and pass `--version` the same way:
+
+```sh
+  helm repo update trendmicro
+  helm install \
+    --values overrides.yaml \
+    --namespace ${namespace} \
+    --create-namespace \
+    --version 3.5.4 \
+    trendmicro \
+    trendmicro/trendmicro-container-security
 ```
 
 Alternatively, using the GitHub archive for a tagged release:
