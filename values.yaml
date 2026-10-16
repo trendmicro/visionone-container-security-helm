@@ -15,11 +15,13 @@ visionOne:
   ## Fields for automated cluster registration only
   ## Cluster name to be used during automated cluster registration. This takes precedence over clusterNamePrefix
   ## clusterName must be less than 64 characters
+  ## Allowed characters: letters, numbers, dots, underscores, and hyphens
   ##
   ## Default value: (none)
   clusterName:
   ## Cluster name prefix to be used during automated cluster registration
   ## clusterNamePrefix must be less than 16 characters
+  ## Allowed characters: letters, numbers, dots, underscores, and hyphens
   ##
   ## Default value: (none)
   clusterNamePrefix:
