@@ -887,6 +887,15 @@ securityContext:
       privileged: false
       runAsNonRoot: false
       runAsUser: 0
+    waitForProxyUrl:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      privileged: false
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 100
 
   runtimeRuleloader:
     pod:
