@@ -519,7 +519,7 @@ auditLogCollection:
   enabled: false
 
   ## provider specifies the audit log provider type
-  ## Supported values: selfManaged, eks, aks, gke, gardener
+  ## Supported values: selfManaged, openshift, eks, aks, gke, gardener
   ##
   ## Default value: ""
   provider: ""

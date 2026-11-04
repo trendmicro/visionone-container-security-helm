@@ -1473,9 +1473,10 @@ true
 {{/*
 Check if we should deploy for selfManaged provider
 Returns "true" if selfManaged provider is enabled, empty string otherwise
+openshift uses the same audit log components as selfManaged, except api-server-modifier.
 */}}
 {{- define "container.security.deployForSelfManaged" -}}
-{{- if and .Values.auditLogCollection.enabled (eq .Values.auditLogCollection.provider "selfManaged") -}}
+{{- if and .Values.auditLogCollection.enabled (has .Values.auditLogCollection.provider (list "selfManaged" "openshift")) -}}
 true
 {{- end -}}
 {{- end -}}
@@ -1496,7 +1497,7 @@ Fails with descriptive error for invalid values
 */}}
 {{- define "container.security.validateProvider" -}}
 {{- if .Values.auditLogCollection.enabled -}}
-{{- $validProviders := list "gardener" "selfManaged" "eks" "aks" "gke" -}}
+{{- $validProviders := list "gardener" "selfManaged" "openshift" "eks" "aks" "gke" -}}
 {{- if not (has .Values.auditLogCollection.provider $validProviders) -}}
 {{- fail (printf "Invalid auditLogCollection.provider: %s. Must be one of: %s" .Values.auditLogCollection.provider (join ", " $validProviders)) -}}
 {{- end -}}
