@@ -87,6 +87,9 @@ spec:
         {{- end }}
         - --scan-config-path=/etc/config
         - --job-active-deadline={{ printf "%ds" (int .Values.visionOne.scanManager.activeDeadlineSeconds) }}
+        {{- with .Values.priorityClassName.scanJob }}
+        - --scan-job-priority-class-name={{ . }}
+        {{- end }}
         - --malware-scan-job-active-deadline={{ printf "%ds" (int .Values.visionOne.scanManager.malwareScanActiveDeadlineSeconds) }}
         {{- if .Values.visionOne.vulnerabilityScanning.enabled }}
         - --enable-vulnerability-scanning

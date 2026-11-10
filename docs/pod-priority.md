@@ -47,6 +47,24 @@ priorityClassName:
 
 If `create: false` was previously set with per-component keys/`default` still pointing at the chart-owned class, clear those too (or omit the block) — otherwise pods will carry a `priorityClassName` the chart no longer creates and fail to schedule.
 
+## Scan jobs (ephemeral scanner pods)
+
+The scanner Jobs that the scan-manager creates at runtime in customer workload namespaces (vulnerability, secret, and malware scans) don't inherit `default` or the per-component keys above; they keep the cluster's default priority. To tag them with a PriorityClass, set `priorityClassName.scanJob`:
+
+```yaml
+priorityClassName:
+  scanJob: my-scan-job-class
+```
+
+The chart doesn't create a class for scan jobs and doesn't set one by default. The PriorityClass object is customer-side configuration and must exist before the first scan runs (otherwise scan pods stay `Pending`).
+
+In cases where scan jobs cannot be created due to a lack of resources, it is highly recommended to set a dedicated resource quota for scan job pods. A `ResourceQuota` with a `pods` scope keyed on priority class counts tagged scan pods against a dedicated bucket instead of the namespace's main quota. Note the class's numeric value plays no role in quota scoping; it only affects scheduling and eviction.
+
+**Recommended class settings for scan jobs:**
+
+- `preemptionPolicy: Never`: strongly recommended. With the default `PreemptLowerPriority`, a pending scan pod can preempt (evict) running customer workloads to take their node slot, and scheduling preemption ignores ResourceQuotas, so a quota setup offers no protection against it. Reusing the chart's own class (`trendmicro-v1cs-security`, value 10000000, preemption on) would exhibit this behavior in workload namespaces.
+- A **low value** (e.g. `0`): scan jobs should lose scheduling contention against customer workloads, not win it.
+
 ## Upgrade and lifecycle notes
 
 - **On `helm upgrade`:** `priorityClassName` is immutable on a running pod. The first time a priority class is assigned to an existing install, affected pods are terminated and recreated — expected, not a defect.

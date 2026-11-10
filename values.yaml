@@ -1249,12 +1249,38 @@ priorityClassName:
   ## If set, applies this priority class to all V1CS component pod templates
   ## (Deployments, the Scout DaemonSet, the ruleloader) unless overridden per
   ## component below. Ephemeral Job templates (scanner, compliance-scan, GKE
-  ## allowlist) ignore this and keep the cluster's default priority. Leave unset
-  ## to disable priority assignment for components that don't set their own
-  ## per-component key below.
+  ## allowlist) ignore this — use `scanJob` below for scanner Job pods. Leave
+  ## unset to disable priority assignment for components that don't set their
+  ## own per-component key below.
   ##
   ## Default Value: (none)
   default:
+
+  ## If set, the scan-manager writes this priority class into the pod template
+  ## of the scan jobs it creates (vulnerability, secret, and malware scanner
+  ## Jobs), which run in customer workload namespaces. This is the only way to
+  ## tag scan-job pods with a PriorityClass — `default` and the per-component
+  ## keys above don't apply to them.
+  ##
+  ## In cases where scan jobs cannot be created due to a lack of resources, it
+  ## is highly recommended to set a dedicated resource quota for scan job pods.
+  ## A ResourceQuota can scope pods by priority class, so a tagged scan pod is
+  ## counted against a dedicated quota bucket instead of the namespace's main
+  ## one. The PriorityClass object itself and any scoped ResourceQuota are
+  ## customer-side configuration and must exist before enabling this.
+  ##
+  ## Warning: prefer a class with `preemptionPolicy: Never` and a low value
+  ## (e.g. 0). With the default `PreemptLowerPriority`, a pending scan pod can
+  ## preempt (evict) running customer workloads to take their node slot —
+  ## scheduling preemption ignores ResourceQuotas, so a quota setup offers no
+  ## protection against it. Reusing the chart's own class
+  ## (`trendmicro-v1cs-security`, value 10000000, preemption on) would exhibit
+  ## this behavior in workload namespaces. The numeric value is irrelevant to
+  ## ResourceQuota scoping; it only affects scheduling/eviction, and scan jobs
+  ## should lose contention, not win it.
+  ##
+  ## Default Value: (none)
+  scanJob:
 
   ## Per-component overrides of `default` above. All V1CS components normally use
   ## the same class, so setting `default` to it is simpler than repeating it.
@@ -1272,7 +1298,11 @@ priorityClassName:
   ## k8sMetaCollector: trendmicro-v1cs-security
   ## fargateInjector: trendmicro-v1cs-security
   ## malwareScanner: trendmicro-v1cs-security
-
+  ##
+  ## `scanJob` is independent of `default` and the keys above — it is passed to
+  ## the scan-manager for the ephemeral scanner Jobs it creates in workload
+  ## namespaces (see its comment above for guidance).
+  ## scanJob: scan-jobs-low
 scout:
   ## hostNetwork, if set to true, the scout daemonset will use the host's network namespace.
   ##

@@ -589,6 +589,8 @@ tolerations:
 
 By default, all V1CS component pods run at Pod Priority 0 — the same as ordinary application workloads. Under node resource pressure, the Kubernetes kubelet preferentially evicts the lowest-priority pods first, so V1CS components can be evicted exactly when they are needed most. The chart can optionally create a single chart-owned `PriorityClass` (`trendmicro-v1cs-security`, value `10,000,000`) shared by all V1CS components, and assign it via `priorityClassName.create` / `priorityClassName.default` (or per-component keys) in `overrides.yaml`.
 
+Ephemeral scan-job pods (vulnerability, secret, malware) are not covered by `priorityClassName.default`. Set `priorityClassName.scanJob` to tag them with a PriorityClass. In cases where scan jobs cannot be created due to a lack of resources, it is highly recommended to set a dedicated resource quota for scan job pods. Prefer a class with `preemptionPolicy: Never` and a low value (e.g. 0) so scan pods can never preempt customer workloads.
+
 See [Configure pod priority](docs/pod-priority.md) for the full configuration reference, trade-offs, and migration notes.
 
 
