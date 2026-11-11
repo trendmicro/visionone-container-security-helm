@@ -68,6 +68,7 @@ spec:
         - --vision-one-endpoint={{ include "container.security.endpoint" . }}
         - --enable-experimental-features={{ default "false" .Values.visionOne.experimental.enabled }}
         - --spc-mode={{ default "false" .Values.spc.enabled }}
+        - --fips-mode={{ default "false" .Values.visionOne.fipsMode.enabled }}
         - --exclude-kubernetes-service-host-from-proxy={{ default "false" .Values.proxy.excludeKubernetesServiceHost }}
         - --excluded-namespaces
         {{- $excludeNS := (include "componentExcludedNamespaces" .) }}
